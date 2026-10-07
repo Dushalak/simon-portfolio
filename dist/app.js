@@ -39,7 +39,7 @@
   const motion=$('.motion-toggle');
   function motionLabel(){motion.innerHTML=paused?'播放动画 <span>▶</span>':'暂停动画 <span>Ⅱ</span>';motion.setAttribute('aria-label',paused?'播放背景动画':'暂停背景动画');}
   function pauseVideo(){videos.forEach(v=>v.pause());}
-  async function playVideo(){try{await videos[currentVideo].play();paused=false;motionLabel();}catch{paused=true;motionLabel();}}
+  async function playVideo(){try{await videos[currentVideo].play();paused=false;motionLabel();}catch(error){if(error.name!=='AbortError'){paused=true;motionLabel();}}}
   videos.forEach((v,i)=>{v.muted=true;v.addEventListener('playing',()=>v.classList.add('video-ready'));v.addEventListener('timeupdate',async()=>{
     if(i!==currentVideo||paused||fading||document.hidden||dialog.open||!Number.isFinite(v.duration)||v.duration-v.currentTime>Math.min(.9,v.duration*.15))return;
     fading=true;const next=videos[1-i];next.currentTime=0;
@@ -51,7 +51,7 @@
   let toastTimer;function toast(text){const e=$('.toast');e.textContent=text;e.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove('show'),3000);}
   document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.copy);toast('微信号已复制：'+b.dataset.copy);}catch{toast('微信号：'+b.dataset.copy+'，请长按复制');}}));
   let currentCase=null,lastTrigger=null,homeScroll=0,homeHash='#nelu',caseRequest=0,caseFrame=false;
-  function transition(change){if(!reduced&&document.startViewTransition)return document.startViewTransition(change).finished.catch(()=>{});change();return Promise.resolve();}
+  function transition(change){let applied=false;const apply=()=>{if(!applied){applied=true;change();}};if(!reduced&&document.startViewTransition)return document.startViewTransition(apply).finished.catch(()=>apply());apply();return Promise.resolve();}
   function updateCase(){
     if(!dialog.open){caseFrame=false;return;}const groups=[...pages.querySelectorAll('.case-group')];let active=0;
     groups.forEach((g,i)=>{if(g.getBoundingClientRect().top<=innerHeight*.38)active=i;});
@@ -80,4 +80,5 @@
   $('.next-case').addEventListener('click',()=>{const keys=Object.keys(projects),next=keys[(keys.indexOf(currentCase)+1)%keys.length];history.replaceState({project:next},'','#project/'+next);openCase(next,null,false);});
   function route(){const key=location.hash.match(/^#project\/(\w+)$/)?.[1];if(projects[key])openCase(key,null,false);else dismissCase();}addEventListener('popstate',route);addEventListener('hashchange',()=>{const key=location.hash.match(/^#project\/(\w+)$/)?.[1];if(projects[key]&&!dialog.open)openCase(key,null,false);});if(location.hash.startsWith('#project/'))route();
 })();
+
 
