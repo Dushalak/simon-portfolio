@@ -4,4 +4,5 @@ nelu-options.jpg
 .sites-runtime/
 *.tar.gz
 qa-*.png
+qa-*.jpg
 __pycache__/
