@@ -1,0 +1,7 @@
+review-sheet.jpg
+asset-sheet.jpg
+nelu-options.jpg
+.sites-runtime/
+*.tar.gz
+qa-*.png
+__pycache__/
