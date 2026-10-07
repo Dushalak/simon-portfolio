@@ -30,28 +30,53 @@
   function updateHome(){header.classList.toggle('scrolled',scrollY>60);let active=sections[0];sections.forEach(e=>{if(e.getBoundingClientRect().top<innerHeight*.45)active=e;});document.querySelectorAll('.section-rail a,.nav a').forEach(a=>{const match=a.hash==='#'+active.id;a.classList.toggle('active',match);if(match)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current');});scrollFrame=false;}
   addEventListener('scroll',()=>{if(!scrollFrame){scrollFrame=true;requestAnimationFrame(updateHome);}},{passive:true});updateHome();
   function clock(){$('#local-time').textContent=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());}clock();setInterval(clock,30000);
-  function closeMenu(){menu.hidden=true;toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','打开菜单');$('.menu-label').textContent='菜单';}
-  toggle.addEventListener('click',()=>{const open=menu.hidden;menu.hidden=!open;toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'关闭菜单':'打开菜单');$('.menu-label').textContent=open?'关闭':'菜单';});
+  let menuTimer;
+  function setMenu(open){
+    clearTimeout(menuTimer);toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'关闭菜单':'打开菜单');$('.menu-label').textContent=open?'金王亮':'菜单';
+    if(open){menu.hidden=false;menu.inert=false;requestAnimationFrame(()=>document.body.classList.add('menu-open'));}
+    else{document.body.classList.remove('menu-open');menu.inert=true;menuTimer=setTimeout(()=>{menu.hidden=true;},reduced?0:550);}
+  }
+  function closeMenu(){setMenu(false);}
+  toggle.addEventListener('click',()=>setMenu(toggle.getAttribute('aria-expanded')!=='true'));
   menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeMenu));
-  document.addEventListener('click',e=>{if(!menu.hidden&&!menu.contains(e.target)&&!toggle.contains(e.target))closeMenu();});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
-  // Cross-fade two video layers around the loop boundary instead of making a hard cut.
-  const videos=[...document.querySelectorAll('.bg-video')];let currentVideo=0,paused=reduced,fading=false;
+  document.addEventListener('click',e=>{if(toggle.getAttribute('aria-expanded')==='true'&&!menu.contains(e.target)&&!toggle.contains(e.target))closeMenu();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeMenu();setCaseMenu(false);}});
+  const caseMenu=$('.case-menu'),caseSummary=caseMenu.querySelector('summary');let caseMenuTimer;
+  function setCaseMenu(open){clearTimeout(caseMenuTimer);caseSummary.setAttribute('aria-expanded',String(open));caseMenu.querySelector('div').inert=!open;
+    if(open){caseMenu.open=true;requestAnimationFrame(()=>caseMenu.classList.add('menu-expanded'));}
+    else{caseMenu.classList.remove('menu-expanded');caseMenuTimer=setTimeout(()=>caseMenu.open=false,reduced?0:450);}}
+  caseSummary.setAttribute('aria-expanded','false');caseSummary.addEventListener('click',e=>{e.preventDefault();setCaseMenu(caseSummary.getAttribute('aria-expanded')!=='true');});
+  dialog.addEventListener('click',e=>{if(!caseMenu.contains(e.target))setCaseMenu(false);});
+  // Play once and keep the decoded final frame visible until the visitor replays it.
+  const videos=[...document.querySelectorAll('.bg-video')];const video=videos[0];let currentVideo=0,paused=reduced,completed=false;
   const motion=$('.motion-toggle');
-  function motionLabel(){motion.innerHTML=paused?'播放动画 <span>▶</span>':'暂停动画 <span>Ⅱ</span>';motion.setAttribute('aria-label',paused?'播放背景动画':'暂停背景动画');}
-  function pauseVideo(){videos.forEach(v=>v.pause());}
-  async function playVideo(){try{await videos[currentVideo].play();paused=false;motionLabel();}catch(error){if(error.name!=='AbortError'){paused=true;motionLabel();}}}
-  videos.forEach((v,i)=>{v.muted=true;v.addEventListener('playing',()=>v.classList.add('video-ready'));v.addEventListener('timeupdate',async()=>{
-    if(i!==currentVideo||paused||fading||document.hidden||dialog.open||!Number.isFinite(v.duration)||v.duration-v.currentTime>Math.min(.9,v.duration*.15))return;
-    fading=true;const next=videos[1-i];next.currentTime=0;
-    try{await next.play();next.classList.add('scene-active');v.classList.remove('scene-active');currentVideo=1-i;setTimeout(()=>{v.pause();fading=false;},1000);}catch{fading=false;}
-  });v.addEventListener('ended',()=>{if(i===currentVideo&&!paused&&!fading){v.currentTime=0;v.play().catch(()=>{});}});});
+  function motionLabel(){motion.innerHTML=completed?'重播动画 <span>↺</span>':paused?'继续播放 <span>▶</span>':'暂停动画 <span>Ⅱ</span>';motion.setAttribute('aria-label',completed?'重新播放开屏动画':paused?'继续播放背景动画':'暂停背景动画');}
+  function pauseVideo(){video.pause();}
+  async function playVideo(){if(completed)return;try{await video.play();paused=false;motionLabel();}catch(error){if(error.name!=='AbortError'){paused=true;motionLabel();}}}
+  video.muted=true;video.loop=false;video.addEventListener('playing',()=>video.classList.add('video-ready'));
+  video.addEventListener('ended',()=>{completed=true;paused=true;motionLabel();});
   if(reduced)pauseVideo();else playVideo();motionLabel();
-  motion.addEventListener('click',()=>{if(paused){videos.forEach(v=>v.style.display='block');playVideo();}else{paused=true;pauseVideo();motionLabel();}});
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseVideo();else if(!paused&&!dialog.open)playVideo();});
+  motion.addEventListener('click',()=>{if(completed){completed=false;video.currentTime=0;playVideo();}else if(paused)playVideo();else{paused=true;pauseVideo();motionLabel();}});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseVideo();else if(!paused&&!completed&&!dialog.open)playVideo();});
   let toastTimer;function toast(text){const e=$('.toast');e.textContent=text;e.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove('show'),3000);}
   document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.copy);toast('微信号已复制：'+b.dataset.copy);}catch{toast('微信号：'+b.dataset.copy+'，请长按复制');}}));
   let currentCase=null,lastTrigger=null,homeScroll=0,homeHash='#nelu',caseRequest=0,caseFrame=false;
-  function transition(change){let applied=false;const apply=()=>{if(!applied){applied=true;change();}};if(!reduced&&document.startViewTransition)return document.startViewTransition(apply).finished.catch(()=>apply());apply();return Promise.resolve();}
+  let activeTransition;
+  async function transition(change,direction='enter',origin=null){
+    if(activeTransition)await activeTransition;
+    document.documentElement.dataset.transition=direction;
+    const artwork=origin?.closest('.project')?.querySelector('.project-art')||origin;
+    const image=direction==='switch'?null:artwork?.querySelector('img');
+    const cover=$('.case-cover');
+    if(image&&!dialog.open)image.style.viewTransitionName='project-cover';
+    if(dialog.open)cover.style.viewTransitionName='project-cover';
+    let applied=false;const apply=()=>{if(!applied){applied=true;if(image)image.style.viewTransitionName='';cover.style.viewTransitionName='';change();if(dialog.open)cover.style.viewTransitionName='project-cover';else if(image)image.style.viewTransitionName='project-cover';}};
+    const run=async()=>{
+      try{if(!reduced&&document.startViewTransition){const t=document.startViewTransition(apply);await t.finished.catch(()=>apply());}
+      else{apply();if(!reduced){const target=dialog.open?dialog:document.querySelector('main');await target.animate([{opacity:0,transform:'translateY(24px)'},{opacity:1,transform:'none'}],{duration:600,easing:'cubic-bezier(.22,1,.36,1)'}).finished;}}}
+      finally{if(image)image.style.viewTransitionName='';$('.case-cover').style.viewTransitionName='';delete document.documentElement.dataset.transition;}
+    };activeTransition=run();await activeTransition;activeTransition=null;
+  }
   function updateCase(){
     if(!dialog.open){caseFrame=false;return;}const groups=[...pages.querySelectorAll('.case-group')];let active=0;
     groups.forEach((g,i)=>{if(g.getBoundingClientRect().top<=innerHeight*.38)active=i;});
@@ -70,10 +95,10 @@
       const button=document.createElement('button');button.className='chapter-card';button.setAttribute('aria-controls',section.id);const label=document.createElement('span');label.className='chapter-label';label.textContent=String(i+1).padStart(2,'0')+' / '+group.title;
       const summary=document.createElement('div');summary.className='chapter-summary';const title=document.createElement('strong');title.textContent=group.heading;const text=document.createElement('p');text.textContent=group.text;summary.append(title,text);button.append(label,summary);
       button.addEventListener('click',()=>dialog.scrollTo({top:dialog.scrollTop+section.getBoundingClientRect().top-(innerWidth<=720?185:110),behavior:reduced?'instant':'smooth'}));navigation.append(button);
-    });closeMenu();$('.case-menu').open=false;if(push)history.pushState({project:key},'','#project/'+key);
-    await transition(()=>{currentCase=key;$('#case-title').textContent=project.title;$('.case-category').textContent=project.category;$('.case-subtitle').textContent=project.subtitle;const cover=document.createElement('img');cover.src=project.cover;cover.alt=project.title+' 项目展示';$('.case-cover').replaceChildren(cover);$('.case-cover').classList.toggle('is-nelu',key==='nelu');pages.replaceChildren(fragment);$('.case-navigation').replaceChildren(navigation);if(!dialog.open)dialog.showModal();dialog.scrollTop=0;pauseVideo();document.title=project.title+' · 金王亮设计作品集';updateCase();});
+    });closeMenu();setCaseMenu(false);if(push)history.pushState({project:key},'','#project/'+key);
+    await transition(()=>{currentCase=key;$('#case-title').textContent=project.title;$('.case-category').textContent=project.category;$('.case-subtitle').textContent=project.subtitle;const cover=document.createElement('img');cover.src=project.cover;cover.alt=project.title+' 项目展示';$('.case-cover').replaceChildren(cover);$('.case-cover').classList.toggle('is-nelu',key==='nelu');pages.replaceChildren(fragment);$('.case-navigation').replaceChildren(navigation);if(!dialog.open)dialog.showModal();dialog.scrollTop=0;pauseVideo();document.title=project.title+' · 金王亮设计作品集';updateCase();},dialog.open?'switch':'enter',lastTrigger);
   }
-  async function dismissCase(){if(!dialog.open)return;caseRequest++;await transition(()=>{dialog.close();currentCase=null;document.title='金王亮 · UI/UX 设计作品集';window.scrollTo({top:homeScroll,behavior:'instant'});});lastTrigger?.focus({preventScroll:true});if(!paused)playVideo();updateHome();}
+  async function dismissCase(){if(!dialog.open)return;caseRequest++;await transition(()=>{dialog.close();currentCase=null;document.title='金王亮 · UI/UX 设计作品集';window.scrollTo({top:homeScroll,behavior:'instant'});},'return',lastTrigger);lastTrigger?.focus({preventScroll:true});if(!paused)playVideo();updateHome();}
   function returnHome(){if(!dialog.open)return;if(history.state?.project)history.back();else{history.replaceState(null,'',homeHash);dismissCase();}}
   document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>openCase(b.dataset.open,b)));document.querySelectorAll('.case-close').forEach(b=>b.addEventListener('click',returnHome));dialog.addEventListener('cancel',e=>{e.preventDefault();returnHome();});
   document.querySelectorAll('[data-case-switch]').forEach(b=>b.addEventListener('click',()=>{history.replaceState({project:b.dataset.caseSwitch},'','#project/'+b.dataset.caseSwitch);openCase(b.dataset.caseSwitch,null,false);}));
