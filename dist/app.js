@@ -29,7 +29,6 @@
   const sections=[...document.querySelectorAll('main .section')];let scrollFrame=false;
   function updateHome(){header.classList.toggle('scrolled',scrollY>60);let active=sections[0];sections.forEach(e=>{if(e.getBoundingClientRect().top<innerHeight*.45)active=e;});document.querySelectorAll('.section-rail a,.nav a').forEach(a=>{const match=a.hash==='#'+active.id;a.classList.toggle('active',match);if(match)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current');});scrollFrame=false;}
   addEventListener('scroll',()=>{if(!scrollFrame){scrollFrame=true;requestAnimationFrame(updateHome);}},{passive:true});updateHome();
-  function clock(){$('#local-time').textContent=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());}clock();setInterval(clock,30000);
   let menuTimer;
   function setMenu(open){
     clearTimeout(menuTimer);toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'关闭菜单':'打开菜单');$('.menu-label').textContent=open?'金王亮':'菜单';
@@ -47,17 +46,16 @@
     else{caseMenu.classList.remove('menu-expanded');caseMenuTimer=setTimeout(()=>caseMenu.open=false,reduced?0:450);}}
   caseSummary.setAttribute('aria-expanded','false');caseSummary.addEventListener('click',e=>{e.preventDefault();setCaseMenu(caseSummary.getAttribute('aria-expanded')!=='true');});
   dialog.addEventListener('click',e=>{if(!caseMenu.contains(e.target))setCaseMenu(false);});
-  // Play once and keep the decoded final frame visible until the visitor replays it.
-  const videos=[...document.querySelectorAll('.bg-video')];const video=videos[0];let currentVideo=0,paused=reduced,completed=false;
+  // Native looping keeps playback reliable when switching tabs or opening a case.
+  const video=$('.bg-video');let paused=reduced;
   const motion=$('.motion-toggle');
-  function motionLabel(){motion.innerHTML=completed?'重播动画 <span>↺</span>':paused?'继续播放 <span>▶</span>':'暂停动画 <span>Ⅱ</span>';motion.setAttribute('aria-label',completed?'重新播放开屏动画':paused?'继续播放背景动画':'暂停背景动画');}
+  function motionLabel(){motion.innerHTML=paused?'播放动画 <span>▶</span>':'暂停动画 <span>Ⅱ</span>';motion.setAttribute('aria-label',paused?'播放背景动画':'暂停背景动画');}
   function pauseVideo(){video.pause();}
-  async function playVideo(){if(completed)return;try{await video.play();paused=false;motionLabel();}catch(error){if(error.name!=='AbortError'){paused=true;motionLabel();}}}
-  video.muted=true;video.loop=false;video.addEventListener('playing',()=>video.classList.add('video-ready'));
-  video.addEventListener('ended',()=>{completed=true;paused=true;motionLabel();});
+  async function playVideo(){try{await video.play();paused=false;motionLabel();}catch(error){if(error.name!=='AbortError'){paused=true;motionLabel();}}}
+  video.muted=true;video.loop=true;video.addEventListener('playing',()=>video.classList.add('video-ready'));
   if(reduced)pauseVideo();else playVideo();motionLabel();
-  motion.addEventListener('click',()=>{if(completed){completed=false;video.currentTime=0;playVideo();}else if(paused)playVideo();else{paused=true;pauseVideo();motionLabel();}});
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseVideo();else if(!paused&&!completed&&!dialog.open)playVideo();});
+  motion.addEventListener('click',()=>{if(paused)playVideo();else{paused=true;pauseVideo();motionLabel();}});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseVideo();else if(!paused&&!dialog.open)playVideo();});
   let toastTimer;function toast(text){const e=$('.toast');e.textContent=text;e.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove('show'),3000);}
   document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.copy);toast('微信号已复制：'+b.dataset.copy);}catch{toast('微信号：'+b.dataset.copy+'，请长按复制');}}));
   let currentCase=null,lastTrigger=null,homeScroll=0,homeHash='#nelu',caseRequest=0,caseFrame=false;
