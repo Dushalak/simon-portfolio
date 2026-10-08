@@ -8,49 +8,39 @@
   const lightPlane = hero.querySelector('.hero-light-plane');
   const videoPlane = hero.querySelector('.hero-bg');
   const atmosphere = hero.querySelector('.hero-atmosphere');
-  const darken = hero.querySelector('.hero-darken');
   const cursorLight = hero.querySelector('.hero-light');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const desktop = matchMedia('(min-width: 721px) and (hover: hover) and (pointer: fine)');
 
   // All motion parameters live here. The original page routes remain native anchors.
-  const config = { drawMs: 1500, revealMs: 660, staggerMs: 140, tiltDeg: 1.8,
+  const config = { revealMs: 660, staggerMs: 140, tiltDeg: 1.8,
     photoPx: 8, lightPx: 18, interpolation: .075 };
-  const ease = 'cubic-bezier(.22,1,.36,1)';
   const clamp = (v, lo=0, hi=1) => Math.min(hi,Math.max(lo,v));
   const smooth = v => { v=clamp(v); return v*v*(3-2*v); };
   const segment = (p,a,b) => smooth((p-a)/(b-a));
   const pieces = [...panel.querySelectorAll('.hero-piece')];
   const offsets = [{start:.04,end:.64,scale:1.2}, {start:.1,end:.74,scale:1},
     ...Array.from({length:5},(_,i)=>({start:.16+i*.04,end:.75+i*.025,scale:1}))];
-  let animations=[], introDone=false, frame=0, active=true, geometry;
+  let introTimeline, introDone=false, frame=0, active=true, geometry;
   let targetX=0,targetY=0,x=0,y=0,glow=0,targetGlow=0;
   let pointerX=0,pointerY=0,lightX=0,lightY=0,lastTime=0;
   const events = new AbortController();
 
-  // 1. Opening timeline: one clock, a real path draw, then staggered editorial text.
+  // 1. Intro delegates to one master timeline; pointer and scroll logic below stays unchanged.
   function finishIntro() {
     if (introDone) return;
     introDone=true; hero.classList.remove('hero-intro-running');
-    animations.forEach(a=>a.cancel()); animations=[];
+    introTimeline?.finish();
+    document.documentElement.classList.remove('intro-pending','intro-running');
+    clearTimeout(window.portfolioIntroWatchdog);
     hero.dataset.intro='complete'; request();
   }
   function animateOpening() {
-    if (reduced.matches || scrollY>30 || !Element.prototype.animate) { finishIntro(); return; }
-    hero.classList.add('hero-intro-running'); hero.dataset.intro='drawing';
-    const clock=document.timeline.currentTime;
-    function cue(node,keys,duration,delay=0,easing=ease) {
-      const a=node.animate(keys,{duration,delay,easing,fill:'both'}); a.startTime=clock; animations.push(a); return a;
-    }
-    cue(border.querySelector('path'),[{strokeDashoffset:'1'},{strokeDashoffset:'0'}],config.drawMs,0,'cubic-bezier(.65,0,.35,1)');
-    cue(darken,[{opacity:.84},{opacity:.12}],2450);
-    const revealKeys=[{opacity:0,filter:'blur(8px)',transform:'translate3d(0,16px,0)'},
-      {opacity:1,filter:'blur(0px)',transform:'translate3d(0,0,0)'}];
-    cue(panel.querySelector('.hero-heading .hero-reveal'),revealKeys,config.revealMs,config.drawMs-70);
-    cue(panel.querySelector('.hero-philosophy .hero-reveal'),revealKeys,config.revealMs,config.drawMs+100);
-    panel.querySelectorAll('.hero-nav-item .hero-reveal').forEach((node,i)=>cue(node,revealKeys,config.revealMs,config.drawMs+270+i*config.staggerMs));
-    const end=cue(hero.querySelector('.hero-author .hero-reveal'),revealKeys,600,config.drawMs+940);
-    end.finished.then(finishIntro).catch(()=>{});
+    if (reduced.matches || scrollY>30 || (location.hash && location.hash!=='#home') || !Element.prototype.animate || !window.PortfolioIntro) { finishIntro(); return; }
+    try {
+      introTimeline=window.PortfolioIntro.create({hero,onComplete:finishIntro,revealMs:config.revealMs,staggerMs:config.staggerMs});
+      introTimeline.play();
+    } catch (_) { finishIntro(); }
   }
 
   // 2. Scroll composition: measure natural slots once, only transform on each scroll.
@@ -95,7 +85,7 @@
     videoPlane.style.transform=`translate3d(${x*config.lightPx*movement}px,${y*10*movement}px,0) scale(${1+p*.035})`;
     cursorLight.style.transform=`translate3d(${lightX-140}px,${lightY-140}px,0)`;
     cursorLight.style.opacity=String(glow*.5*(1-p));
-    atmosphere.style.animationPlayState=hero.querySelector('video').paused?'paused':'running';
+    atmosphere.style.animationPlayState=!introDone||hero.querySelector('video').paused?'paused':'running';
     const unsettled=Math.abs(targetX-x)+Math.abs(targetY-y)>.002 || Math.abs(pointerX-lightX)+Math.abs(pointerY-lightY)>.25 || Math.abs(targetGlow-glow)>.002;
     if(visible&&unsettled&&!reduced.matches)request();
   }
@@ -113,7 +103,7 @@
   function scroll(){request();}
   function resize(){measure();}
   function visibility(){lastTime=0;resetPointer();if(document.hidden&&frame){cancelAnimationFrame(frame);frame=0;}else request();}
-  function cleanUp(event){if(event.persisted)return;active=false;events.abort();observer.disconnect();animations.forEach(a=>a.cancel());cancelAnimationFrame(frame);}
+  function cleanUp(event){if(event.persisted)return;active=false;events.abort();observer.disconnect();introTimeline?.dispose();cancelAnimationFrame(frame);}
   hero.classList.toggle('has-story',!reduced.matches);
   const options={passive:true,signal:events.signal};
   stage.addEventListener('pointermove',pointerMove,options);
@@ -121,6 +111,8 @@
   addEventListener('scroll',scroll,options);addEventListener('resize',resize,options);
   addEventListener('pagehide',cleanUp,{signal:events.signal});addEventListener('pageshow',resize,{signal:events.signal});
   document.addEventListener('visibilitychange',visibility,{signal:events.signal});
+  addEventListener('portfolio:intro-timeout',finishIntro,{signal:events.signal});
+  document.addEventListener('keydown',event=>{if(event.key==='Tab')finishIntro();},{signal:events.signal});
   reduced.addEventListener('change',motionPreference,{signal:events.signal});
   desktop.addEventListener('change',resize,{signal:events.signal});
   hero.querySelector('video').addEventListener('play',request,{signal:events.signal});

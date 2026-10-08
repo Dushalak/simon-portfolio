@@ -5,8 +5,26 @@
   <title>金王亮 · UI/UX 设计作品集</title>
   <meta name="description" content="金王亮的个人设计作品集。探索 Nelu AI、予序、晴雨电商与 AIGC 视觉设计，从用户需求到有温度的产品体验。">
   <meta name="theme-color" content="#0c0c0c">
+  <script>
+    // Set before first paint. Deep links and reduced motion use the normal page immediately.
+    try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches && (!location.hash || location.hash === '#home')) {
+      document.documentElement.classList.add('intro-pending');
+      window.portfolioIntroWatchdog = setTimeout(() => {
+        dispatchEvent(new Event('portfolio:intro-timeout'));
+        document.documentElement.classList.remove('intro-pending', 'intro-running');
+        document.querySelector('.hero')?.classList.remove('hero-intro-running');
+        document.querySelectorAll('.hero-intro-curtain,.hero-construction').forEach(node=>node.remove());
+      }, 8000);
+    } } catch (_) {}
+  </script>
+  <style>
+    html.intro-pending,html.intro-pending body{background:#000}
+    html.intro-pending main{visibility:hidden}
+    html.intro-pending .header,html.intro-pending .section-rail,html.intro-running .header,html.intro-running .section-rail{opacity:0}
+    html.intro-pending .skip-link:not(:focus){visibility:hidden}
+  </style>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23080a0d'/%3E%3Cpath d='M19 15h8v24c0 6 4 8 10 5V15h8v30c-12 12-26 6-26-6z' fill='%23ed9673'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="refinement.css"><link rel="stylesheet" href="hero.css?v=20261009-story">
+  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="refinement.css"><link rel="stylesheet" href="hero.css?v=20261009-intro2">
 </head>
 <body>
   <a class="skip-link" href="#nelu">跳到作品</a>
@@ -72,7 +90,7 @@
     <div class="case-end"><p class="eyebrow">THANK YOU FOR EXPLORING</p><h3>设计的故事，还在继续。</h3><div><button class="case-close">返回作品位置</button><button class="next-case">探索下一件作品</button></div></div>
   </dialog>
   <div class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js"></script><script src="hero-motion.js?v=20261009-story"></script>
+  <script src="app.js"></script><script src="hero-intro.js?v=20261009-intro2"></script><script src="hero-motion.js?v=20261009-intro2"></script>
 </body>
 </html>
 
