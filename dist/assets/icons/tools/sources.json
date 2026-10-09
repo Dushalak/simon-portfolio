@@ -1,0 +1,24 @@
+{
+  "downloaded": "2026-10-10",
+  "sources": {
+    "figma.svg": "https://raw.githubusercontent.com/gilbarbara/logos/main/logos/figma.svg",
+    "protopie.png": "https://framerusercontent.com/images/92eEaIQkXYFubBkZJm9YDfn5NvQ.png",
+    "openai.svg": "https://raw.githubusercontent.com/gilbarbara/logos/main/logos/openai-icon.svg",
+    "claude.svg": "https://raw.githubusercontent.com/lobehub/lobe-icons/master/packages/static-svg/icons/claude-color.svg",
+    "google-ai-studio.png": "https://www.gstatic.com/images/branding/productlogos/ai_studio/v1/web-512dp/logo_ai_studio_color_1x_web_512dp.png",
+    "photoshop.svg": "https://raw.githubusercontent.com/gilbarbara/logos/main/logos/adobe-photoshop.svg",
+    "premierepro.svg": "https://raw.githubusercontent.com/gilbarbara/logos/main/logos/adobe-premiere.svg",
+    "aftereffects.svg": "https://raw.githubusercontent.com/gilbarbara/logos/main/logos/adobe-after-effects.svg",
+    "illustrator.svg": "https://raw.githubusercontent.com/gilbarbara/logos/main/logos/adobe-illustrator.svg",
+    "cinema4d.svg": "https://mxwebnuxtprod01.blob.core.windows.net/media/images/Branding/Cinema_4D_202512.zip # Cinema 4D/Mark/Primary/Maxon_Cinema_4D_Mark_Primary.svg"
+  },
+  "notes": {
+    "figma": "Official five-color Figma mark, mirrored by Iconify Logos; direct static.figma.com download returned 403.",
+    "protopie": "Official website favicon",
+    "cinema4d": "Current official Maxon brand kit; differs from legacy C4D sphere in Midu",
+    "google-ai-studio": "Actual ai_studio product logo from official Google branding CDN, not Gemini",
+    "adobe": "Brand SVG files distributed by gilbarbara/logos (Iconify Logos collection)",
+    "claude": "Lobe Icons Claude color asset",
+    "openai": "Iconify Logos brand asset"
+  }
+}
