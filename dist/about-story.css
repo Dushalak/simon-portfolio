@@ -41,7 +41,7 @@
  .about-story-enabled .about-designed{margin-top:calc(-1 * var(--about-stage-height,100svh));min-height:var(--about-stage-height,100svh)}
  .about-story-enabled .about-designed[data-story-mode=transition] .about-viewport{position:fixed;inset:0;visibility:hidden;background:transparent}
  .about-story-enabled .about-designed[data-story-visible=true] .about-viewport{visibility:visible}
- .about-story-enabled .about-designed[data-story-mode=transition] .about-reveal{mask-image:url('#about-scroll-mask');-webkit-mask-image:url('#about-scroll-mask')}
+ .about-story-enabled .about-designed[data-story-mode=transition] .about-reveal:not([data-optics-complete=true]){mask-image:url('#about-scroll-mask');-webkit-mask-image:url('#about-scroll-mask')}
  .about-story-enabled .about-designed[data-story-mode=transition] .about-optics{display:block}
  .about-story-enabled .about-motion{will-change:transform,opacity,filter}
  .about-story-enabled .about-designed[data-story-mode=settled] .about-motion{will-change:auto}

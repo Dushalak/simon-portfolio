@@ -7,8 +7,8 @@
 @media(prefers-reduced-motion:reduce){.hero.has-story{height:100svh}.has-story .hero-stage{position:relative}.hero-atmosphere{animation:none}.hero-photo,.hero-light-plane,.hero-panel,.hero-piece,.hero-reveal{will-change:auto}.hero-light{display:none}.hero-intro-running .hero-reveal{opacity:1}.hero-intro-running .hero-border path{stroke-dashoffset:0}.hero-intro-running .hero-darken{opacity:.12}}
 
 /* Transient intro layers. Removed at completion; no changes to the final composition. */
-.hero-construction{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;fill:none;stroke:#fff;stroke-width:.75}
-.hero-construction path{stroke-dasharray:1;stroke-dashoffset:1;opacity:.105}
+.hero-construction{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;fill:none;stroke:#fff;stroke-width:1}
+.hero-construction path{stroke-dasharray:1;stroke-dashoffset:1;opacity:.24}
 .hero-intro-curtain{position:absolute;inset:0;z-index:0;background:#000;pointer-events:none;overflow:hidden}
 .hero-intro-curtain canvas{display:block;width:100%;height:100%}
 .hero-intro-curtain[data-renderer=webgl]{background:transparent}

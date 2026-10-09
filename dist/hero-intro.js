@@ -42,28 +42,31 @@
   function construction(panel, stage) {
     const ns = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(ns, 'svg');
-    svg.setAttribute('viewBox', '0 0 361 499');
+    // Measured from Shopify's davinci-lines SVG; scale its construction to our frame.
+    svg.setAttribute('viewBox', '550 208 340 464');
     svg.setAttribute('preserveAspectRatio', 'none');
     svg.setAttribute('aria-hidden', 'true'); svg.classList.add('hero-construction');
-    // The reference uses golden-ratio corner brackets, frame extensions,
-    // two diagonals and opposed circular arcs, rather than a repeated grid.
-    const sx = panel.offsetWidth/361, sy = panel.offsetHeight/499;
-    const left = panel.offsetLeft-panel.offsetWidth/2, top = panel.offsetTop-panel.offsetHeight/2;
-    const x0 = -left/sx, x1 = (stage.clientWidth-left)/sx;
-    const y0 = -top/sy, y1 = (stage.clientHeight-top)/sy;
-    const r = 451.25, cx = 180.5, cy = 249.5;
     const lines = [
-      { d: 'M-223 0H0 M-223 53H-138V0', group: 'mark', at: 300 },
-      { d: 'M361 499H584 M499 499V446H584', group: 'mark', at: 360 },
-      { d: 'M-171 53V33H-138 M-171 33V20H-158', group: 'mark', at: 430 },
-      { d: 'M532 446V466H499 M532 466V479H519', group: 'mark', at: 480 },
-      { d: `M${x0} 138H0`, group: 'axis', at: 420 },
-      { d: `M361 361H${x1}`, group: 'axis', at: 490 },
-      ...[0,cx,361].map((x,i) => ({ d: `M${x} ${y0}V${y1}`, group: 'axis', at: 500+i*60 })),
-      { d: `M${x0} ${y0}L${x1} ${y1}`, group: 'diagonal', at: 650 },
-      { d: `M${x1} ${y0}L${x0} ${y1}`, group: 'diagonal', at: 710 },
-      { d: `M${cx-r} ${cy-r}A${r} ${r} 0 0 0 ${cx+r} ${cy-r}`, group: 'arc', at: 720 },
-      { d: `M${cx+r} ${cy+r}A${r} ${r} 0 0 0 ${cx-r} ${cy+r}`, group: 'arc', at: 780 }
+      {d:'M339.938 207.740H550.031',group:'mark',at:300},
+      {d:'M420.186 207.740V336.130',group:'mark',at:345},
+      {d:'M339.938 256.781H420.186',group:'mark',at:390},
+      {d:'M389.534 256.781V207.740',group:'mark',at:435},
+      {d:'M389.534 238.049H420.186',group:'mark',at:480},
+      {d:'M889.969 672.260H1100.062',group:'mark',at:365},
+      {d:'M1019.814 672.260V543.870',group:'mark',at:410},
+      {d:'M1019.814 623.219H1100.062',group:'mark',at:455},
+      {d:'M1050.466 623.219V672.260',group:'mark',at:500},
+      {d:'M1050.466 641.951H1019.814',group:'mark',at:545},
+      {d:'',geometry:'top-spiral',group:'mark',at:330},
+      {d:'',geometry:'bottom-spiral',group:'mark',at:395},
+      {d:'',geometry:'left-horizontal',group:'axis',at:550},
+      {d:'',geometry:'right-horizontal',group:'axis',at:610},
+      ...[550.031,720,889.969].map((x,i)=>({d:'',geometry:'vertical',x,group:'axis',at:590+i*70})),
+      {d:'',geometry:'diagonal-down',group:'diagonal',at:750},
+      {d:'',geometry:'diagonal-up',group:'diagonal',at:830},
+      // The reference's paired 425-unit circles meet at the frame's center.
+      {d:'M295 15a425 425 0 1 0 850 0',group:'arc',at:860},
+      {d:'M1145 865a425 425 0 1 0-850 0',group:'arc',at:950}
     ];
     lines.forEach(line => {
       const path = document.createElementNS(ns, 'path');
@@ -72,36 +75,47 @@
       path.dataset.group = line.group; svg.append(path); line.node = path;
     });
     function resize() {
-      const scaleX=panel.offsetWidth/361,scaleY=panel.offsetHeight/499;
+      const scaleX=panel.offsetWidth/340,scaleY=panel.offsetHeight/464;
       const panelLeft=panel.offsetLeft-panel.offsetWidth/2,panelTop=panel.offsetTop-panel.offsetHeight/2;
-      const minX=-panelLeft/scaleX,maxX=(stage.clientWidth-panelLeft)/scaleX;
-      const minY=-panelTop/scaleY,maxY=(stage.clientHeight-panelTop)/scaleY;
-      const paths=[`M${minX} 138H0`,`M361 361H${maxX}`,
-        ...[0,cx,361].map(x=>`M${x} ${minY}V${maxY}`),
-        `M${minX} ${minY}L${maxX} ${maxY}`,`M${maxX} ${minY}L${minX} ${maxY}`];
-      paths.forEach((d,i)=>lines[i+4].node.setAttribute('d',d));
+      const minX=550-panelLeft/scaleX,maxX=550+(stage.clientWidth-panelLeft)/scaleX;
+      const minY=208-panelTop/scaleY,maxY=208+(stage.clientHeight-panelTop)/scaleY;
+      const extent=Math.max(720-minX,maxX-720),slope=464/340;
+      lines.forEach(line=>{
+        const paths={
+          'top-spiral':`M339.938 ${minY}V336.130`,
+          'bottom-spiral':`M1100.062 543.870V${maxY}`,
+          'left-horizontal':`M${minX} 336.130H550.031`,
+          'right-horizontal':`M889.969 543.870H${maxX}`,
+          'vertical':`M${line.x} ${minY}V${maxY}`,
+          'diagonal-down':`M${720-extent} ${440-extent/slope}L${720+extent} ${440+extent/slope}`,
+          'diagonal-up':`M${720+extent} ${440-extent/slope}L${720-extent} ${440+extent/slope}`
+        };
+        if(line.geometry)line.node.setAttribute('d',paths[line.geometry]);
+      });
     }
-    panel.prepend(svg); return { svg, lines, resize };
+    panel.prepend(svg);resize(); return { svg, lines, resize };
   }
 
   // A transparent WebGL veil reveals the EXISTING DOM photograph. No image
   // replacement or duplicate 3D scene: only the moving dissolution boundary is rendered.
-  function opticalReveal(stage) {
-    const veil = document.createElement('div'); veil.className = 'hero-intro-curtain';
+  function opticalReveal(stage, {canvas: suppliedCanvas, overlay = false} = {}) {
+    const veil = suppliedCanvas || document.createElement('div');
+    if(!suppliedCanvas)veil.className = 'hero-intro-curtain';
     veil.setAttribute('aria-hidden', 'true');
-    const canvas = document.createElement('canvas'); veil.append(canvas); stage.prepend(veil);
+    const canvas = suppliedCanvas || document.createElement('canvas');
+    if(!suppliedCanvas){veil.append(canvas);stage.prepend(veil);}
     const resources = [], events = new AbortController();
-    let gl, program, buffer, uniforms, fallback = false, lastSize = '';
+    let gl, program, buffer, uniforms, fallback = false, lastSize = '', maskKey = '', maskURL = null;
     const vertex = `attribute vec2 aPosition;varying vec2 vUv;
       void main(){vUv=aPosition*.5+.5;gl_Position=vec4(aPosition,0.,1.);}`;
     const fragment = `precision highp float;
-      varying vec2 vUv;uniform vec2 uResolution;uniform float uProgress,uLight;
+      varying vec2 vUv;uniform vec2 uResolution;uniform float uProgress,uLight,uMode;
       float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
       float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
         return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+1.),f.x),f.y);}
       float fbm(vec2 p){float n=0.,a=.5;for(int i=0;i<4;i++){n+=a*noise(p);p=p*2.03+vec2(13.7,9.2);a*=.5;}return n;}
       void main(){
-        if(uProgress>=1.){gl_FragColor=vec4(0.);return;}
+        if(uProgress>=1.&&uMode<1.5){gl_FragColor=vec4(0.);return;}
         vec2 uv=vec2(vUv.x,1.-vUv.y), ratio=vec2(uResolution.x/uResolution.y,1.);
         vec2 q=uv*ratio;
         vec2 warp=vec2(fbm(q*3.1+vec2(7.2,1.8)),fbm(q*3.4+vec2(1.3,8.6)));
@@ -115,6 +129,7 @@
         float d=length((uv-vec2(.57,.82))*ratio);
         float distance=min(min(a,b),min(c,d));
         float field=coarse*.88+medium*.08+detail*.035+min(distance,.8)*.28+(grain-.5)*.014;
+        if(uMode>1.5){gl_FragColor=vec4(vec3(field),1.);return;}
         float threshold=mix(.25,.95,uProgress);
         float edge=field-threshold;
         float open=(1.-smoothstep(-.008,.014,edge))*smoothstep(.001,.05,uProgress);
@@ -126,9 +141,14 @@
         float light=rim+bloom+precursor;
         float alpha=clamp(1.-open+light,0.,1.);
         vec3 silver=vec3(1.,.96,.86)*light;
+        if(uMode>.5){alpha=clamp(light,0.,1.);}
         gl_FragColor=vec4(silver/max(alpha,.0001),alpha);
       }`;
-    function gradientFallback() { fallback = true; veil.dataset.renderer = 'gradient'; canvas.remove(); }
+    function gradientFallback() {
+      fallback = true; veil.dataset.renderer = 'gradient';
+      if(!suppliedCanvas)canvas.remove();
+      else{canvas.style.background='radial-gradient(ellipse 24% 35% at 39% 56%,#e4dfbb40,transparent),radial-gradient(ellipse 21% 30% at 65% 32%,#e4dfbb38,transparent),radial-gradient(ellipse 25% 33% at 78% 66%,#e4dfbb38,transparent)';}
+    }
     try {
       gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false,
         antialias: false, depth: false, stencil: false, powerPreference: 'low-power' });
@@ -147,15 +167,17 @@
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]), gl.STATIC_DRAW);
       const attribute = gl.getAttribLocation(program, 'aPosition');
       gl.enableVertexAttribArray(attribute); gl.vertexAttribPointer(attribute,2,gl.FLOAT,false,0,0);
-      uniforms = Object.fromEntries(['uResolution','uProgress','uLight'].map(name=>[name,gl.getUniformLocation(program,name)]));
+      uniforms = Object.fromEntries(['uResolution','uProgress','uLight','uMode'].map(name=>[name,gl.getUniformLocation(program,name)]));
       veil.dataset.renderer = 'webgl';
       canvas.addEventListener('webglcontextlost', event=>{event.preventDefault();gradientFallback();}, {signal:events.signal});
     } catch (_) { gradientFallback(); }
     function draw(progress, light = 0) {
       if (progress >= 1) { veil.style.visibility = 'hidden'; return; }
+      if (overlay && progress <= 0 && light <= 0) { veil.style.visibility = 'hidden'; return; }
       veil.style.visibility = 'visible';
       const w=stage.clientWidth,h=stage.clientHeight;
       if (fallback) {
+        if(overlay){veil.style.opacity=String(smooth(progress/.12)*(1-smooth((progress-.72)/.28)));return;}
         if(progress===0){veil.style.maskImage='none';veil.style.webkitMaskImage='none';veil.style.setProperty('--intro-light',String(light*.3));return;}
         const radius=progress*Math.hypot(w,h)*.80;
         const mask=[[39,56,.88],[65,32,.75],[78,66,1],[57,82,.8]].map(([x,y,s])=>
@@ -171,10 +193,28 @@
       if(size!==lastSize){canvas.width=Math.max(1,Math.round(w*scale));canvas.height=Math.max(1,Math.round(h*scale));gl.viewport(0,0,canvas.width,canvas.height);lastSize=size;}
       gl.uniform2f(uniforms.uResolution,w,h);
       gl.uniform1f(uniforms.uProgress,progress);gl.uniform1f(uniforms.uLight,light);
+      gl.uniform1f(uniforms.uMode,overlay?1:0);
       gl.drawArrays(gl.TRIANGLES,0,6);
     }
+    // Export the SAME scalar field once per viewport size, not per animation frame.
+    // The SVG mask samples it with a moving threshold while the shader lights its edge.
+    function maskImage(){
+      if(fallback||!gl)return null;
+      const w=stage.clientWidth,h=stage.clientHeight,key=`${w}x${h}`;
+      if(key===maskKey)return maskURL;
+      const mw=512,mh=Math.max(1,Math.round(mw*h/w));
+      canvas.width=mw;canvas.height=mh;gl.viewport(0,0,mw,mh);
+      gl.uniform2f(uniforms.uResolution,w,h);gl.uniform1f(uniforms.uProgress,.5);
+      gl.uniform1f(uniforms.uLight,0);gl.uniform1f(uniforms.uMode,2);gl.drawArrays(gl.TRIANGLES,0,6);
+      const pixels=new Uint8Array(mw*mh*4);gl.readPixels(0,0,mw,mh,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
+      const image=document.createElement('canvas');image.width=mw;image.height=mh;
+      const context=image.getContext('2d'),data=context.createImageData(mw,mh);
+      for(let row=0;row<mh;row++)data.data.set(pixels.subarray((mh-row-1)*mw*4,(mh-row)*mw*4),row*mw*4);
+      context.putImageData(data,0,0);maskURL=image.toDataURL('image/png');maskKey=key;lastSize='';
+      return maskURL;
+    }
     draw(0);
-    return { draw, renderer:veil.dataset.renderer, dispose() {
+    return { draw, maskImage, renderer:veil.dataset.renderer, dispose() {
       events.abort();veil.remove();
       if(gl){resources.forEach(shader=>gl.deleteShader(shader));if(buffer)gl.deleteBuffer(buffer);if(program)gl.deleteProgram(program);
         gl.getExtension('WEBGL_lose_context')?.loseContext();}
@@ -198,9 +238,9 @@
       }
     },onComplete);
     auxiliary.lines.forEach(({node,group,at})=>{
-      timeline.add(node,[{strokeDashoffset:'1'},{strokeDashoffset:'0'}],group==='arc'?700:480,at,'cubic-bezier(.45,0,.35,1)');
+      timeline.add(node,[{strokeDashoffset:'1'},{strokeDashoffset:'0'}],group==='arc'?1050:group==='mark'?580:850,at,'cubic-bezier(.45,0,.35,1)');
       const fade=labels.constructionFadeOut+{arc:0,diagonal:100,axis:220,mark:310}[group];
-      timeline.add(node,[{opacity:.105},{opacity:0}],group==='mark'?390:500,fade);
+      timeline.add(node,[{opacity:group==='mark'?.30:.24},{opacity:0}],group==='mark'?390:500,fade);
     });
     timeline.add(hero.querySelector('.hero-border path'),[{strokeDashoffset:'1'},{strokeDashoffset:'0'}],
       labels.frameHold-labels.frameDrawing,labels.frameDrawing,'cubic-bezier(.55,.01,.3,1)');
@@ -241,5 +281,5 @@
       dispose() { this.finish(); }
     };
   }
-  window.PortfolioIntro={create,labels};
+  window.PortfolioIntro={create,labels,createOpticalField:opticalReveal};
 })();

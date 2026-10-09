@@ -14,19 +14,16 @@
     const about=document.querySelector('#about'),viewport=about?.querySelector('.about-viewport');
     if(!about)return null;
     const reveal=about.querySelector('.about-reveal'),board=about.querySelector('.about-board');
-    const canvas=about.querySelector('.about-optics'),ctx=canvas.getContext('2d',{alpha:true});
+    const canvas=about.querySelector('.about-optics');
     const groups=[...about.querySelectorAll('[data-about-group]')];
     const wide=matchMedia('(min-width:1000px)'),events=new AbortController();
-    let enabled=false,w=1,h=1,previous=-1,lastMode='',lastAccess='',destroyed=false;
-    let randomState=411;
-    const random=()=>{randomState=(randomState*16807)%2147483647;return randomState/2147483647;};
-    const particles=Array.from({length:126},(_,i)=>({seed:i%seeds.length,angle:random()*Math.PI*2,
-      distance:.08+random()*.88,size:.45+random()*1.5,speed:.65+random()*.75,twinkle:random()*Math.PI*2}));
+    let enabled=false,w=1,h=1,previous=-1,lastMode='',lastAccess='',destroyed=false,optics=null,fieldReady=false;
     const svg=document.createElementNS(NS,'svg');svg.setAttribute('aria-hidden','true');
     svg.setAttribute('width','0');svg.setAttribute('height','0');svg.style.cssText='position:absolute;pointer-events:none';
-    svg.innerHTML='<defs><radialGradient id="about-scroll-soft"><stop offset="0" stop-color="white"/><stop offset=".43" stop-color="white"/><stop offset=".72" stop-color="white" stop-opacity=".86"/><stop offset="1" stop-color="white" stop-opacity="0"/></radialGradient><filter id="about-scroll-grain" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" x="0" y="0" width="1" height="1"><feTurbulence type="fractalNoise" baseFrequency="13 17" numOctaves="2" seed="19" result="grain"/><feDisplacementMap in="SourceGraphic" in2="grain" scale=".055" xChannelSelector="R" yChannelSelector="G"/><feGaussianBlur stdDeviation=".012"/></filter><mask id="about-scroll-mask" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox" x="0" y="0" width="1" height="1" style="mask-type:luminance"><g filter="url(#about-scroll-grain)"></g></mask></defs>';
+    svg.innerHTML='<defs><radialGradient id="about-scroll-soft"><stop offset="0" stop-color="white"/><stop offset=".43" stop-color="white"/><stop offset=".72" stop-color="white" stop-opacity=".86"/><stop offset="1" stop-color="white" stop-opacity="0"/></radialGradient><filter id="about-scroll-grain" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" x="0" y="0" width="1" height="1"><feTurbulence type="fractalNoise" baseFrequency="13 17" numOctaves="2" seed="19" result="grain"/><feDisplacementMap in="SourceGraphic" in2="grain" scale=".055" xChannelSelector="R" yChannelSelector="G"/><feGaussianBlur stdDeviation=".012"/></filter><filter id="about-scroll-field" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" x="0" y="0" width="1" height="1"><feComponentTransfer><feFuncR type="linear" slope="-45.4545" intercept="0"/><feFuncG type="linear" slope="-45.4545" intercept="0"/><feFuncB type="linear" slope="-45.4545" intercept="0"/></feComponentTransfer></filter><mask id="about-scroll-mask" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox" x="0" y="0" width="1" height="1" style="mask-type:luminance"><g filter="url(#about-scroll-grain)"></g><image x="0" y="0" width="1" height="1" preserveAspectRatio="none" filter="url(#about-scroll-field)"/></mask></defs>';
     document.body.append(svg);
     const maskGroup=svg.querySelector('g');
+    const fieldImage=svg.querySelector('image'),thresholdChannels=[...svg.querySelectorAll('#about-scroll-field feComponentTransfer > *')];
     const ellipses=seeds.map(seed=>{const el=document.createElementNS(NS,'ellipse');el.setAttribute('cx',seed.x);el.setAttribute('cy',seed.y);el.setAttribute('rx','0');el.setAttribute('ry','0');el.setAttribute('fill','url(#about-scroll-soft)');maskGroup.append(el);return el;});
     // CSS sticky remains the only pin. The real About section overlaps its final
     // viewport and switches from fixed to normal flow at that exact same position.
@@ -38,43 +35,22 @@
       document.documentElement.style.setProperty('--about-stage-height',h+'px');
       const scale=Math.min(w/1280,h/842);
       board.style.setProperty('--about-board-scale',String(scale));
-      const ratio=Math.min(devicePixelRatio,1.25);
-      canvas.width=Math.round(w*ratio*.8);canvas.height=Math.round(h*ratio*.8);
-      ctx?.setTransform(canvas.width/w,0,0,canvas.height/h,0,0);
+      if(enabled){
+        optics ||= window.PortfolioIntro.createOpticalField(viewport,{canvas,overlay:true});
+        const image=optics.maskImage();fieldReady=Boolean(image);
+        if(fieldReady)fieldImage.setAttribute('href',image);
+        fieldImage.style.display=fieldReady?'':'none';maskGroup.style.display=fieldReady?'none':'';
+        about.dataset.opticsRenderer=optics.renderer;
+      }
       previous=-1;lastMode='';lastAccess='';
       if(!enabled){about.removeAttribute('data-story-mode');about.removeAttribute('data-story-visible');
         about.inert=false;about.removeAttribute('aria-hidden');groups.forEach(node=>{node.style.removeProperty('transform');node.style.removeProperty('opacity');node.style.removeProperty('filter');});
         reveal.style.removeProperty('transform');hero.querySelector('.hero-scene').style.removeProperty('opacity');}
     }
-    function drawLight(p){
-      if(!ctx)return;
-      ctx.clearRect(0,0,w,h);
-      if(p<=.20||p>=.76)return;
-      const fade=smooth(phase(p,.20,.30))*(1-smooth(phase(p,.48,.76)));
-      ctx.globalCompositeOperation='lighter';
-      seeds.forEach((s,i)=>{
-        const t=smooth(phase(p,.20+s.delay,.64));
-        if(!t)return;
-        const cx=(s.x+Math.sin(p*6+i)*.013)*w,cy=(s.y+Math.cos(p*5+i)*.016)*h;
-        const r=(.018+t*.26)*Math.min(w,h),g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
-        g.addColorStop(0,`rgba(225,225,206,${fade*.18})`);
-        g.addColorStop(.14,`rgba(190,204,211,${fade*.095})`);
-        g.addColorStop(.48,`rgba(145,152,172,${fade*.045})`);g.addColorStop(1,'rgba(100,110,130,0)');
-        ctx.fillStyle=g;ctx.fillRect(cx-r,cy-r,r*2,r*2);
-      });
-      particles.forEach((dot,i)=>{
-        const seed=seeds[dot.seed],t=phase(p,.21+seed.delay,.68),spread=smooth(t);
-        if(t<=0||t>=1)return;
-        const angle=dot.angle+spread*.18;
-        const radius=(.012+Math.pow(spread,.8)*dot.distance*.44)*Math.min(w,h);
-        const px=seed.x*w+Math.cos(angle)*radius*seed.a,py=seed.y*h+Math.sin(angle)*radius*seed.b;
-        const alpha=fade*Math.sin(t*Math.PI)*(.28+.55*Math.pow(Math.sin(p*26*dot.speed+dot.twinkle),2));
-        const size=dot.size*(.8+spread*.55);
-        ctx.fillStyle=`rgba(221,225,218,${alpha})`;ctx.beginPath();ctx.arc(px,py,size,0,Math.PI*2);ctx.fill();
-        if(i%19===0){ctx.strokeStyle=`rgba(230,223,197,${alpha*.32})`;ctx.lineWidth=.6;
-          ctx.beginPath();ctx.moveTo(px-size*4,py);ctx.lineTo(px+size*4,py);ctx.moveTo(px,py-size*4);ctx.lineTo(px,py+size*4);ctx.stroke();}
-      });
-      ctx.globalCompositeOperation='source-over';
+    function drawLight(p,progress){
+      const precursor=smooth(phase(p,.20,.26))*(1-smooth(phase(p,.26,.39)));
+      optics?.draw(progress,precursor);
+      canvas.style.transform=reveal.style.transform;
     }
     function render(p,introDone){
       if(!enabled)return {exit:0,advance:p*.035};
@@ -88,7 +64,12 @@
       if(access!==lastAccess){about.inert=access==='false';about.setAttribute('aria-hidden',String(access==='false'));lastAccess=access;}
       const revealProgress=smooth(phase(p,...timing.backdrop));
       reveal.style.transform=`scale(${1+(1-revealProgress)*.025})`;
-      seeds.forEach((s,i)=>{
+      reveal.dataset.opticsComplete=String(revealProgress>=1);
+      if(fieldReady){
+        const threshold=.25+.70*revealProgress;
+        thresholdChannels.forEach(channel=>channel.setAttribute('intercept',String((threshold+.014)/.022)));
+        fieldImage.setAttribute('opacity',String(smooth(phase(revealProgress,.001,.05))));
+      }else seeds.forEach((s,i)=>{
         const t=smooth(phase(p,.235+s.delay*.62,.65));
         const radius=t*(1.4+Math.sin(p*8+i)*.035);
         ellipses[i].setAttribute('rx',String(radius*s.a));ellipses[i].setAttribute('ry',String(radius*s.b));
@@ -102,7 +83,7 @@
         node.style.filter=t===1?'none':`blur(${end*(isPortrait?8:big?5:3)}px)`;
       });
       if(introDone){hero.querySelector('.hero-scene').style.opacity=String(1-smooth(phase(p,.45,.69)));}
-      drawLight(p);
+      drawLight(p,revealProgress);
       return {exit,advance:smooth(phase(p,0,.25))*.045};
     }
     document.querySelectorAll('a[href="#about"],a[href="#home"]').forEach(link=>link.addEventListener('click',event=>{
@@ -115,6 +96,6 @@
     about.querySelectorAll('img').forEach(img=>img.decode?.().catch(()=>{}));
     Promise.allSettled(['14px "About Alibaba"','64px "About Erya"','32px "About Script"'].map(font=>document.fonts.load(font))).then(()=>dispatchEvent(new Event('portfolio:about-ready')));
     measure();
-    return {measure,render,dispose(){destroyed=true;events.abort();svg.remove();canvas.width=canvas.height=0;document.documentElement.classList.remove('about-story-enabled');}};
+    return {measure,render,dispose(){destroyed=true;events.abort();svg.remove();optics?.dispose();canvas.width=canvas.height=0;document.documentElement.classList.remove('about-story-enabled');}};
   }};
 })();
