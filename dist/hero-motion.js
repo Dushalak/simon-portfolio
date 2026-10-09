@@ -23,6 +23,7 @@
   let targetX=0,targetY=0,x=0,y=0,glow=0,targetGlow=0;
   let pointerX=0,pointerY=0,lightX=0,lightY=0,lastTime=0;
   const events = new AbortController();
+  const aboutStory=window.PortfolioAbout?.create({hero,stage,reduced});
 
   // 1. Intro delegates to one master timeline, then hands off to the interactions.
   function finishIntro() {
@@ -46,6 +47,7 @@
   // 2. Crossing one threshold starts a timed layout transition. Stopping the
   // wheel cannot leave the text halfway; reversing below the threshold returns it.
   function measure() {
+    aboutStory?.measure();
     const w=stage.clientWidth,h=stage.clientHeight;
     const left=panel.offsetLeft-panel.offsetWidth/2;
     const top=panel.offsetTop-panel.offsetHeight/2;
@@ -68,6 +70,7 @@
     const visible=rect.bottom>0&&rect.top<innerHeight;
     const p=reduced.matches?0:clamp(-rect.top/geometry.pin);
     hero.dataset.scrollProgress=p.toFixed(3);
+    const story=aboutStory?.render(p,introDone)||{exit:0,advance:p*.035};
     if(!introDone&&scrollY>0)window.scrollTo({top:0,left:0,behavior:'instant'});
     const scrollDistance=Math.max(0,-rect.top);
     const nextLayout=reduced.matches?0:scrollDistance>=(layoutTarget?geometry.threshold-18:geometry.threshold)?1:0;
@@ -85,7 +88,10 @@
     lightX+=(pointerX-lightX)*alpha;lightY+=(pointerY-lightY)*alpha;glow+=(targetGlow-glow)*alpha;
     // Text settles into its reading layout; the background keeps its independent depth.
     const panelMovement=(1-layoutValue)*(canTilt?1:0),sceneMovement=canTilt?1:0;
-    panel.style.transform=`translate(-50%,-50%) rotateX(${-y*config.tiltDeg*panelMovement}deg) rotateY(${x*config.tiltDeg*panelMovement}deg)`;
+    panel.style.transform=`translate(-50%,-50%) translate3d(0,${-26*story.exit}px,0) rotateX(${-y*config.tiltDeg*panelMovement}deg) rotateY(${x*config.tiltDeg*panelMovement}deg)`;
+    panel.style.opacity=String(1-story.exit);
+    panel.inert=story.exit>.96;
+    if(introDone)hero.querySelector('.hero-bottom').style.opacity=String(1-story.exit);
     border.style.opacity=String(.72*(1-layoutValue));
     pieces.forEach((node,i)=>{
       const t=layoutValue,slot=geometry.slots[i],scale=i===0?(geometry.w<=720?1.08:1.2):1;
@@ -93,7 +99,7 @@
     });
     photo.style.transform=`translate3d(${x*config.photoPx*sceneMovement}px,calc(-50% + ${y*config.photoY*sceneMovement-p*14}px),0) scale(${1+p*.035})`;
     lightPlane.style.transform=`translate3d(${x*config.lightPx*sceneMovement}px,calc(-50% + ${y*config.lightY*sceneMovement-p*20}px),0) scale(${1+p*.04})`;
-    videoPlane.style.transform=`translate3d(${x*config.lightPx*sceneMovement}px,${y*config.lightY*sceneMovement}px,0) rotateX(${-y*config.tiltDeg*.42*sceneMovement}deg) rotateY(${x*config.tiltDeg*.42*sceneMovement}deg) scale(${1+p*.035})`;
+    videoPlane.style.transform=`translate3d(${x*config.lightPx*sceneMovement}px,${y*config.lightY*sceneMovement}px,0) rotateX(${-y*config.tiltDeg*.42*sceneMovement}deg) rotateY(${x*config.tiltDeg*.42*sceneMovement}deg) scale(${1+story.advance})`;
     cursorLight.style.transform=`translate3d(${lightX-140}px,${lightY-140}px,0)`;
     cursorLight.style.opacity=String(glow*.75*(1-p));
     atmosphere.style.animationPlayState=!introDone||hero.querySelector('video').paused?'paused':'running';
@@ -114,7 +120,7 @@
   function scroll(){request();}
   function resize(){measure();}
   function visibility(){lastTime=0;resetPointer();if(document.hidden&&frame){cancelAnimationFrame(frame);frame=0;}else request();}
-  function cleanUp(event){if(event.persisted)return;active=false;events.abort();observer.disconnect();introTimeline?.dispose();cancelAnimationFrame(frame);}
+  function cleanUp(event){if(event.persisted)return;active=false;events.abort();observer.disconnect();introTimeline?.dispose();aboutStory?.dispose();cancelAnimationFrame(frame);}
   hero.classList.toggle('has-story',!reduced.matches);
   const options={passive:true,signal:events.signal};
   stage.addEventListener('pointermove',pointerMove,options);
@@ -123,6 +129,7 @@
   addEventListener('pagehide',cleanUp,{signal:events.signal});addEventListener('pageshow',resize,{signal:events.signal});
   document.addEventListener('visibilitychange',visibility,{signal:events.signal});
   addEventListener('portfolio:intro-timeout',finishIntro,{signal:events.signal});
+  addEventListener('portfolio:about-ready',resize,{signal:events.signal});
   reduced.addEventListener('change',motionPreference,{signal:events.signal});
   desktop.addEventListener('change',resize,{signal:events.signal});
   hero.querySelector('video').addEventListener('play',request,{signal:events.signal});

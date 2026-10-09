@@ -1,0 +1,70 @@
+/* The 1280 × 842 Figma board is the final state; only transforms animate. */
+@font-face{font-family:About Alibaba;src:url('assets/fonts/alibaba-regular.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:About Alibaba;src:url('assets/fonts/alibaba-medium.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:About Alibaba;src:url('assets/fonts/alibaba-bold.woff2') format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:About Erya;src:url('assets/fonts/erya-heading.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:About Script;src:url('assets/fonts/alex-brush.woff2') format('woff2');font-weight:400;font-display:swap}
+.about-designed{display:block;padding:0;min-height:0;position:relative;background:#040404;isolation:isolate;scroll-margin:0;overflow-anchor:none}
+.hero{overflow-anchor:none}
+.about-viewport{position:relative;height:var(--about-stage-height,100svh);min-height:640px;overflow:hidden;background:#040404}
+.about-reveal{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);place-items:center;background:#040404}
+.about-board{position:relative;width:1280px;height:842px;flex:none;overflow:clip;border-radius:36px;background:linear-gradient(187.336deg,#0c0c0a 4.9454%,#040404 96.561%);transform:scale(var(--about-board-scale,1));transform-origin:50% 50%;font-family:About Alibaba,'Microsoft YaHei',sans-serif;color:#f3f3ed}
+.about-board p,.about-board h2,.about-board h3,.about-board figure{margin:0}
+.about-backdrop{position:absolute;left:0;top:0;width:777px;height:1382px;object-fit:cover;opacity:.19;pointer-events:none}
+.about-title-group{position:absolute;inset:0;pointer-events:none}
+.about-title-light{position:absolute;left:307.101px;top:105.701px;width:116.171px;height:116.171px;transform:rotate(-9.88deg);opacity:.6}
+.about-board #about-title{position:absolute;left:65px;top:105px;font:400 64px/normal About Erya,sans-serif;letter-spacing:3.2px;opacity:.96;background:linear-gradient(144.175deg,rgba(200,224,241,.8) 26.558%,rgba(246,250,251,.85) 18.551%,rgba(255,255,255,.98) 68.556%,rgba(250,247,246,.8) 113.21%);background-clip:text;-webkit-background-clip:text;color:transparent;white-space:nowrap}
+.about-script{position:absolute;left:316px;top:144px;width:117.906px;height:62.651px;display:flex;align-items:center;justify-content:center;transform:rotate(-12.14deg);font:400 32px/normal About Script,cursive;background:linear-gradient(123.51deg,rgba(124,140,105,.8) 21.156%,#ab5c33 35.215%,#d59f5f 70.3%,rgba(171,92,51,.6) 97.41%);background-clip:text;-webkit-background-clip:text;color:transparent;white-space:nowrap}
+.about-greeting{position:absolute;left:65px;top:206px;font-weight:500;letter-spacing:2px;background-image:url('assets/about/imgHi.png');background-position:center;background-size:cover;background-clip:text;-webkit-background-clip:text;color:transparent}
+.about-greeting p{background:linear-gradient(125.325deg,rgba(200,224,241,.8) 17.91%,rgba(246,250,251,.7) 9.1553%,rgba(249,250,246,.97) 41.012%,rgba(250,248,247,.6) 95.892%);background-clip:text;-webkit-background-clip:text;color:transparent}
+.about-greeting p:first-child{font-size:52px;line-height:1.2}.about-greeting p:last-child{font-size:40px;line-height:.9798999}
+.about-text-fill{background-position:center;background-size:cover;background-repeat:no-repeat;background-clip:text;-webkit-background-clip:text;color:transparent}
+.about-biography{position:absolute;left:65px;top:347px;width:625px;font-size:14px;line-height:normal;letter-spacing:.7px;opacity:.76;background-image:url('assets/about/imgUiUxAiAgent01CBaigc.png')}
+.about-board strong{font-weight:500}.about-board b{font-weight:700}
+.about-work-title{position:absolute;left:65px;top:471px;font-size:26px;font-weight:500;line-height:normal;letter-spacing:1.3px;background-image:url('assets/about/img.png')}
+.about-experience{position:absolute;left:65px;width:625px}.about-experience-one{top:525px}.about-experience-two{top:612px}
+.about-work-row{display:grid;grid-template-columns:131px 371px max-content;align-items:start;font-size:18px;font-weight:500;line-height:normal;letter-spacing:.9px}
+.about-work-row>*{white-space:nowrap;opacity:.9}.about-tight{letter-spacing:-2.88px}
+.about-experience-one time{width:107px}.about-experience-two time{width:95px}.about-experience-one .about-company{width:322px}.about-experience-two .about-company{width:357px}.about-role{width:128px}
+.about-experience-one time{background-image:url('assets/about/img20250712.png')}.about-experience-two time{background-image:url('assets/about/img2026039.png')}
+.about-experience-one .about-company{background-image:url('assets/about/img1.png')}.about-experience-two .about-company{background-image:url('assets/about/imgAiAgent.png')}.about-role{background-image:url('assets/about/imgUi.png')}
+.about-board .about-work-description{position:absolute;top:33px;margin:0;font-size:15px;line-height:normal;letter-spacing:.75px;opacity:.6;background-image:url('assets/about/imgCB.png')}
+.about-portrait{position:absolute;left:823px;top:162px;width:379px;height:518px;border-radius:24px;overflow:hidden;transform-origin:50% 50%}
+.about-portrait img{position:absolute;width:107.9%;height:105.3%;max-width:none;left:-2.09%;top:-5.3%}
+.about-portrait span{position:absolute;inset:0;background:linear-gradient(180deg,transparent 65.909%,#060606 97.803%);pointer-events:none}
+.about-bottom-shadow{position:absolute;left:709px;top:799px;width:521px;height:71px;opacity:.5;background:linear-gradient(0deg,#020507,rgba(51,42,27,0) 108.64%);pointer-events:none}
+.about-optics{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:none}
+.about-skills{position:relative;padding:35px 7% 65px;background:#040404;scroll-margin-top:110px}.about-skills .about-facts{max-width:950px;margin:0 auto}.about-skills>.text-link{display:block;width:fit-content;margin:25px auto 0}
+/* One existing sticky Hero, one overlapping flow section; no second pin/spacer. */
+@media(min-width:1000px){
+ .about-story-enabled{--hero-scroll-distance:210svh}
+ .about-story-enabled .about-designed{margin-top:calc(-1 * var(--about-stage-height,100svh));min-height:var(--about-stage-height,100svh)}
+ .about-story-enabled .about-designed[data-story-mode=transition] .about-viewport{position:fixed;inset:0;visibility:hidden;background:transparent}
+ .about-story-enabled .about-designed[data-story-visible=true] .about-viewport{visibility:visible}
+ .about-story-enabled .about-designed[data-story-mode=transition] .about-reveal{mask-image:url('#about-scroll-mask');-webkit-mask-image:url('#about-scroll-mask')}
+ .about-story-enabled .about-designed[data-story-mode=transition] .about-optics{display:block}
+ .about-story-enabled .about-motion{will-change:transform,opacity,filter}
+ .about-story-enabled .about-designed[data-story-mode=settled] .about-motion{will-change:auto}
+}
+@media(max-width:999px){
+ .about-designed{margin-top:0!important}
+ .about-viewport{height:auto;min-height:0;overflow:clip;padding:100px 6% 60px}
+ .about-reveal{position:relative;display:block}
+ .about-board{width:100%;height:auto;min-height:0;padding:42px 7% 46px;transform:none!important;display:flex;flex-direction:column;border-radius:26px}
+ .about-backdrop{height:150%;width:100%;object-fit:cover}
+ .about-title-group{position:relative;inset:auto;height:104px}
+ .about-board #about-title{left:0;top:0;font-size:clamp(43px,6.6vw,64px);letter-spacing:2px}
+ .about-title-light{left:min(210px,calc(100% - 100px));top:-20px;width:100px;height:100px}
+ .about-script{left:min(200px,calc(100% - 118px));top:30px;font-size:28px}
+ .about-greeting,.about-biography,.about-work-title,.about-experience,.about-portrait{position:relative;inset:auto;width:100%}
+ .about-greeting{margin-bottom:28px}.about-greeting p:first-child{font-size:42px}.about-greeting p:last-child{font-size:32px;line-height:1.2}
+ .about-board .about-biography{font-size:15px;line-height:1.85;margin-bottom:32px;letter-spacing:.5px}
+ .about-board .about-work-title{font-size:24px;margin-bottom:25px}
+ .about-board .about-experience{margin-bottom:25px}
+ .about-work-row{grid-template-columns:1fr auto;gap:7px 12px;font-size:15px;letter-spacing:.35px}
+ .about-work-row>*{width:auto!important}.about-company{grid-column:1/-1;grid-row:2;white-space:normal}.about-role{grid-column:2;grid-row:1}
+ .about-board .about-work-description{position:relative;top:auto;font-size:14px;line-height:1.8;margin-top:11px;letter-spacing:.45px}
+ .about-board .about-portrait{width:min(100%,379px);aspect-ratio:379/518;height:auto;margin:12px auto 0;order:8}
+ .about-bottom-shadow{display:none}.about-skills{padding:0 7% 45px}
+}
+@media(prefers-reduced-motion:reduce){.about-optics{display:none!important}.about-motion{transform:none!important;filter:none!important}.about-viewport,.about-reveal{mask-image:none!important;-webkit-mask-image:none!important}}
