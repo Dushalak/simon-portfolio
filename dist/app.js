@@ -29,11 +29,12 @@
   const sections=[...document.querySelectorAll('main .section')];let scrollFrame=false;
   function updateHome(){header.classList.toggle('scrolled',scrollY>60);let active=sections[0];sections.forEach(e=>{if(e.getBoundingClientRect().top<innerHeight*.45)active=e;});document.querySelectorAll('.section-rail a,.nav a').forEach(a=>{const match=a.hash==='#'+active.id;a.classList.toggle('active',match);if(match)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current');});scrollFrame=false;}
   addEventListener('scroll',()=>{if(!scrollFrame){scrollFrame=true;requestAnimationFrame(updateHome);}},{passive:true});updateHome();
-  let menuTimer;
+  let menuTimer;const menuBackground=$('main'),menuRail=$('.section-rail');
   function setMenu(open){
-    clearTimeout(menuTimer);toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'关闭菜单':'打开菜单');$('.menu-label').textContent=open?'金王亮':'菜单';
-    if(open){menu.hidden=false;menu.inert=false;requestAnimationFrame(()=>document.body.classList.add('menu-open'));}
-    else{document.body.classList.remove('menu-open');menu.inert=true;menuTimer=setTimeout(()=>{menu.hidden=true;},reduced?0:550);}
+    clearTimeout(menuTimer);toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'关闭菜单':'打开菜单');$('.menu-label').textContent=open?'Close':'Menu';
+    menuBackground.inert=open;if(menuRail)menuRail.inert=open;
+    if(open){menu.hidden=false;menu.inert=false;void menu.offsetWidth;document.body.classList.add('menu-open');}
+    else{document.body.classList.remove('menu-open');if(menu.contains(document.activeElement))toggle.focus({preventScroll:true});menu.inert=true;menuTimer=setTimeout(()=>{menu.hidden=true;},reduced?0:660);}
   }
   function closeMenu(){setMenu(false);}
   toggle.addEventListener('click',()=>setMenu(toggle.getAttribute('aria-expanded')!=='true'));

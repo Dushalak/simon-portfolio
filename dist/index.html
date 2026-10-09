@@ -47,7 +47,7 @@
     html.intro-pending .skip-link:not(:focus){visibility:hidden}
   </style>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23080a0d'/%3E%3Cpath d='M19 15h8v24c0 6 4 8 10 5V15h8v30c-12 12-26 6-26-6z' fill='%23ed9673'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="refinement.css"><link rel="stylesheet" href="hero.css?v=20261009-intro5">
+  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="refinement.css"><link rel="stylesheet" href="hero.css?v=20261009-intro5"><link rel="stylesheet" href="menu.css?v=20261009-menu1">
 </head>
 <body>
   <a class="skip-link" href="#nelu">跳到作品</a>
@@ -55,9 +55,18 @@
 
     <nav class="nav" aria-label="主导航"><a href="#home">首页</a><a href="#about">关于</a><a href="#nelu">作品</a><a href="#contact">联系</a></nav>
     <a class="header-contact" href="#contact">聊聊设计<span class="contact-dot"></span></a>
-    <button class="menu-toggle" aria-label="打开菜单" aria-expanded="false" aria-controls="mobile-nav"><i class="menu-symbol" aria-hidden="true">⠿</i><span class="menu-label">菜单</span><small>PORTFOLIO / 2026</small></button>
+    <button class="menu-toggle" aria-label="打开菜单" aria-expanded="false" aria-controls="mobile-nav"><i class="menu-symbol" aria-hidden="true">⠿</i><span class="menu-label">Menu</span><small>PORTFOLIO / 2026</small></button>
   </header>
-  <nav id="mobile-nav" class="mobile-nav" aria-label="全站导航" hidden><p class="eyebrow">EXPLORE / 探索</p><a href="#home">首页 <small>01</small></a><a href="#about">关于我 <small>02</small></a><a href="#nelu">精选作品 <small>03</small></a><a href="#contact">联系方式 <small>04</small></a><div class="menu-footer">UI / UX · AI PRODUCTS · VISUAL DESIGN</div></nav>
+  <div class="menu-backdrop" aria-hidden="true"></div>
+  <nav id="mobile-nav" class="mobile-nav" aria-label="全站导航" hidden inert>
+    <p class="menu-heading"><span lang="en">EXPLORE</span> / 探索</p>
+    <a href="#home"><span class="menu-cn">首页</span><span class="menu-en" lang="en">Welcome</span></a>
+    <a href="#about"><span class="menu-cn">关于我</span><span class="menu-en" lang="en">About Me</span></a>
+    <a href="#what-i-bring"><span class="menu-cn">个人优势</span><span class="menu-en" lang="en">What I Bring</span></a>
+    <a href="#nelu"><span class="menu-cn">精选作品</span><span class="menu-en" lang="en">Projects</span></a>
+    <a href="#contact"><span class="menu-cn">联系方式</span><span class="menu-en" lang="en">Get in Touch</span></a>
+    <div class="menu-footer" lang="en">UI / UX · AI PRODUCTS · VISUAL DESIGN</div>
+  </nav>
   <main>
     <section id="home" class="hero section" aria-label="Welcome">
       <div class="hero-stage">
@@ -113,7 +122,7 @@
     <div class="case-end"><p class="eyebrow">THANK YOU FOR EXPLORING</p><h3>设计的故事，还在继续。</h3><div><button class="case-close">返回作品位置</button><button class="next-case">探索下一件作品</button></div></div>
   </dialog>
   <div class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=20261009-intro5"></script><script src="hero-intro.js?v=20261009-intro5"></script><script src="hero-motion.js?v=20261009-intro5"></script>
+  <script src="app.js?v=20261009-menu1"></script><script src="hero-intro.js?v=20261009-intro5"></script><script src="hero-motion.js?v=20261009-intro5"></script>
 </body>
 </html>
 
