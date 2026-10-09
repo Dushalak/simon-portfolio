@@ -31,10 +31,12 @@
     introTimeline?.finish();
     document.documentElement.classList.remove('intro-pending','intro-running');
     clearTimeout(window.portfolioIntroWatchdog);
+    window.portfolioReleaseIntro?.();
+    dispatchEvent(new Event('portfolio:intro-complete'));
     hero.dataset.intro='complete'; request();
   }
   function animateOpening() {
-    if (reduced.matches || scrollY>30 || (location.hash && location.hash!=='#home') || !Element.prototype.animate || !window.PortfolioIntro) { finishIntro(); return; }
+    if (reduced.matches || !Element.prototype.animate || !window.PortfolioIntro) { finishIntro(); return; }
     try {
       introTimeline=window.PortfolioIntro.create({hero,onComplete:finishIntro,revealMs:config.revealMs,staggerMs:config.staggerMs});
       introTimeline.play();
@@ -66,7 +68,7 @@
     const visible=rect.bottom>0&&rect.top<innerHeight;
     const p=reduced.matches?0:clamp(-rect.top/geometry.pin);
     hero.dataset.scrollProgress=p.toFixed(3);
-    if(p>.008&&!introDone)finishIntro();
+    if(!introDone&&scrollY>0)window.scrollTo({top:0,left:0,behavior:'instant'});
     const scrollDistance=Math.max(0,-rect.top);
     const nextLayout=reduced.matches?0:scrollDistance>=(layoutTarget?geometry.threshold-18:geometry.threshold)?1:0;
     if(nextLayout!==layoutTarget){layoutFrom=layoutValue;layoutTarget=nextLayout;layoutStart=now;}
@@ -120,7 +122,6 @@
   addEventListener('pagehide',cleanUp,{signal:events.signal});addEventListener('pageshow',resize,{signal:events.signal});
   document.addEventListener('visibilitychange',visibility,{signal:events.signal});
   addEventListener('portfolio:intro-timeout',finishIntro,{signal:events.signal});
-  document.addEventListener('keydown',event=>{if(event.key==='Tab')finishIntro();},{signal:events.signal});
   reduced.addEventListener('change',motionPreference,{signal:events.signal});
   desktop.addEventListener('change',resize,{signal:events.signal});
   hero.querySelector('video').addEventListener('play',request,{signal:events.signal});

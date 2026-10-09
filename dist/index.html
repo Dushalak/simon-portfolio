@@ -6,11 +6,34 @@
   <meta name="description" content="金王亮的个人设计作品集。探索 Nelu AI、予序、晴雨电商与 AIGC 视觉设计，从用户需求到有温度的产品体验。">
   <meta name="theme-color" content="#0c0c0c">
   <script>
-    // Set before first paint. Deep links and reduced motion use the normal page immediately.
-    try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches && (!location.hash || location.hash === '#home')) {
+    // Every document visit starts at the opening; in-page routes still work afterwards.
+    try {
+      history.scrollRestoration = 'manual';
+      if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+      const startAtTop = () => window.scrollTo({top:0,left:0,behavior:'instant'});
+      startAtTop();
+      document.addEventListener('DOMContentLoaded', startAtTop, {once:true});
+      addEventListener('pageshow', event => {
+        startAtTop();
+        if (event.persisted) {
+          document.documentElement.classList.add('intro-pending');
+          location.reload();
+        }
+      });
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
       document.documentElement.classList.add('intro-pending');
+      window.portfolioIntroLocked = true;
+      const lockEvents = new AbortController();
+      const blockScroll = event => { if (window.portfolioIntroLocked) event.preventDefault(); };
+      addEventListener('wheel', blockScroll, {passive:false,signal:lockEvents.signal});
+      addEventListener('touchmove', blockScroll, {passive:false,signal:lockEvents.signal});
+      addEventListener('keydown', event => {
+        if (['ArrowDown','ArrowUp','PageDown','PageUp','Home','End',' ','Tab'].includes(event.key)) blockScroll(event);
+      }, {capture:true,signal:lockEvents.signal});
+      window.portfolioReleaseIntro = () => { window.portfolioIntroLocked = false; lockEvents.abort(); };
       window.portfolioIntroWatchdog = setTimeout(() => {
         dispatchEvent(new Event('portfolio:intro-timeout'));
+        window.portfolioReleaseIntro();
         document.documentElement.classList.remove('intro-pending', 'intro-running');
         document.querySelector('.hero')?.classList.remove('hero-intro-running');
         document.querySelectorAll('.hero-intro-curtain,.hero-construction').forEach(node=>node.remove());
@@ -24,7 +47,7 @@
     html.intro-pending .skip-link:not(:focus){visibility:hidden}
   </style>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23080a0d'/%3E%3Cpath d='M19 15h8v24c0 6 4 8 10 5V15h8v30c-12 12-26 6-26-6z' fill='%23ed9673'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="refinement.css"><link rel="stylesheet" href="hero.css?v=20261009-intro4">
+  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="refinement.css"><link rel="stylesheet" href="hero.css?v=20261009-intro5">
 </head>
 <body>
   <a class="skip-link" href="#nelu">跳到作品</a>
@@ -41,7 +64,7 @@
         <div class="hero-scene is-video-scene" aria-hidden="true">
           <div class="hero-photo"><img src="assets/home-figma.png" alt="" width="2480" height="1920" fetchpriority="high"></div>
           <div class="hero-light-plane"><img src="assets/home-figma.png" alt="" width="2480" height="1920"></div>
-          <div class="hero-bg"><video class="bg-video scene-active" autoplay loop muted playsinline preload="auto" poster="assets/home-poster.webp"><source src="assets/home-light.mp4" type="video/mp4"></video></div>
+          <div class="hero-bg"><video class="bg-video scene-active" loop muted playsinline preload="auto" poster="assets/home-poster.webp"><source src="assets/home-light.mp4" type="video/mp4"></video></div>
           <div class="hero-atmosphere"></div><div class="hero-darken"></div>
         </div>
         <div class="hero-light" aria-hidden="true"></div>
@@ -90,7 +113,7 @@
     <div class="case-end"><p class="eyebrow">THANK YOU FOR EXPLORING</p><h3>设计的故事，还在继续。</h3><div><button class="case-close">返回作品位置</button><button class="next-case">探索下一件作品</button></div></div>
   </dialog>
   <div class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js"></script><script src="hero-intro.js?v=20261009-intro4"></script><script src="hero-motion.js?v=20261009-intro4"></script>
+  <script src="app.js?v=20261009-intro5"></script><script src="hero-intro.js?v=20261009-intro5"></script><script src="hero-motion.js?v=20261009-intro5"></script>
 </body>
 </html>
 

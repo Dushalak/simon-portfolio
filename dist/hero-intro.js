@@ -185,14 +185,17 @@
     const stage=hero.querySelector('.hero-stage'), panel=hero.querySelector('.hero-panel');
     const auxiliary=construction(panel,stage), optics=opticalReveal(stage);
     const root=document.documentElement, events=new AbortController();
-    const scene=hero.querySelector('.hero-scene'); let disposed=false;
+    const scene=hero.querySelector('.hero-scene'); let disposed=false,videoStarted=false;
     const timeline=new MasterTimeline(t=>{
       hero.dataset.introTime=String(Math.round(t));
       hero.dataset.intro=t<labels.frameDrawing?'construction':t<labels.frameHold?'drawing':
         t<labels.lightReveal?'frame-hold':t<labels.contentEntrance?'light-reveal':'content';
       const progress=smooth((t-labels.backgroundReveal)/backgroundRevealMs);
       const light=smooth((t-labels.lightReveal)/160)*(1-smooth((t-labels.backgroundReveal-100)/500));
-      if(t>=labels.lightReveal)optics.draw(progress,light);
+      if(t>=labels.lightReveal){
+        if(!videoStarted){videoStarted=true;dispatchEvent(new Event('portfolio:light-reveal'));}
+        optics.draw(progress,light);
+      }
     },onComplete);
     auxiliary.lines.forEach(({node,group,at})=>{
       timeline.add(node,[{strokeDashoffset:'1'},{strokeDashoffset:'0'}],group==='arc'?700:480,at,'cubic-bezier(.45,0,.35,1)');

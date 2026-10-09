@@ -48,14 +48,20 @@
   dialog.addEventListener('click',e=>{if(!caseMenu.contains(e.target))setCaseMenu(false);});
   // Native looping keeps playback reliable when switching tabs or opening a case.
   const video=$('.bg-video');let paused=reduced;
+  let introVideoWaiting=!!window.portfolioIntroLocked;
   const motion=$('.motion-toggle');
   function motionLabel(){motion.innerHTML=paused?'播放动画 <span>▶</span>':'暂停动画 <span>Ⅱ</span>';motion.setAttribute('aria-label',paused?'播放背景动画':'暂停背景动画');}
   function pauseVideo(){video.pause();}
   async function playVideo(){try{await video.play();paused=false;motionLabel();}catch(error){if(error.name!=='AbortError'){paused=true;motionLabel();}}}
   video.muted=true;video.loop=true;video.addEventListener('playing',()=>video.classList.add('video-ready'));
-  if(reduced)pauseVideo();else playVideo();motionLabel();
+  function startIntroVideo(){if(!introVideoWaiting)return;introVideoWaiting=false;
+    if(video.currentTime>.01)video.currentTime=0;if(!paused&&!dialog.open)playVideo();}
+  addEventListener('portfolio:light-reveal',startIntroVideo);
+  addEventListener('portfolio:intro-complete',startIntroVideo);
+  addEventListener('portfolio:intro-timeout',startIntroVideo);
+  if(reduced||introVideoWaiting)pauseVideo();else playVideo();motionLabel();
   motion.addEventListener('click',()=>{if(paused)playVideo();else{paused=true;pauseVideo();motionLabel();}});
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseVideo();else if(!paused&&!dialog.open)playVideo();});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseVideo();else if(!introVideoWaiting&&!paused&&!dialog.open)playVideo();});
   let toastTimer;function toast(text){const e=$('.toast');e.textContent=text;e.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove('show'),3000);}
   document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.copy);toast('微信号已复制：'+b.dataset.copy);}catch{toast('微信号：'+b.dataset.copy+'，请长按复制');}}));
   let currentCase=null,lastTrigger=null,homeScroll=0,homeHash='#nelu',caseRequest=0,caseFrame=false;
