@@ -83,16 +83,17 @@
     if(!canTilt)targetX=targetY=targetGlow=0;
     x+=(targetX-x)*alpha;y+=(targetY-y)*alpha;
     lightX+=(pointerX-lightX)*alpha;lightY+=(pointerY-lightY)*alpha;glow+=(targetGlow-glow)*alpha;
-    const movement=(1-layoutValue)*(canTilt?1:0);
-    panel.style.transform=`translate(-50%,-50%) rotateX(${-y*config.tiltDeg*movement}deg) rotateY(${x*config.tiltDeg*movement}deg)`;
+    // Text settles into its reading layout; the background keeps its independent depth.
+    const panelMovement=(1-layoutValue)*(canTilt?1:0),sceneMovement=canTilt?1:0;
+    panel.style.transform=`translate(-50%,-50%) rotateX(${-y*config.tiltDeg*panelMovement}deg) rotateY(${x*config.tiltDeg*panelMovement}deg)`;
     border.style.opacity=String(.72*(1-layoutValue));
     pieces.forEach((node,i)=>{
       const t=layoutValue,slot=geometry.slots[i],scale=i===0?(geometry.w<=720?1.08:1.2):1;
       node.style.transform=`translate3d(${slot.dx*t}px,${slot.dy*t}px,0) scale(${1+(scale-1)*t})`;
     });
-    photo.style.transform=`translate3d(${x*config.photoPx*movement}px,calc(-50% + ${y*config.photoY*movement-p*14}px),0) scale(${1+p*.035})`;
-    lightPlane.style.transform=`translate3d(${x*config.lightPx*movement}px,calc(-50% + ${y*config.lightY*movement-p*20}px),0) scale(${1+p*.04})`;
-    videoPlane.style.transform=`translate3d(${x*config.lightPx*movement}px,${y*config.lightY*movement}px,0) rotateX(${-y*config.tiltDeg*.42*movement}deg) rotateY(${x*config.tiltDeg*.42*movement}deg) scale(${1+p*.035})`;
+    photo.style.transform=`translate3d(${x*config.photoPx*sceneMovement}px,calc(-50% + ${y*config.photoY*sceneMovement-p*14}px),0) scale(${1+p*.035})`;
+    lightPlane.style.transform=`translate3d(${x*config.lightPx*sceneMovement}px,calc(-50% + ${y*config.lightY*sceneMovement-p*20}px),0) scale(${1+p*.04})`;
+    videoPlane.style.transform=`translate3d(${x*config.lightPx*sceneMovement}px,${y*config.lightY*sceneMovement}px,0) rotateX(${-y*config.tiltDeg*.42*sceneMovement}deg) rotateY(${x*config.tiltDeg*.42*sceneMovement}deg) scale(${1+p*.035})`;
     cursorLight.style.transform=`translate3d(${lightX-140}px,${lightY-140}px,0)`;
     cursorLight.style.opacity=String(glow*.75*(1-p));
     atmosphere.style.animationPlayState=!introDone||hero.querySelector('video').paused?'paused':'running';

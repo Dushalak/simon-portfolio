@@ -227,7 +227,7 @@
       video.addEventListener('loadeddata',ready,{once:true,signal:events.signal});
       video.addEventListener('error',ready,{once:true,signal:events.signal});
     });
-    Promise.all([videoReady,...[...hero.querySelectorAll('.hero-photo img,.hero-light-plane img')].map(img=>
+    Promise.all([videoReady,...[...hero.querySelectorAll('.hero-photo img,.hero-light-plane img,.scene-poster')].map(img=>
       img.decode?img.decode().catch(()=>{}):Promise.resolve())]).then(()=>{timeline.assetsReady=true;});
     document.addEventListener('visibilitychange',()=>document.hidden?timeline.pause():timeline.play(),{signal:events.signal});
     addEventListener('resize',auxiliary.resize,{passive:true,signal:events.signal});
