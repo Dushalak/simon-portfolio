@@ -29,15 +29,29 @@
   const sections=[...document.querySelectorAll('main .section')];let scrollFrame=false;
   function updateHome(){header.classList.toggle('scrolled',scrollY>60);let active=sections[0];sections.forEach(e=>{if(e.getBoundingClientRect().top<innerHeight*.45)active=e;});document.querySelectorAll('.section-rail a,.nav a').forEach(a=>{const match=a.hash==='#'+active.id;a.classList.toggle('active',match);if(match)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current');});scrollFrame=false;}
   addEventListener('scroll',()=>{if(!scrollFrame){scrollFrame=true;requestAnimationFrame(updateHome);}},{passive:true});updateHome();
-  let menuTimer;const menuBackground=$('main'),menuRail=$('.section-rail');
+  let menuTimer,menuHoverTimer;const menuBackground=$('main'),menuRail=$('.section-rail');
+  const menuHover=matchMedia('(min-width: 721px) and (hover: hover) and (pointer: fine)');
   function setMenu(open){
-    clearTimeout(menuTimer);toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'关闭菜单':'打开菜单');$('.menu-label').textContent=open?'Close':'Menu';
+    clearTimeout(menuTimer);clearTimeout(menuHoverTimer);toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'关闭菜单':'打开菜单');$('.menu-label').textContent=open?'Close':'Menu';
     menuBackground.inert=open;if(menuRail)menuRail.inert=open;
     if(open){menu.hidden=false;menu.inert=false;void menu.offsetWidth;document.body.classList.add('menu-open');}
     else{document.body.classList.remove('menu-open');if(menu.contains(document.activeElement))toggle.focus({preventScroll:true});menu.inert=true;menuTimer=setTimeout(()=>{menu.hidden=true;},reduced?0:660);}
   }
   function closeMenu(){setMenu(false);}
   toggle.addEventListener('click',()=>setMenu(toggle.getAttribute('aria-expanded')!=='true'));
+  function hoverMenu(event){
+    if(!menuHover.matches||event.pointerType==='touch'||window.portfolioIntroLocked||dialog.open)return;
+    clearTimeout(menuHoverTimer);if(toggle.getAttribute('aria-expanded')!=='true')setMenu(true);
+  }
+  function leaveMenu(event){
+    if(!menuHover.matches||event.pointerType==='touch')return;
+    if(event.relatedTarget&&(toggle.contains(event.relatedTarget)||menu.contains(event.relatedTarget)))return;
+    // A small grace period lets the pointer cross into the expanding surface.
+    clearTimeout(menuHoverTimer);menuHoverTimer=setTimeout(()=>{
+      if(!toggle.matches(':hover')&&!menu.matches(':hover')&&!menu.contains(document.activeElement))closeMenu();
+    },220);
+  }
+  [toggle,menu].forEach(node=>{node.addEventListener('mouseenter',hoverMenu);node.addEventListener('mouseleave',leaveMenu);});
   menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeMenu));
   document.addEventListener('click',e=>{if(toggle.getAttribute('aria-expanded')==='true'&&!menu.contains(e.target)&&!toggle.contains(e.target))closeMenu();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeMenu();setCaseMenu(false);}});

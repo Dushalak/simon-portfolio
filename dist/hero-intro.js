@@ -215,7 +215,7 @@
     // All three top controls share the same downward motion, start and easing.
     const topEntrance=[{opacity:0,transform:'translate3d(0,-32px,0)'},
       {opacity:1,transform:'translate3d(0,0,0)'}];
-    timeline.add(hero.querySelector('.hero-author .hero-reveal'),topEntrance,760,labels.contentEntrance);
+    // The author, centered menu and contact now enter together inside the fixed header.
     timeline.add(document.querySelector('.header'),topEntrance,760,labels.contentEntrance);
     timeline.add(hero.querySelector('.hero-bottom'),[{opacity:0},{opacity:1}],600,labels.contentEntrance+170);
     timeline.add(document.querySelector('.section-rail'),[{opacity:0},{opacity:1}],600,labels.contentEntrance+340);
