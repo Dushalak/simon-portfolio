@@ -120,9 +120,9 @@
         float open=(1.-smoothstep(-.008,.014,edge))*smoothstep(.001,.05,uProgress);
         float envelope=smoothstep(.005,.10,uProgress)*(1.-smoothstep(.83,1.,uProgress));
         float texture=mix(.02,1.,smoothstep(.35,.74,noise(q*185.)))*mix(.35,1.,grain);
-        float rim=exp(-abs(edge)*155.)*texture*.55*envelope;
-        float bloom=exp(-abs(edge)*27.)*.09*envelope;
-        float precursor=(exp(-a*a/.024)+exp(-b*b/.018)+exp(-c*c/.035)+exp(-d*d/.015))*uLight*.14;
+        float rim=exp(-abs(edge)*155.)*texture*.85*envelope;
+        float bloom=exp(-abs(edge)*27.)*.16*envelope;
+        float precursor=(exp(-a*a/.024)+exp(-b*b/.018)+exp(-c*c/.035)+exp(-d*d/.015))*uLight*.23;
         float light=rim+bloom+precursor;
         float alpha=clamp(1.-open+light,0.,1.);
         vec3 silver=vec3(1.,.96,.86)*light;
@@ -217,9 +217,15 @@
     timeline.add(hero.querySelector('.hero-bottom'),[{opacity:0},{opacity:1}],600,labels.contentEntrance+170);
     timeline.add(document.querySelector('.section-rail'),[{opacity:0},{opacity:1}],600,labels.contentEntrance+340);
     timeline.duration=Math.max(labels.introComplete,labels.contentEntrance+340+4*staggerMs+revealMs);
-    // Decode eagerly in parallel with construction, not after the frame is drawn.
-    Promise.all([...hero.querySelectorAll('.hero-photo img,.hero-light-plane img')].map(img=>
-      img.decode?img.decode().catch(()=>{}):Promise.resolve())).then(()=>{timeline.assetsReady=true;});
+    // Decode the fallback and wait for a real video frame during construction.
+    const video=hero.querySelector('video');
+    const videoReady=video.readyState>=2?Promise.resolve():new Promise(resolve=>{
+      const ready=()=>{video.removeEventListener('loadeddata',ready);video.removeEventListener('error',ready);resolve();};
+      video.addEventListener('loadeddata',ready,{once:true,signal:events.signal});
+      video.addEventListener('error',ready,{once:true,signal:events.signal});
+    });
+    Promise.all([videoReady,...[...hero.querySelectorAll('.hero-photo img,.hero-light-plane img')].map(img=>
+      img.decode?img.decode().catch(()=>{}):Promise.resolve())]).then(()=>{timeline.assetsReady=true;});
     document.addEventListener('visibilitychange',()=>document.hidden?timeline.pause():timeline.play(),{signal:events.signal});
     addEventListener('resize',auxiliary.resize,{passive:true,signal:events.signal});
     hero.dataset.introRenderer=optics.renderer;
