@@ -13,8 +13,8 @@
   const desktop = matchMedia('(min-width: 721px) and (hover: hover) and (pointer: fine)');
 
   // All motion parameters live here. The original page routes remain native anchors.
-  const config = { revealMs: 660, staggerMs: 140, tiltDeg: 1.8,
-    photoPx: 8, lightPx: 18, interpolation: .075 };
+  const config = { revealMs: 660, staggerMs: 140, tiltDeg: 3.6,
+    photoPx: 18, photoY: 10, lightPx: 38, lightY: 22, interpolation: .075 };
   const clamp = (v, lo=0, hi=1) => Math.min(hi,Math.max(lo,v));
   const smooth = v => { v=clamp(v); return v*v*(3-2*v); };
   const segment = (p,a,b) => smooth((p-a)/(b-a));
@@ -80,9 +80,9 @@
       const o=offsets[i],t=segment(p,o.start,o.end),slot=geometry.slots[i];
       node.style.transform=`translate3d(${slot.dx*t}px,${slot.dy*t}px,0) scale(${1+(o.scale-1)*t})`;
     });
-    photo.style.transform=`translate3d(${x*config.photoPx*movement}px,calc(-50% + ${y*5*movement-p*14}px),0) scale(${1+p*.035})`;
-    lightPlane.style.transform=`translate3d(${x*config.lightPx*movement}px,calc(-50% + ${y*10*movement-p*20}px),0) scale(${1+p*.04})`;
-    videoPlane.style.transform=`translate3d(${x*config.lightPx*movement}px,${y*10*movement}px,0) scale(${1+p*.035})`;
+    photo.style.transform=`translate3d(${x*config.photoPx*movement}px,calc(-50% + ${y*config.photoY*movement-p*14}px),0) scale(${1+p*.035})`;
+    lightPlane.style.transform=`translate3d(${x*config.lightPx*movement}px,calc(-50% + ${y*config.lightY*movement-p*20}px),0) scale(${1+p*.04})`;
+    videoPlane.style.transform=`translate3d(${x*config.lightPx*movement}px,${y*config.lightY*movement}px,0) scale(${1+p*.035})`;
     cursorLight.style.transform=`translate3d(${lightX-140}px,${lightY-140}px,0)`;
     cursorLight.style.opacity=String(glow*.5*(1-p));
     atmosphere.style.animationPlayState=!introDone||hero.querySelector('video').paused?'paused':'running';
