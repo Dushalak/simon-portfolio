@@ -21,14 +21,21 @@
   isolation: isolate;
   overflow: hidden;
   container-type: inline-size;
-  background: var(--bwf-bg);
+  background: linear-gradient(180deg,var(--bg),var(--bwf-bg) 180px);
+  min-height: auto;
+  justify-content: flex-start;
+  padding-top: clamp(140px,18vh,190px);
+  padding-bottom: 16px;
+  margin-top: -1px;
   touch-action: pan-y;
 }
 /* Keep the contact content above the shared optical canvas without changing
    fonts, colors, spacing, borders, grid tracks, or existing link behavior. */
-.bwf > .eyebrow, .bwf > h2, .bwf > .contact-links, .bwf > footer { position: relative; z-index: 2; }
-.bwf-rule { position: absolute; left: 0; right: 0; top: 0; height: 1px; z-index: 3; background: linear-gradient(90deg,rgba(var(--bwf-acc),.15),rgba(var(--bwf-acc),.55) var(--bwf-b),rgba(var(--bwf-acc),.15)); }
-.bwf-sky { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.bwf > .contact-links, .bwf > footer { position: relative; z-index: 2; }
+.bwf > footer { margin-top: 32px; }
+/* Optical layers emerge below the previous section instead of starting at a
+   hard gold border, then fade across the full-width bottom edge. */
+.bwf-sky { position: absolute; inset: 0; z-index: 0; pointer-events: none; -webkit-mask-image: linear-gradient(180deg,transparent,#000 160px,#000 calc(100% - 90px),transparent); mask-image: linear-gradient(180deg,transparent,#000 160px,#000 calc(100% - 90px),transparent); }
 .bwf-wash { position: absolute; inset: 0; background: radial-gradient(120% 90% at 8% 0%,rgba(var(--bwf-acc),.2),transparent 55%),radial-gradient(90% 70% at 92% 8%,rgba(var(--bwf-acc),.14),transparent 60%),linear-gradient(180deg,rgba(var(--bwf-acc),.06),transparent 70%); }
 .bwf-bands { position: absolute; inset: 0; background: repeating-linear-gradient(90deg,rgba(var(--bwf-acc),.05) 0 1.6cqw,transparent 1.6cqw 4.2cqw); -webkit-mask-image: linear-gradient(100deg,#000 0%,transparent 55%); mask-image: linear-gradient(100deg,#000 0%,transparent 55%); opacity: .9; }
 .bwf-beam { position: absolute; inset: 0; filter: blur(calc(1px + 1.6cqw)); background: linear-gradient(var(--bwf-ang),transparent calc(var(--bwf-b) - 11%),rgba(var(--bwf-acc),.10) calc(var(--bwf-b) - 5%),rgba(var(--bwf-acc),.34) var(--bwf-b),rgba(var(--bwf-acc),.08) calc(var(--bwf-b) + 4%),transparent calc(var(--bwf-b) + 9%)),linear-gradient(var(--bwf-ang),transparent calc(var(--bwf-b) - 34%),rgba(var(--bwf-acc),.10) calc(var(--bwf-b) - 27%),transparent calc(var(--bwf-b) - 20%)); }
@@ -38,7 +45,7 @@
 .bwf-bands { opacity: .4; }
 .bwf-beam { opacity: .72; }
 .bwf-grain { opacity: .1; }
-.bwf-word { position: relative; z-index: 1; overflow: hidden; margin-top: clamp(28px,7cqw,96px); margin-inline: calc(-100% * 7 / 86); height: 35cqw; flex: 0 0 auto; }
+.bwf-word { position: relative; z-index: 1; overflow: hidden; margin-top: 36px; margin-inline: calc(-100% * 7 / 86); height: 35cqw; flex: 0 0 auto; }
 /* Use the existing Contact content width instead of a second template grid. */
 .bwf-word-box { padding: 0 7%; width: 100%; margin: 0 auto; box-sizing: border-box; }
 .bwf-word-in { display: inline-flex; white-space: nowrap; font-family: var(--bwf-sans); font-size: 39cqw; font-weight: var(--bwf-ww); line-height: 1; letter-spacing: -.045em; user-select: none; -webkit-user-select: none; }
@@ -70,6 +77,12 @@
 .bwf-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .bwf[data-motion='reduced'] .bwf-lw, .bwf[data-motion='reduced'] .bwf-l { transition: none !important; animation: none !important; }
 .bwf[data-motion='reduced'] .bwf-lw { translate: none; }
+@media (max-width: 720px) {
+  #contact.bwf { padding-top: 96px; padding-bottom: 12px; }
+  .bwf > footer { margin-top: 24px; }
+  .bwf-word { margin-top: 24px; }
+  .bwf-sky { -webkit-mask-image: linear-gradient(180deg,transparent,#000 100px,#000 calc(100% - 60px),transparent); mask-image: linear-gradient(180deg,transparent,#000 100px,#000 calc(100% - 60px),transparent); }
+}
 @media (prefers-reduced-motion: reduce) {
   .bwf .bwf-lw, .bwf .bwf-l { transition: none !important; animation: none !important; }
   .bwf[data-in='false'] .bwf-lw { translate: none; }
