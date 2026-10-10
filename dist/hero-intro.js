@@ -1,7 +1,7 @@
 /* First-visit intro only. Scroll composition and pointer depth stay in hero-motion.js. */
 (() => {
   const labels = Object.freeze({ introStart: 0, constructionLines: 300, frameDrawing: 800,
-    frameHold: 2200, lightReveal: 2480, backgroundReveal: 2580,
+    frameHold: 2200, lightReveal: 1480, backgroundReveal: 1580,
     constructionFadeOut: 3600, contentEntrance: 2580, introComplete: 4400 });
   const backgroundRevealMs = 1400;
   const clamp = value => Math.min(1, Math.max(0, value));
@@ -228,8 +228,8 @@
     const scene=hero.querySelector('.hero-scene'); let disposed=false,videoStarted=false;
     const timeline=new MasterTimeline(t=>{
       hero.dataset.introTime=String(Math.round(t));
-      hero.dataset.intro=t<labels.frameDrawing?'construction':t<labels.frameHold?'drawing':
-        t<labels.lightReveal?'frame-hold':t<labels.contentEntrance?'light-reveal':'content';
+      hero.dataset.intro=t<labels.frameDrawing?'construction':t<labels.lightReveal?'drawing':
+        t<labels.contentEntrance?'light-reveal':'content';
       const progress=smooth((t-labels.backgroundReveal)/backgroundRevealMs);
       const light=smooth((t-labels.lightReveal)/160)*(1-smooth((t-labels.backgroundReveal-100)/500));
       if(t>=labels.lightReveal){

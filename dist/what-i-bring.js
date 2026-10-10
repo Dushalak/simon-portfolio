@@ -26,26 +26,18 @@
   list.append(fragment);
   const events=new AbortController(),motion=matchMedia('(prefers-reduced-motion: reduce)'),wide=matchMedia('(min-width:721px)');
   const cards=[...section.querySelectorAll('.bring-card-stage')],items=[...list.children];
-  const animations=[];let started=false,visible=false,frame=0,destroyed=false;
+  let visible=false,frame=0,destroyed=false;
   const clamp=v=>Math.max(0,Math.min(1,v));
-  // One ordered entrance timeline; the cards below are sampled independently from scroll position.
-  const schedule=[
-    {nodes:[section.querySelector('.bring-title-primary')],at:0,duration:850,y:54,blur:4},
-    {nodes:items,at:220,stagger:55,duration:650,y:28,blur:0},
-    {nodes:[section.querySelector('.bring-title-secondary')],at:880,duration:900,y:54,blur:4},
-    {nodes:[section.querySelector('.bring-statement')],at:1190,duration:700,y:20,blur:3},
-    {nodes:[section.querySelector('.bring-description')],at:1290,duration:700,y:18,blur:3},
-    {nodes:[section.querySelector('.bring-action')],at:1430,duration:650,y:14,blur:0}
-  ];
-  function clearEntrance(){animations.forEach(a=>a.cancel());animations.length=0;section.querySelectorAll('[data-bring-enter]').forEach(el=>{el.style.opacity='1';el.style.removeProperty('transform');el.style.removeProperty('filter');});}
-  function entrance(){
-    if(started||destroyed)return;started=true;
-    if(motion.matches||!Element.prototype.animate){clearEntrance();return;}
-    schedule.forEach(group=>group.nodes.forEach((el,i)=>{
-      const anim=el.animate([{opacity:0,transform:`translate3d(0,${group.y}px,0)`,filter:`blur(${group.blur}px)`},{opacity:1,transform:'translate3d(0,0,0)',filter:'blur(0px)'}],{duration:group.duration,delay:group.at+i*(group.stagger||0),easing:'cubic-bezier(.22,1,.36,1)',fill:'both'});
-      animations.push(anim);anim.finished.then(()=>{el.style.opacity='1';el.style.removeProperty('transform');el.style.removeProperty('filter');anim.cancel();}).catch(()=>{});
-    }));
-  }
+  // Preserve the entrance keyframes and tool stagger, with a reversible scroll playhead.
+  section.classList.add('bring-ready');
+  const entrance=window.PortfolioScrollReveal.create([
+    {nodes:[section.querySelector('.bring-title-primary')],duration:850,y:54,blur:4},
+    {nodes:items,anchor:list,stagger:55,duration:650,y:28,blur:0},
+    {nodes:[section.querySelector('.bring-title-secondary')],duration:900,y:54,blur:4},
+    {nodes:[section.querySelector('.bring-statement')],duration:700,y:20,blur:3},
+    {nodes:[section.querySelector('.bring-description')],duration:700,delay:100,y:18,blur:3},
+    {nodes:[section.querySelector('.bring-action')],duration:650,delay:240,y:14,blur:0}
+  ]);
   // Use a stationary outer wrapper for progress to keep forward and reverse sampling identical.
   cards.forEach(card=>{const shell=document.createElement('div');shell.className='bring-card-anchor';shell.style.setProperty('--bring-order',card.style.getPropertyValue('--bring-order'));card.before(shell);shell.append(card);});
   function render(){
@@ -66,11 +58,11 @@
     const target=document.getElementById(link.hash.slice(1));if(!target)return;
     event.preventDefault();history.pushState(null,'',link.hash);target.scrollIntoView({behavior:motion.matches?'instant':'smooth',block:'start'});
   },{signal:events.signal}));
-  const observer=new IntersectionObserver(entries=>{entries.forEach(entry=>{visible=entry.isIntersecting;if(visible){entrance();request();}});},{rootMargin:'0px 0px -12% 0px'});
-  section.classList.add('bring-ready');observer.observe(section);render();
+  const observer=new IntersectionObserver(entries=>{entries.forEach(entry=>{visible=entry.isIntersecting;request();});},{rootMargin:'0px 0px -12% 0px'});
+  observer.observe(section);render();
   addEventListener('scroll',()=>{if(visible)request();},{passive:true,signal:events.signal});
   addEventListener('resize',request,{passive:true,signal:events.signal});
-  motion.addEventListener('change',()=>{if(motion.matches)clearEntrance();request();},{signal:events.signal});
+  motion.addEventListener('change',request,{signal:events.signal});
   addEventListener('pageshow',request,{signal:events.signal});
-  addEventListener('pagehide',event=>{if(event.persisted)return;destroyed=true;events.abort();observer.disconnect();animations.forEach(a=>a.cancel());cancelAnimationFrame(frame);},{signal:events.signal});
+  addEventListener('pagehide',event=>{if(event.persisted)return;destroyed=true;events.abort();observer.disconnect();entrance.dispose();cancelAnimationFrame(frame);},{signal:events.signal});
 })();

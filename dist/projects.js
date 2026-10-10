@@ -41,46 +41,17 @@
     const words=line.dataset.headingWords.split('|').map(text=>node('span','projects-heading-word',text));
     line.replaceChildren(...words);headingWords.push(...words);
   });
-  const headingAnimations=new Set();
-  function animateHeading(element,frames,timing,visibleClass){
-    const animation=element.animate(frames,{...timing,fill:'both'});headingAnimations.add(animation);
-    animation.finished.then(()=>{element.classList.add(visibleClass);animation.cancel();headingAnimations.delete(animation);},()=>headingAnimations.delete(animation));
-  }
-  function revealHeading(target,instant=false){
-    if(target===headingTitle){
-      headingTitle.dataset.revealed='true';
-      headingWords.forEach((word,index)=>{
-        if(instant){word.classList.add('is-heading-word-visible');return;}
-        // The original initial values are opacity .001, blur 4px and Y 10px.
-        // Duration/easing/stagger are tuned approximations of the observed reveal.
-        animateHeading(word,[{opacity:.001,filter:'blur(4px)',transform:'translate3d(0,10px,0)'},{opacity:1,filter:'blur(0px)',transform:'none'}],
-          {duration:680,delay:index*70,easing:'cubic-bezier(.22,1,.36,1)'},'is-heading-word-visible');
-      });
-    }else{
-      headingBody.dataset.revealed='true';
-      if(instant){headingBody.classList.add('is-heading-body-visible');return;}
-      animateHeading(headingBody,[{opacity:0,transform:'translate3d(0,35px,0)'},{opacity:1,transform:'none'}],
-        {duration:750,easing:'cubic-bezier(.22,1,.36,1)'},'is-heading-body-visible');
-    }
-  }
-  const headingReveal=new IntersectionObserver(entries=>entries.forEach(entry=>{
-    if(entry.isIntersecting){headingReveal.unobserve(entry.target);revealHeading(entry.target,reduced.matches);}
-  }),{threshold:.12,rootMargin:'0px 0px -35px 0px'});
-  if(!reduced.matches&&Element.prototype.animate){heading.classList.add('projects-heading-ready');headingReveal.observe(headingTitle);headingReveal.observe(headingBody);}
-  const reveal=new IntersectionObserver(entries=>entries.forEach(entry=>{
-    if(entry.isIntersecting){entry.target.classList.add('is-visible');reveal.unobserve(entry.target);}
-  }),{threshold:.10,rootMargin:'0px 0px -24px 0px'});
-  if(!reduced.matches){gallery.classList.add('projects-ready');cards.forEach(el=>reveal.observe(el));}
+  heading.classList.add('projects-heading-ready');gallery.classList.add('projects-ready');
+  const entrance=window.PortfolioScrollReveal.create([
+    {nodes:headingWords,anchor:headingTitle,duration:680,stagger:70,opacity:.001,y:10,blur:4,visibleClass:'is-heading-word-visible'},
+    {nodes:[headingBody],duration:750,y:35,visibleClass:'is-heading-body-visible'},
+    ...cards.map(card=>({nodes:[card.querySelector('.project-stage')],anchor:card,duration:950,y:70,scale:.98,blur:8,start:.95,end:.48}))
+  ]);
   function revealAt(position){
-    [headingTitle,headingBody].forEach(part=>{const top=part.getBoundingClientRect().top+scrollY-position;
-      if(top<innerHeight&&top+part.offsetHeight>0&&!part.dataset.revealed){headingReveal.unobserve(part);revealHeading(part,true);}
-    });
-    cards.forEach(card=>{const top=card.getBoundingClientRect().top+scrollY-position;
-      if(top<innerHeight&&top+card.offsetHeight>0){card.classList.add('is-visible','is-restored');reveal.unobserve(card);}
-    });
+    entrance.measure();entrance.renderAt(position);
   }
-  reduced.addEventListener('change',()=>{if(reduced.matches){folds.forEach(fold=>fold.reset());headingAnimations.forEach(animation=>animation.cancel());headingAnimations.clear();headingReveal.disconnect();gallery.classList.remove('projects-ready');heading.classList.remove('projects-heading-ready');cards.forEach(card=>card.classList.add('is-visible'));}},{signal:events.signal});
+  reduced.addEventListener('change',()=>{if(reduced.matches)folds.forEach(fold=>fold.reset());},{signal:events.signal});
   fine.addEventListener('change',()=>{if(!fine.matches){folds.forEach(fold=>fold.reset());cards.forEach(card=>card.classList.remove('is-selected'));}},{signal:events.signal});
   window.PortfolioProjectsUI={revealAt};
-  addEventListener('pagehide',event=>{if(event.persisted)return;events.abort();folds.forEach(fold=>fold.reset());headingAnimations.forEach(animation=>animation.cancel());headingAnimations.clear();headingReveal.disconnect();reveal.disconnect();},{once:true});
+  addEventListener('pagehide',event=>{if(event.persisted)return;events.abort();folds.forEach(fold=>fold.reset());entrance.dispose();},{once:true});
 })();
