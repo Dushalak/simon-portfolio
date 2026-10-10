@@ -45,16 +45,17 @@
   typographyMode();
   window.PortfolioProximity={prepare};
   const workRoot=[document.querySelector('.about-work-title'),...document.querySelectorAll('.about-experience')],workPieces=[];
+  const workRows=[...document.querySelectorAll('.about-experience')];
   workRoot.forEach(root=>{
     const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
     nodes.forEach(node=>{
       const fragment=document.createDocumentFragment();
-      const parts=node.textContent.match(/[\u3400-\u9fff]{1,3}|[A-Za-z0-9]+|\s+|[^\u3400-\u9fffA-Za-z0-9\s]+/gu)||[];
-      parts.forEach(text=>{if(/^\s+$/.test(text)){fragment.append(document.createTextNode(text));return;}const piece=document.createElement('span');piece.className='work-light-piece';piece.textContent=text;fragment.append(piece);workPieces.push({piece,value:0});});node.replaceWith(fragment);
+      const parts=node.textContent.match(/[\u3400-\u9fff]{1,2}|[A-Za-z0-9]+|\s+|[^\u3400-\u9fffA-Za-z0-9\s]+/gu)||[];
+      parts.forEach(text=>{if(/^\s+$/.test(text)){fragment.append(document.createTextNode(text));return;}const piece=document.createElement('span');piece.className='work-light-piece';piece.textContent=text;fragment.append(piece);workPieces.push({piece,row:root.closest('.about-experience'),value:0});});node.replaceWith(fragment);
     });
   });
   const halo=document.createElement('div');halo.className='work-spotlight-halo';halo.setAttribute('aria-hidden','true');board.querySelector('.about-work-title').before(halo);
-  function workMode(){board.classList.toggle('work-spotlight-enabled',fine.matches);if(!fine.matches){workPieces.forEach(({piece})=>piece.style.removeProperty('--work-strength'));halo.style.setProperty('--work-halo','0');}request();}
+  function workMode(){board.classList.toggle('work-spotlight-enabled',fine.matches);if(!fine.matches){workAmount=0;workPieces.forEach(c=>{c.value=0;c.piece.style.removeProperty('--work-strength');});workRows.forEach(row=>row.style.removeProperty('--work-row-strength'));halo.style.setProperty('--work-halo','0');}request();}
   function hideView(){currentCard?.classList.remove('is-view-cursor-active');currentCard=null;bubble.classList.remove('is-visible','is-pressed');}
   function enterCard(card,e){
     if(!fine.matches||reduce.matches||e.pointerType==='touch'||dialog.open)return;
@@ -100,11 +101,21 @@
       workAmount+=((workActive?1:0)-workAmount)*fast;
       const localX=(gx-workBounds.left)/Math.max(.001,workBounds.width)*halo.offsetWidth,localY=(gy-workBounds.top)/Math.max(.001,workBounds.height)*halo.offsetHeight;
       halo.style.setProperty('--work-x',localX+'px');halo.style.setProperty('--work-y',localY+'px');halo.style.setProperty('--work-halo',workAmount.toFixed(3));
-      workPieces.forEach(c=>{
-        const r=c.piece.getBoundingClientRect(),target=workActive?Math.pow(clamp(1-nearRect(gx,gy,r)/165),1.5):0;
-        c.value+=(target-c.value)*(reduce.matches?1:recover);if(c.value<.001)c.value=0;
+      const workFollow=1-Math.exp(-dt/65),workRecover=1-Math.exp(-dt/190);
+      // Read all glyph positions before writing styles to avoid layout thrashing.
+      const workTargets=workPieces.map(c=>{
+        if(!workActive)return 0;
+        const r=c.piece.getBoundingClientRect(),distance=Math.hypot(gx-r.left-r.width/2,gy-r.top-r.height/2);
+        const t=clamp(1-distance/165);return t*t*(3-2*t);
+      });
+      const rowStrengths=new Map(workRows.map(row=>[row,0]));
+      workPieces.forEach((c,index)=>{
+        const target=workTargets[index];
+        c.value+=(target-c.value)*(reduce.matches?1:target>c.value?workFollow:workRecover);if(c.value<.001)c.value=0;
         c.piece.style.setProperty('--work-strength',c.value.toFixed(4));moving ||= Math.abs(target-c.value)>.001;
-      });moving ||= Math.abs((workActive?1:0)-workAmount)>.001;
+        if(c.row)rowStrengths.set(c.row,Math.max(rowStrengths.get(c.row),c.value));
+      });rowStrengths.forEach((value,row)=>row.style.setProperty('--work-row-strength',value.toFixed(4)));
+      moving ||= Math.abs((workActive?1:0)-workAmount)>.001;
     }
     dirty=false;if(moving&&fine.matches&&!document.hidden)request();
   }
