@@ -258,7 +258,8 @@ void main() {
   vec3 foil = (layered ? tint : mix(tint, vec3(1.0), 0.12)) * (1.15 + 0.3 * sheen) + metal * glint * 1.2;
   float tilted = smoothstep(0.02, 0.21, length(sin(uTilt)));
   float awake = mix(0.2, 1.0, tilted);
-  float strength = uIntensity * f.mask * (1.0 - frame) * awake;
+  // Rainbow foil reaches the photo's rounded edge without an uncoated inset.
+  float strength = uIntensity * f.mask * (uPreset == 4 ? 1.0 : 1.0 - frame) * awake;
   float band = uPreset == 5 ? spoke : layered ? 0.25 + 0.75 * smoothstep(0.3, 0.95, 0.5 + 0.5 * cos(phase * TAU * 0.5 + 1.3)) : 1.0;
   vec3 color = layered
     ? 1.0 - (1.0 - art) * (1.0 - clamp(foil * look.w * band * strength, 0.0, 1.0))
@@ -277,7 +278,7 @@ void main() {
   const canvas=document.createElement('canvas');canvas.className='about-holo-canvas';canvas.setAttribute('aria-hidden','true');
   fade.classList.add('about-portrait-fade');root.append(rotor);rotor.append(image,canvas,fade);
   const fine=matchMedia('(min-width:721px) and (hover:hover) and (pointer:fine)'),reduce=matchMedia('(prefers-reduced-motion:reduce)'),events=new AbortController();
-  const settings={preset:4,intensity:.25,scale:1,edge:0,frame:.025,glare:.1,tiltMax:15,hoverScale:1.04,radius:14,idle:true};
+  const settings={preset:4,intensity:.16,scale:1,edge:0,frame:0,glare:.06,tiltMax:15,hoverScale:1.04,radius:14,idle:true};
   const gl=canvas.getContext('webgl2',{alpha:true,premultipliedAlpha:true,antialias:false});
   let program,buffer,texture,uniforms={},ready=false,lost=false,visible=false,frame=0,last=0,lastDraw=0,clock=0,alive=true;
   let pointer={x:.5,y:.5,inside:false},state={x:0,y:0,lx:.36,ly:.26,lift:1};

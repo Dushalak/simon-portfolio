@@ -18,7 +18,8 @@
     uniform float u_time;
     uniform float u_saturation;
     void main(){
-      vec3 FC=vec3(gl_FragCoord.xy,0.0);
+      // Shift the field upward in screen space while keeping the canvas full size.
+      vec3 FC=vec3(gl_FragCoord.xy-vec2(0.0,u_res.y*.06),0.0);
       vec3 r=vec3(u_res,max(u_res.x,u_res.y));
       float t=u_time;
       vec4 o=vec4(0.0);
