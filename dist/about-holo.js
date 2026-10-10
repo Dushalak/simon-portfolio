@@ -272,10 +272,11 @@ void main() {
 `;
   const root=document.querySelector('.about-portrait'),image=root.querySelector('img'),fade=root.querySelector('span');
   const rotor=document.createElement('div');rotor.className='about-holo-rotor';
+  const shadow=document.createElement('div');shadow.className='about-holo-shadow';shadow.setAttribute('aria-hidden','true');root.prepend(shadow);
   const canvas=document.createElement('canvas');canvas.className='about-holo-canvas';canvas.setAttribute('aria-hidden','true');
   fade.classList.add('about-portrait-fade');root.append(rotor);rotor.append(image,canvas,fade);
   const fine=matchMedia('(min-width:721px) and (hover:hover) and (pointer:fine)'),reduce=matchMedia('(prefers-reduced-motion:reduce)'),events=new AbortController();
-  const settings={preset:4,intensity:.65,scale:.95,edge:.8,frame:.04,glare:.5,tiltMax:15,hoverScale:1.04,idle:true};
+  const settings={preset:4,intensity:.25,scale:1,edge:0,frame:.025,glare:.1,tiltMax:15,hoverScale:1.04,radius:14,idle:true};
   const gl=canvas.getContext('webgl2',{alpha:true,premultipliedAlpha:true,antialias:false});
   let program,buffer,texture,uniforms={},ready=false,lost=false,visible=false,frame=0,last=0,lastDraw=0,clock=0,alive=true;
   let pointer={x:.5,y:.5,inside:false},state={x:0,y:0,lx:.36,ly:.26,lift:1};
@@ -308,7 +309,7 @@ void main() {
     gl.viewport(0,0,canvas.width,canvas.height);gl.useProgram(program);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);
     gl.uniform1i(uniforms.uArt,0);gl.uniform2f(uniforms.uSize,canvas.width,canvas.height);gl.uniform1f(uniforms.uAspect,canvas.height/canvas.width);
     gl.uniform2f(uniforms.uTilt,state.x*Math.PI/180,state.y*Math.PI/180);gl.uniform2f(uniforms.uLight,state.lx,state.ly);gl.uniform1f(uniforms.uDistance,1100/root.clientWidth);
-    gl.uniform1i(uniforms.uPreset,settings.preset);gl.uniform1f(uniforms.uIntensity,settings.intensity);gl.uniform1f(uniforms.uScale,settings.scale);gl.uniform1f(uniforms.uEdge,settings.edge);gl.uniform1f(uniforms.uFrame,settings.frame);gl.uniform1f(uniforms.uRadius,24/root.clientWidth);gl.uniform1f(uniforms.uGlare,settings.glare);
+    gl.uniform1i(uniforms.uPreset,settings.preset);gl.uniform1f(uniforms.uIntensity,settings.intensity);gl.uniform1f(uniforms.uScale,settings.scale);gl.uniform1f(uniforms.uEdge,settings.edge);gl.uniform1f(uniforms.uFrame,settings.frame);gl.uniform1f(uniforms.uRadius,settings.radius/root.clientWidth);gl.uniform1f(uniforms.uGlare,settings.glare);
     gl.uniform3fv(uniforms.uFoil,[226,230,236].map(c=>Math.pow(c/255,2.2)));gl.uniform1f(uniforms.uReady,1);gl.drawArrays(gl.TRIANGLES,0,3);
   }
   const allowed=()=>alive&&visible&&!document.hidden&&!document.querySelector('.case-dialog').open&&!root.closest('[inert]')&&!lost;
@@ -325,7 +326,7 @@ void main() {
     if(!enabled){Object.assign(state,{x:0,y:0,lx:.36,ly:.26,lift:1});Object.keys(velocity).forEach(key=>velocity[key]=0);}
     else{const steps=Math.ceil(dt/1000/(1/240)),h=dt/1000/steps;for(let i=0;i<steps;i++){spring('x',tx,150,16,h);spring('y',ty,150,16,h);spring('lx',lx,220,30,h);spring('ly',ly,220,30,h);spring('lift',lift,320,30,h);}}
     rotor.style.transform=`rotateX(${state.x}deg) rotateY(${state.y}deg) scale(${state.lift})`;
-    if(enabled)rotor.style.boxShadow=`${-state.y*.7}px ${16+state.x*.7}px 35px rgba(0,0,0,.2)`;else rotor.style.removeProperty('box-shadow');
+    shadow.style.transform=`translate(${-state.y*.7}px,${state.x*.7}px) scale(${.9+(state.lift-1)*1.5})`;
     root.dataset.holoTilt=state.x.toFixed(2)+','+state.y.toFixed(2);root.dataset.holoMotion=enabled?'running':'static';
     if(now-lastDraw>32){draw();lastDraw=now;}
     const remaining=Math.abs(tx-state.x)+Math.abs(ty-state.y)+Math.abs(lift-state.lift)*40+(Math.abs(lx-state.lx)+Math.abs(ly-state.ly))*60+Math.abs(velocity.x)+Math.abs(velocity.y)+Math.abs(velocity.lift)*40+(Math.abs(velocity.lx)+Math.abs(velocity.ly))*60;
