@@ -3,6 +3,9 @@
   const phase=(p,a,b)=>clamp((p-a)/(b-a));
   const smooth=t=>t*t*(3-2*t);
   const NS='http://www.w3.org/2000/svg';
+  // Reserve the final 16% of the existing pin for reading the finished About.
+  // The section height and the next section's physical spacing stay unchanged.
+  const completionAt=.84;
   // Every value below is sampled from scroll progress, never from elapsed time.
   const timing={lights:[.20,.45],backdrop:[.24,.65],heroExit:[.16,.46],
     portrait:[.55,.85],title:[.60,.77],greeting:[.65,.82],biography:[.70,.88],
@@ -50,7 +53,7 @@
         about.dataset.opticsRenderer=optics.renderer;
       }
       previous=-1;lastMode='';lastAccess='';
-      if(!enabled){about.removeAttribute('data-story-mode');about.removeAttribute('data-story-visible');
+      if(!enabled){about.removeAttribute('data-story-mode');about.removeAttribute('data-story-visible');about.removeAttribute('data-story-holding');
         about.inert=false;about.removeAttribute('aria-hidden');groups.forEach(node=>{node.style.removeProperty('transform');node.style.removeProperty('opacity');node.style.removeProperty('filter');});
         reveal.style.removeProperty('transform');hero.querySelector('.hero-scene').style.removeProperty('opacity');}
     }
@@ -59,12 +62,14 @@
       optics?.draw(progress,precursor);
       canvas.style.transform=reveal.style.transform;
     }
-    function render(p,introDone){
-      if(!enabled)return {exit:0,advance:p*.035};
+    function render(scrollProgress,introDone){
+      if(!enabled)return {exit:0,advance:scrollProgress*.035};
+      const p=clamp(scrollProgress/completionAt);
       const exit=smooth(phase(p,...timing.heroExit));
-      if(previous===p)return {exit,advance:smooth(phase(p,0,.25))*.045};
-      previous=p;about.dataset.storyProgress=p.toFixed(4);
-      const settled=p>=1,mode=settled?'settled':'transition';
+      if(previous===scrollProgress)return {exit,advance:smooth(phase(p,0,.25))*.045};
+      previous=scrollProgress;about.dataset.storyProgress=p.toFixed(4);
+      const settled=scrollProgress>=1,mode=settled?'settled':'transition';
+      about.dataset.storyHolding=String(p>=1&&!settled);
       if(mode!==lastMode){about.dataset.storyMode=mode;lastMode=mode;}
       about.dataset.storyVisible=String(p>.20);
       const access=String(p>=.85);

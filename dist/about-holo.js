@@ -264,8 +264,9 @@ void main() {
     ? 1.0 - (1.0 - art) * (1.0 - clamp(foil * look.w * band * strength, 0.0, 1.0))
     : mix(art, foil, clamp(strength * look.w, 0.0, 1.0));
   color += sparkles(p, halfway, sweep, mix(0.55, 1.0, tilted)) * uEdge * frame;
-  color += uFoil * sheen * 0.12 * frame;
-  color += vec3(sheen * 0.07 + shine * 0.3) * uGlare;
+  // Keep the photo clear: no neutral wash across the rim or the whole face.
+  // The remaining small specular reflection appears only with actual tilt.
+  color += vec3(shine * 0.3) * uGlare * tilted;
   color = pow(clamp(color, 0.0, 1.0), vec3(1.0 / 2.2));
   outColor = vec4(color * alpha, alpha);
 }
