@@ -279,6 +279,7 @@ void main() {
   const gl=canvas.getContext('webgl2',{alpha:true,premultipliedAlpha:true,antialias:false});
   let program,buffer,texture,uniforms={},ready=false,lost=false,visible=false,frame=0,last=0,lastDraw=0,clock=0,alive=true;
   let pointer={x:.5,y:.5,inside:false},state={x:0,y:0,lx:.36,ly:.26,lift:1};
+  const velocity={x:0,y:0,lx:0,ly:0,lift:0};
   function compile(type,source){const shader=gl.createShader(type);gl.shaderSource(shader,source);gl.compileShader(shader);if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS)){gl.deleteShader(shader);throw Error('Holo shader unavailable');}return shader;}
   function setup(){
     if(!gl)return;
@@ -299,7 +300,8 @@ void main() {
     try{gl.bindTexture(gl.TEXTURE_2D,texture);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,image);gl.generateMipmap(gl.TEXTURE_2D);ready=true;root.dataset.holoRenderer='webgl';resize();}catch{root.dataset.holoRenderer='image';}
   }
   function resize(){
-    if(!program||lost)return;const dpr=Math.min(devicePixelRatio||1,1.25);canvas.width=Math.max(1,Math.round(root.clientWidth*dpr));canvas.height=Math.max(1,Math.round(root.clientHeight*dpr));draw();wake();
+    if(!program||lost)return;const dpr=Math.min(devicePixelRatio||1,1.25),width=Math.max(1,Math.round(root.clientWidth*dpr)),height=Math.max(1,Math.round(root.clientHeight*dpr));
+    if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}draw();wake();
   }
   function draw(){
     if(!program||lost||!ready)return;
@@ -310,23 +312,28 @@ void main() {
     gl.uniform3fv(uniforms.uFoil,[226,230,236].map(c=>Math.pow(c/255,2.2)));gl.uniform1f(uniforms.uReady,1);gl.drawArrays(gl.TRIANGLES,0,3);
   }
   const allowed=()=>alive&&visible&&!document.hidden&&!document.querySelector('.case-dialog').open&&!root.closest('[inert]')&&!lost;
+  // Use the supplied component's spring response, with small integration steps.
+  function spring(key,target,stiffness,damping,dt){velocity[key]+=((target-state[key])*stiffness-velocity[key]*damping)*dt;state[key]+=velocity[key]*dt;}
   function tick(now){
     frame=0;if(!allowed()){last=0;root.dataset.holoMotion='paused';return;}
     const dt=Math.min(40,last?now-last:16.7);last=now;clock+=dt*.001;const enabled=fine.matches&&!reduce.matches;
     const hovering=enabled&&pointer.inside,idle=enabled&&settings.idle&&!hovering;
-    const tx=hovering?(.5-pointer.y)*2*settings.tiltMax:idle?Math.sin(clock*.7)*settings.tiltMax*.2:0;
-    const ty=hovering?(pointer.x-.5)*2*settings.tiltMax:idle?Math.sin(clock*.53+1.2)*settings.tiltMax*.28:0;
-    const lx=hovering?pointer.x:idle?.5+Math.sin(clock*.41)*.35:.36,ly=hovering?pointer.y:idle?.38+Math.sin(clock*.33+.6)*.25:.26;
-    const lift=hovering?settings.hoverScale:1,alpha=reduce.matches?1:1-Math.exp(-dt/95);
-    state.x+=(tx-state.x)*alpha;state.y+=(ty-state.y)*alpha;state.lx+=(lx-state.lx)*alpha;state.ly+=(ly-state.ly)*alpha;state.lift+=(lift-state.lift)*alpha;
+    const tx=hovering?(.5-pointer.y)*2*settings.tiltMax:idle?Math.sin(clock*.7)*settings.tiltMax*.28:0;
+    const ty=hovering?(pointer.x-.5)*2*settings.tiltMax:idle?Math.sin(clock*.53+1.2)*settings.tiltMax*.4:0;
+    const lx=hovering?pointer.x:idle?.5+Math.sin(clock*.41)*.42:.36,ly=hovering?pointer.y:idle?.38+Math.sin(clock*.33+.6)*.3:.26;
+    const lift=hovering?settings.hoverScale:1;
+    if(!enabled){Object.assign(state,{x:0,y:0,lx:.36,ly:.26,lift:1});Object.keys(velocity).forEach(key=>velocity[key]=0);}
+    else{const steps=Math.ceil(dt/1000/(1/240)),h=dt/1000/steps;for(let i=0;i<steps;i++){spring('x',tx,150,16,h);spring('y',ty,150,16,h);spring('lx',lx,220,30,h);spring('ly',ly,220,30,h);spring('lift',lift,320,30,h);}}
     rotor.style.transform=`rotateX(${state.x}deg) rotateY(${state.y}deg) scale(${state.lift})`;
+    if(enabled)rotor.style.boxShadow=`${-state.y*.7}px ${16+state.x*.7}px 35px rgba(0,0,0,.2)`;else rotor.style.removeProperty('box-shadow');
     root.dataset.holoTilt=state.x.toFixed(2)+','+state.y.toFixed(2);root.dataset.holoMotion=enabled?'running':'static';
     if(now-lastDraw>32){draw();lastDraw=now;}
-    if(idle||Math.abs(tx-state.x)+Math.abs(ty-state.y)+Math.abs(lift-state.lift)>.002)wake();
+    const remaining=Math.abs(tx-state.x)+Math.abs(ty-state.y)+Math.abs(lift-state.lift)*40+(Math.abs(lx-state.lx)+Math.abs(ly-state.ly))*60+Math.abs(velocity.x)+Math.abs(velocity.y)+Math.abs(velocity.lift)*40+(Math.abs(velocity.lx)+Math.abs(velocity.ly))*60;
+    if(idle||enabled&&remaining>.002)wake();
   }
   function wake(){if(allowed()&&!frame)frame=requestAnimationFrame(tick);}
   function track(e){if(!fine.matches||reduce.matches||e.pointerType==='touch')return;const rect=root.getBoundingClientRect();pointer={x:Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width)),y:Math.max(0,Math.min(1,(e.clientY-rect.top)/rect.height)),inside:true};wake();}
-  root.addEventListener('pointerenter',track,{passive:true,signal:events.signal});root.addEventListener('pointermove',track,{passive:true,signal:events.signal});root.addEventListener('pointerleave',()=>{pointer.inside=false;wake();},{signal:events.signal});
+  root.addEventListener('pointerenter',track,{passive:true,signal:events.signal});root.addEventListener('pointermove',track,{passive:true,signal:events.signal});['pointerleave','pointercancel'].forEach(type=>root.addEventListener(type,()=>{pointer.inside=false;wake();},{signal:events.signal}));
   const intersection=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;wake();});intersection.observe(root);
   const size=new ResizeObserver(resize);size.observe(root);const mode=new MutationObserver(wake);mode.observe(document.querySelector('#about'),{attributes:true,attributeFilter:['inert','data-story-mode','data-story-visible']});mode.observe(document.querySelector('.case-dialog'),{attributes:true,attributeFilter:['open']});
   image.addEventListener('load',load,{signal:events.signal});document.addEventListener('visibilitychange',wake,{signal:events.signal});fine.addEventListener('change',wake,{signal:events.signal});reduce.addEventListener('change',wake,{signal:events.signal});
