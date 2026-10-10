@@ -35,6 +35,12 @@
     }
     function updateCase(){
       frame=0;if(!dialog.open)return;
+      // Keep the reading area clear; controls return at either end of the case.
+      const remaining=dialog.scrollHeight-dialog.clientHeight-dialog.scrollTop;
+      const reading=dialog.scrollTop>80&&remaining>Math.min(100,dialog.clientHeight*.12);
+      const toolbar=$('.case-toolbar');
+      if(reading&&!toolbar.classList.contains('is-reading'))setCaseMenu(false);
+      toolbar.classList.toggle('is-reading',reading);
       const travel=Math.max(1,Math.min(dialog.clientHeight*.86,$('.case-intro').offsetHeight*.9)),progress=clamp(dialog.scrollTop/travel);
       const p=preference.matches?0:progress;dialog.dataset.heroProgress=progress.toFixed(4);
       atmosphere.setProgress(progress);

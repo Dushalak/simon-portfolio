@@ -1,12 +1,14 @@
 /* Case navigation shares the homepage menu's dimensions, colors and timing. */
 .projects-heading h2{font-style:italic}
+.projects-heading-lead,.projects-heading-statement{transform:skewX(2deg)}
 .case-pages{border-radius:16px;overflow:hidden}
 .case-pages .case-group{margin:0}
 .case-pages figure{margin:0;border-radius:0}
 .reading-progress{color:rgba(255,255,255,.55)}
 .progress-track{background:rgba(255,255,255,.12)}
 .progress-track i{background:rgba(255,255,255,.75)}
-.case-toolbar{z-index:26;overflow:visible}
+.case-toolbar{z-index:26;overflow:visible;opacity:1;visibility:visible;transition:opacity .32s ease,visibility 0s}
+.case-toolbar.is-reading{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .32s ease,visibility 0s .32s}
 .case-toolbar .case-menu{position:absolute;left:50%;top:var(--menu-top);transform:translateX(-50%);width:var(--menu-width);height:60px;z-index:27;pointer-events:none;color:#ececec}
 .case-menu summary{position:relative;margin:auto;width:280px;height:60px;display:flex;justify-content:flex-start;align-items:center;gap:9px;padding:0 20px;border:0;border-radius:20px;background:rgba(21,21,21,.8);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#ececec;user-select:none;pointer-events:auto;z-index:2;transition:background .3s,box-shadow .3s}
 .case-menu summary:hover{background:rgba(32,32,32,.9)}
@@ -29,7 +31,7 @@
 .case-menu button .menu-en{font:400 14px/1.3 'DM Sans',Arial,sans-serif;color:#999;white-space:nowrap;transition:color .25s}
 .case-menu button:hover{background:#ffffff04;color:#fff}
 .case-menu button:hover .menu-en{color:#c6c6c6}
-.case-menu button:focus-visible,.case-menu summary:focus-visible{outline:1px solid #bcbcbc;outline-offset:3px}
+.case-dialog button:focus-visible,.case-menu summary:focus-visible{outline:none}
 .case-menu>#case-menu-panel>p,.case-menu>#case-menu-panel>button{opacity:0;transform:translate3d(0,-10px,0);filter:blur(4px);transition:opacity .18s,transform .26s var(--menu-ease),filter .2s;transition-delay:var(--menu-out)}
 .case-menu-heading{--menu-in:110ms;--menu-out:155ms}
 .case-menu button:nth-of-type(1){--menu-in:190ms;--menu-out:125ms}
@@ -58,4 +60,4 @@
  .case-pages{border-radius:8px}
 }
 @media(max-width:380px){.case-menu summary{width:112px;padding:0 12px}.case-menu .case-menu-label{font-size:14px}.case-menu>#case-menu-panel{clip-path:inset(0 calc((100% - 112px)/2) calc(100% - 48px) calc((100% - 112px)/2) round 20px)}}
-@media(prefers-reduced-motion:reduce){.case-menu summary,.case-menu .menu-symbol,.case-menu>#case-menu-panel,.case-menu>#case-menu-panel>*,.case-menu-backdrop{transition:none!important}}
+@media(prefers-reduced-motion:reduce){.case-toolbar,.case-menu summary,.case-menu .menu-symbol,.case-menu>#case-menu-panel,.case-menu>#case-menu-panel>*,.case-menu-backdrop{transition:none!important}}
