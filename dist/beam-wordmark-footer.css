@@ -7,10 +7,7 @@
   --bwf-bg-deep: #121212;
   --bwf-acc: 224, 227, 234;
   --bwf-lit: 246, 249, 255;
-  --bwf-wt: #f5f1e8;
-  --bwf-wm: #d9d1c3;
-  --bwf-ws: #a89f92;
-  --bwf-wf: #1a1a1a;
+  --bwf-word-color: #e3e1de;
   --bwf-red: 220, 128, 145;
   --bwf-orange: 223, 166, 137;
   --bwf-yellow: 228, 215, 170;
@@ -95,7 +92,7 @@
   background-repeat: no-repeat;
   background-size: var(--bwf-rw) var(--bwf-rh);
   background-position: calc(var(--bwf-x) * -1) calc(var(--bwf-y) * -1);
-  background-image: var(--bwf-pointer-prism),radial-gradient(circle 22cqw at var(--bwf-px) var(--bwf-py),rgba(var(--bwf-lit),calc(var(--bwf-g) * .32)),transparent 70%),var(--bwf-prism),linear-gradient(var(--bwf-ang),transparent calc(var(--bwf-b) - 6%),rgba(var(--bwf-lit),.6) var(--bwf-b),transparent calc(var(--bwf-b) + 6%)),linear-gradient(180deg,var(--bwf-wt) var(--bwf-top),var(--bwf-wm) calc(var(--bwf-top) + (var(--bwf-bot) - var(--bwf-top)) * .4),var(--bwf-ws) calc(var(--bwf-top) + (var(--bwf-bot) - var(--bwf-top)) * .7),var(--bwf-wf) var(--bwf-bot));
+  background-image: var(--bwf-pointer-prism),radial-gradient(circle 22cqw at var(--bwf-px) var(--bwf-py),rgba(var(--bwf-lit),calc(var(--bwf-g) * .32)),transparent 70%),var(--bwf-prism),linear-gradient(var(--bwf-ang),transparent calc(var(--bwf-b) - 6%),rgba(var(--bwf-lit),.6) var(--bwf-b),transparent calc(var(--bwf-b) + 6%)),linear-gradient(var(--bwf-word-color),var(--bwf-word-color));
   transition: transform .5s cubic-bezier(.2,.9,.25,1.2),filter .4s;
   transform-origin: 50% 100%;
 }
