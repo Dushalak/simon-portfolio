@@ -26,7 +26,9 @@
 .work-spotlight-enabled .work-light-piece{opacity:calc(.35 + var(--work-strength,0)*.65);filter:brightness(calc(.6 + var(--work-strength,0)*.6));text-shadow:0 0 calc(var(--work-strength,0)*20px) rgba(255,255,255,calc(var(--work-strength,0)*.35))}
 .proximity-word{white-space:nowrap;display:inline-block}
 .proximity-cell{display:inline-block;position:relative;vertical-align:baseline;white-space:pre;line-height:inherit;font:inherit;letter-spacing:inherit}
-.proximity-glyph{display:inline-block;line-height:inherit;transform-origin:50% 70%;transform:translateY(calc(var(--proximity,0)*-2px)) scale(calc(1 + var(--proximity,0)*.08),calc(1 + var(--proximity,0)*.045));-webkit-text-stroke:calc(var(--proximity,0)*.42px) currentColor}
+/* Continuous weight buildup preserves the original font's outlines and avoids
+   discrete normal/bold jumps in the existing non-variable serif/CJK fonts. */
+.proximity-glyph{display:inline-block;line-height:inherit;transform-origin:50% 70%;transform:translateY(calc(var(--proximity,0)*-2px)) scale(calc(1 + var(--proximity,0)*.08),calc(1 + var(--proximity,0)*.045));-webkit-text-stroke:calc(var(--proximity,0)*.017em) currentColor}
 .portfolio-pointer-layer{position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;background:none;overflow:hidden;pointer-events:none;z-index:1000}
 .portfolio-pointer-layer::backdrop{background:none;pointer-events:none}
 .hero-light{display:none!important}
