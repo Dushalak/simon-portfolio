@@ -1,0 +1,16 @@
+/* No container transforms: existing scroll, hover and layout animations remain independent. */
+.fold-text-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.fold-text-visual{display:inline;pointer-events:none}
+.fold-text-segment{display:inline-block;line-height:inherit;perspective:725px;transform-style:preserve-3d;vertical-align:baseline}
+.fold-text-piece{position:relative;display:inline-block;color:inherit;line-height:inherit;transform-origin:50% 0%;transform-style:preserve-3d;backface-visibility:hidden}
+.fold-text-crease{position:absolute;inset:-.08em -.02em;pointer-events:none;opacity:0;mix-blend-mode:multiply;border-radius:.08em;background:linear-gradient(180deg,#00000094 0%,#00000038 42%,#ffffff42 100%)}
+.fold-text.is-folding .fold-text-piece{will-change:transform,opacity}
+/* Legacy span rules in these controls apply to every descendant; confine them to labels. */
+.header .menu-toggle .fold-text-visual,.header .menu-toggle .fold-text-segment,.header .menu-toggle .fold-text-piece,.contact-links .fold-text-visual,.contact-links .fold-text-segment,.contact-links .fold-text-piece{width:auto;height:auto;padding:0;margin:0;border:0;border-radius:0;background:none;font:inherit;letter-spacing:inherit;color:inherit;transform:none}
+.header .menu-toggle .fold-text-visual{display:inline}
+.header .menu-toggle .fold-text-segment,.header .menu-toggle .fold-text-piece{display:inline-block}
+.header .menu-toggle .fold-text-crease{width:auto;height:auto;margin:0;transform:none;background:linear-gradient(180deg,#00000094 0%,#00000038 42%,#ffffff42 100%)}
+.header .menu-toggle .fold-text-sr-only{width:1px;height:1px;transform:none}
+#contact.bwf .contact-links .fold-text-visual,#contact.bwf .contact-links .fold-text-segment,#contact.bwf .contact-links .fold-text-piece{color:inherit}
+#about-title.fold-text{pointer-events:auto}
+@media(prefers-reduced-motion:reduce){.fold-text-piece{opacity:1!important;transform:none!important}.fold-text-crease{opacity:0!important}}

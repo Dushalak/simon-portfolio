@@ -10,7 +10,7 @@
   let menuTimer,menuHoverTimer;const menuBackground=$('main'),menuRail=$('.section-rail');
   const menuHover=matchMedia('(min-width: 721px) and (hover: hover) and (pointer: fine)');
   function setMenu(open){
-    clearTimeout(menuTimer);clearTimeout(menuHoverTimer);toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'关闭菜单':'打开菜单');$('.menu-label').textContent=open?'Close':'Menu';
+    clearTimeout(menuTimer);clearTimeout(menuHoverTimer);toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'关闭菜单':'打开菜单');window.PortfolioFoldText.setText($('.menu-label'),open?'Close':'Menu');
     menuBackground.inert=open;if(menuRail)menuRail.inert=open;
     if(open){menu.hidden=false;menu.inert=false;void menu.offsetWidth;document.body.classList.add('menu-open');}
     else{document.body.classList.remove('menu-open');if(menu.contains(document.activeElement))toggle.focus({preventScroll:true});menu.inert=true;menuTimer=setTimeout(()=>{menu.hidden=true;},reduced?0:660);}
