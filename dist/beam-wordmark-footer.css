@@ -1,12 +1,26 @@
 /* The supplied BeamWordmarkFooter's optical layers and letter animations.
    Scoped to Contact; no template resets or layout rules touch its existing DOM. */
 #contact.bwf {
-  --bwf-bg: #080807;
-  --bwf-bg-rgb: 8, 8, 7;
-  --bwf-acc: 201, 164, 90;
-  --bwf-lit: 229, 199, 131;
-  --bwf-wt: #98743d;
-  --bwf-wf: #1c150c;
+  --bwf-bg: #070707;
+  --bwf-bg-rgb: 7, 7, 7;
+  --bwf-bg-mid: #0d0d0d;
+  --bwf-bg-deep: #121212;
+  --bwf-acc: 224, 227, 234;
+  --bwf-lit: 246, 249, 255;
+  --bwf-wt: #f5f1e8;
+  --bwf-wm: #d9d1c3;
+  --bwf-ws: #a89f92;
+  --bwf-wf: #1a1a1a;
+  --bwf-red: 220, 128, 145;
+  --bwf-orange: 223, 166, 137;
+  --bwf-yellow: 228, 215, 170;
+  --bwf-green: 145, 191, 166;
+  --bwf-cyan: 142, 202, 218;
+  --bwf-blue: 151, 170, 226;
+  --bwf-violet: 186, 157, 220;
+  --bwf-prism-strength: .38;
+  --bwf-beam-opacity: .62;
+  --bwf-glow-strength: .22;
   --bwf-sans: "DM Sans", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --bwf-ww: 500;
   --bwf-ang: 118deg;
@@ -18,10 +32,26 @@
   --bwf-rh: 100%;
   --bwf-top: 0px;
   --bwf-bot: 100%;
+  /* Both the canvas and each letter paint this exact spectrum in Contact's
+     coordinate space. The existing measured offsets keep refraction in sync. */
+  --bwf-prism: linear-gradient(var(--bwf-ang),
+    transparent calc(var(--bwf-b) - 10%),
+    rgba(var(--bwf-red),var(--bwf-prism-strength)) calc(var(--bwf-b) - 7%),
+    rgba(var(--bwf-orange),var(--bwf-prism-strength)) calc(var(--bwf-b) - 5.5%),
+    rgba(var(--bwf-yellow),var(--bwf-prism-strength)) calc(var(--bwf-b) - 4%),
+    rgba(var(--bwf-green),var(--bwf-prism-strength)) calc(var(--bwf-b) - 2.5%),
+    rgba(var(--bwf-cyan),var(--bwf-prism-strength)) calc(var(--bwf-b) - 1%),
+    rgba(var(--bwf-blue),var(--bwf-prism-strength)) calc(var(--bwf-b) + 1.5%),
+    rgba(var(--bwf-violet),var(--bwf-prism-strength)) calc(var(--bwf-b) + 4%),
+    transparent calc(var(--bwf-b) + 8%));
+  --bwf-pointer-prism:
+    radial-gradient(ellipse 16cqw 24cqw at calc(var(--bwf-px) - 4cqw) var(--bwf-py),rgba(var(--bwf-red),calc(var(--bwf-g) * var(--bwf-glow-strength) * .65)),transparent 72%),
+    radial-gradient(ellipse 16cqw 24cqw at calc(var(--bwf-px) + 4cqw) var(--bwf-py),rgba(var(--bwf-cyan),calc(var(--bwf-g) * var(--bwf-glow-strength))),transparent 72%),
+    radial-gradient(circle 20cqw at calc(var(--bwf-px) + 8cqw) calc(var(--bwf-py) + 2cqw),rgba(var(--bwf-violet),calc(var(--bwf-g) * var(--bwf-glow-strength) * .55)),transparent 72%);
   isolation: isolate;
   overflow: hidden;
   container-type: inline-size;
-  background: linear-gradient(180deg,var(--bg),var(--bwf-bg) 180px);
+  background: radial-gradient(ellipse 90% 75% at 60% 60%,var(--bwf-bg-deep),transparent 75%),linear-gradient(180deg,var(--bg),var(--bwf-bg-mid) 180px,var(--bwf-bg));
   min-height: auto;
   justify-content: flex-start;
   padding-top: clamp(140px,18vh,190px);
@@ -29,21 +59,26 @@
   margin-top: -1px;
   touch-action: pan-y;
 }
-/* Keep the contact content above the shared optical canvas without changing
-   fonts, colors, spacing, borders, grid tracks, or existing link behavior. */
+/* Only recolor the existing content; its typography, grid, and spacing stay. */
 .bwf > .contact-links, .bwf > footer { position: relative; z-index: 2; }
 .bwf > footer { margin-top: 32px; }
+#contact.bwf .contact-links > a, #contact.bwf .contact-links > button { border-top-color: rgba(255,255,255,.14); }
+#contact.bwf .contact-links span { color: rgba(255,255,255,.72); }
+#contact.bwf .contact-links strong { color: #f2f2f2; }
+#contact.bwf .contact-links small, #contact.bwf > footer { color: rgba(255,255,255,.55); }
+#contact.bwf .contact-links > a:hover strong, #contact.bwf .contact-links > button:hover strong { color: #fff; }
+#contact.bwf > footer { border-top-color: rgba(255,255,255,.14); }
 /* Optical layers emerge below the previous section instead of starting at a
-   hard gold border, then fade across the full-width bottom edge. */
+   hard border, then fade across the full-width bottom edge. */
 .bwf-sky { position: absolute; inset: 0; z-index: 0; pointer-events: none; -webkit-mask-image: linear-gradient(180deg,transparent,#000 160px,#000 calc(100% - 90px),transparent); mask-image: linear-gradient(180deg,transparent,#000 160px,#000 calc(100% - 90px),transparent); }
-.bwf-wash { position: absolute; inset: 0; background: radial-gradient(120% 90% at 8% 0%,rgba(var(--bwf-acc),.2),transparent 55%),radial-gradient(90% 70% at 92% 8%,rgba(var(--bwf-acc),.14),transparent 60%),linear-gradient(180deg,rgba(var(--bwf-acc),.06),transparent 70%); }
-.bwf-bands { position: absolute; inset: 0; background: repeating-linear-gradient(90deg,rgba(var(--bwf-acc),.05) 0 1.6cqw,transparent 1.6cqw 4.2cqw); -webkit-mask-image: linear-gradient(100deg,#000 0%,transparent 55%); mask-image: linear-gradient(100deg,#000 0%,transparent 55%); opacity: .9; }
-.bwf-beam { position: absolute; inset: 0; filter: blur(calc(1px + 1.6cqw)); background: linear-gradient(var(--bwf-ang),transparent calc(var(--bwf-b) - 11%),rgba(var(--bwf-acc),.10) calc(var(--bwf-b) - 5%),rgba(var(--bwf-acc),.34) var(--bwf-b),rgba(var(--bwf-acc),.08) calc(var(--bwf-b) + 4%),transparent calc(var(--bwf-b) + 9%)),linear-gradient(var(--bwf-ang),transparent calc(var(--bwf-b) - 34%),rgba(var(--bwf-acc),.10) calc(var(--bwf-b) - 27%),transparent calc(var(--bwf-b) - 20%)); }
-.bwf-glow { position: absolute; inset: 0; opacity: var(--bwf-g); background: radial-gradient(circle 26cqw at var(--bwf-px) var(--bwf-py),rgba(var(--bwf-acc),.16),transparent 70%); }
+.bwf-wash { position: absolute; inset: 0; background: radial-gradient(120% 90% at 8% 0%,rgba(var(--bwf-blue),.055),transparent 55%),radial-gradient(90% 70% at 92% 8%,rgba(var(--bwf-red),.04),transparent 60%),linear-gradient(180deg,rgba(var(--bwf-acc),.025),transparent 70%); }
+.bwf-bands { position: absolute; inset: 0; background: repeating-linear-gradient(90deg,rgba(var(--bwf-acc),.025) 0 1.6cqw,transparent 1.6cqw 4.2cqw); -webkit-mask-image: linear-gradient(100deg,#000 0%,transparent 55%); mask-image: linear-gradient(100deg,#000 0%,transparent 55%); opacity: .9; }
+.bwf-beam { position: absolute; inset: 0; filter: blur(calc(1px + 1.6cqw)); background: var(--bwf-prism),linear-gradient(var(--bwf-ang),transparent calc(var(--bwf-b) - 6%),rgba(var(--bwf-lit),.22) var(--bwf-b),transparent calc(var(--bwf-b) + 6%)),linear-gradient(var(--bwf-ang),transparent calc(var(--bwf-b) - 32%),rgba(var(--bwf-cyan),.06) calc(var(--bwf-b) - 27%),rgba(var(--bwf-lit),.07) calc(var(--bwf-b) - 25%),rgba(var(--bwf-violet),.045) calc(var(--bwf-b) - 23%),transparent calc(var(--bwf-b) - 18%)); }
+.bwf-glow { position: absolute; inset: 0; background: var(--bwf-pointer-prism),radial-gradient(circle 26cqw at var(--bwf-px) var(--bwf-py),rgba(var(--bwf-lit),calc(var(--bwf-g) * .055)),transparent 70%); }
 .bwf-grain { position: absolute; inset: 0; opacity: .14; mix-blend-mode: overlay; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
 .bwf-wash { opacity: .5; }
 .bwf-bands { opacity: .4; }
-.bwf-beam { opacity: .72; }
+.bwf-beam { opacity: var(--bwf-beam-opacity); }
 .bwf-grain { opacity: .1; }
 .bwf-word { position: relative; z-index: 1; overflow: hidden; margin-top: 36px; margin-inline: calc(-100% * 7 / 86); height: 35cqw; flex: 0 0 auto; }
 /* Use the existing Contact content width instead of a second template grid. */
@@ -60,7 +95,7 @@
   background-repeat: no-repeat;
   background-size: var(--bwf-rw) var(--bwf-rh);
   background-position: calc(var(--bwf-x) * -1) calc(var(--bwf-y) * -1);
-  background-image: radial-gradient(circle 22cqw at var(--bwf-px) var(--bwf-py),rgba(var(--bwf-lit),calc(var(--bwf-g) * .85)),transparent 70%),linear-gradient(var(--bwf-ang),transparent calc(var(--bwf-b) - 9%),rgba(var(--bwf-lit),.55) calc(var(--bwf-b) - 1.5%),rgba(var(--bwf-lit),.7) var(--bwf-b),rgba(var(--bwf-lit),.2) calc(var(--bwf-b) + 3.5%),transparent calc(var(--bwf-b) + 8%)),linear-gradient(180deg,var(--bwf-wt) var(--bwf-top),var(--bwf-wf) var(--bwf-bot));
+  background-image: var(--bwf-pointer-prism),radial-gradient(circle 22cqw at var(--bwf-px) var(--bwf-py),rgba(var(--bwf-lit),calc(var(--bwf-g) * .32)),transparent 70%),var(--bwf-prism),linear-gradient(var(--bwf-ang),transparent calc(var(--bwf-b) - 6%),rgba(var(--bwf-lit),.6) var(--bwf-b),transparent calc(var(--bwf-b) + 6%)),linear-gradient(180deg,var(--bwf-wt) var(--bwf-top),var(--bwf-wm) calc(var(--bwf-top) + (var(--bwf-bot) - var(--bwf-top)) * .4),var(--bwf-ws) calc(var(--bwf-top) + (var(--bwf-bot) - var(--bwf-top)) * .7),var(--bwf-wf) var(--bwf-bot));
   transition: transform .5s cubic-bezier(.2,.9,.25,1.2),filter .4s;
   transform-origin: 50% 100%;
 }
