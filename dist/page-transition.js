@@ -1,4 +1,4 @@
-/* One direction for enter, return and project switching; no cover morph or dark interstitial. */
+/* Project entry pushes up from below; return keeps the existing downward reveal. */
 (() => {
   const reduced=matchMedia('(prefers-reduced-motion:reduce)');
   const duration=1050,easing='cubic-bezier(.76,0,.24,1)';
@@ -34,7 +34,7 @@
       }else{
         if(dialog.open)snapshot=detailSnapshot(dialog);
         apply();
-        animation=dialog.animate([{clipPath:'inset(0 0 100% 0)'},{clipPath:'inset(0 0 0% 0)'}],{duration,easing,fill:'both'});
+        animation=dialog.animate([{transform:'translate3d(0,100%,0)'},{transform:'translate3d(0,0,0)'}],{duration,easing,fill:'both'});
         await animation.finished.catch(()=>{});
       }
       return true;

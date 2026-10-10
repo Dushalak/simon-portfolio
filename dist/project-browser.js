@@ -3,6 +3,12 @@
   window.PortfolioProjectBrowser={init({dialog,pages,reduced,toast,closeMenu,setCaseMenu,pauseVideo,resumeVideo,updateHome}){
     const projects=window.PortfolioProjects,events=new AbortController();
     const $=selector=>dialog.querySelector(selector),clamp=value=>Math.max(0,Math.min(1,value));
+    const fadeProgress=(progress,start,end)=>{const t=clamp((progress-start)/(end-start));return t*t*(3-2*t);};
+    function soften(element,amount,offset,blur,scale=1){
+      element.style.opacity=String(1-amount);
+      element.style.filter=`blur(${amount*blur}px)`;
+      element.style.transform=`translate3d(0,${amount*offset}px,0) scale(${1-amount*(1-scale)})`;
+    }
     const preference=matchMedia('(prefers-reduced-motion:reduce)');
     const dataReady=fetch('assets/projects.json').then(response=>{if(!response.ok)throw Error('Case assets unavailable');return response.json();});dataReady.catch(()=>{});
     let currentCase=null,lastTrigger=null,homeScroll=0,homeHash='#nelu',busy=false,queued,frame=0,contentAnimations=[];
@@ -28,9 +34,13 @@
       frame=0;if(!dialog.open)return;
       const travel=Math.max(1,dialog.clientHeight*.86),progress=clamp(dialog.scrollTop/travel);
       const p=preference.matches?0:progress;dialog.dataset.heroProgress=progress.toFixed(4);
-      $('.case-scroll-title').style.transform=`translate3d(0,${p*115}px,0) scale(${1-p*.08})`;
-      $('.case-scroll-meta').style.transform=`translate3d(0,${p*65}px,0)`;
-      dialog.querySelectorAll('.case-scroll-copy').forEach((el,index)=>{el.style.transform=`translate3d(0,${p*(125+index*18)}px,0)`;});
+      // Fade the whole text group before the rising cover reaches it. Unclipped
+      // wrappers keep the blur soft instead of cutting letters on a straight edge.
+      soften($('.case-scroll-title'),fadeProgress(p,.10,.60),32,12,.97);
+      soften($('.case-scroll-meta'),fadeProgress(p,.06,.48),24,8);
+      dialog.querySelectorAll('.case-scroll-copy').forEach((el,index)=>{
+        soften(el,fadeProgress(p,.02+index*.015,.20+index*.015),28+index*4,9);
+      });
       const image=$('.case-cover img');if(image)image.style.transform=`scale(${1+(1-p)*.025})`;
       let active=0;[...pages.querySelectorAll('.case-group')].forEach((group,index)=>{if(group.getBoundingClientRect().top<=innerHeight*.38)active=index;});
       dialog.querySelectorAll('.chapter-card').forEach((button,index)=>{const selected=index===active;button.classList.toggle('active',selected);button.setAttribute('aria-expanded',String(selected));if(selected)button.setAttribute('aria-current','step');else button.removeAttribute('aria-current');});
