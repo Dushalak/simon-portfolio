@@ -35,6 +35,13 @@
       document.documentElement.style.setProperty('--about-stage-height',h+'px');
       const scale=Math.min(w/1280,h/842);
       board.style.setProperty('--about-board-scale',String(scale));
+      const title=about.querySelector('#about-title');
+      title.style.setProperty('--about-fill-width',title.offsetWidth+'px');
+      title.style.setProperty('--about-fill-height',title.offsetHeight+'px');
+      title.querySelectorAll('.fold-text-piece').forEach(piece=>{
+        piece.style.setProperty('--about-fill-x',-piece.parentElement.offsetLeft+'px');
+        piece.style.setProperty('--about-fill-y',-piece.parentElement.offsetTop+'px');
+      });
       if(enabled){
         optics ||= window.PortfolioIntro.createOpticalField(viewport,{canvas,overlay:true});
         const image=optics.maskImage();fieldReady=Boolean(image);

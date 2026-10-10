@@ -13,10 +13,15 @@
 .about-backdrop{position:absolute;left:0;top:0;width:777px;height:1382px;object-fit:cover;opacity:.19;pointer-events:none}
 .about-title-group{position:absolute;inset:0;pointer-events:none}
 .about-title-light{position:absolute;left:307.101px;top:105.701px;width:116.171px;height:116.171px;transform:rotate(-9.88deg);opacity:.6}
-.about-board #about-title{position:absolute;left:65px;top:105px;font:400 64px/normal About Erya,sans-serif;letter-spacing:3.2px;color:#fff;white-space:nowrap}
-.about-script{position:absolute;left:316px;top:144px;width:117.906px;height:62.651px;display:flex;align-items:center;justify-content:center;transform:rotate(-12.14deg);font:400 32px/normal About Script,cursive;color:#fff;white-space:nowrap}
-.about-greeting{position:absolute;left:65px;top:206px;font-weight:500;letter-spacing:2px;color:#fff}
-.about-greeting p{color:#fff}
+.about-board #about-title{--about-title-fill:linear-gradient(144.17513deg,rgba(255,255,255,.8) 26.558%,rgba(246,250,251,.85) 18.551%,rgba(255,255,255,.98) 68.556%,rgba(250,247,246,.56) 113.21%);position:absolute;left:65px;top:105px;font:400 64px/normal About Erya,sans-serif;letter-spacing:3.2px;opacity:.96;color:transparent;background-image:var(--about-title-fill);background-clip:text;-webkit-background-clip:text;white-space:nowrap}
+/* Each folding letter samples the same full-title gradient, so hover preserves
+   the Figma fill instead of inheriting transparent text or restarting its colors. */
+.about-board #about-title.fold-text{background-image:none}
+.about-board #about-title .fold-text-segment{position:relative}
+.about-board #about-title .fold-text-piece{color:transparent;background-image:var(--about-title-fill);background-size:var(--about-fill-width,322px) var(--about-fill-height,77px);background-position:var(--about-fill-x,0px) var(--about-fill-y,0px);background-repeat:no-repeat;background-clip:text;-webkit-background-clip:text}
+.about-script{position:absolute;left:316px;top:144px;width:117.906px;height:62.651px;display:flex;align-items:center;justify-content:center;transform:rotate(-12.14deg);font:400 32px/normal About Script,cursive;color:transparent;background-image:linear-gradient(123.50951deg,rgba(124,140,105,.8) 21.156%,#ab5c33 35.215%,#d59f5f 70.3%,rgba(171,92,51,.6) 97.41%);background-clip:text;-webkit-background-clip:text;white-space:nowrap}
+.about-greeting{position:absolute;left:65px;top:206px;font-weight:500;letter-spacing:2px;color:transparent;background-image:url('assets/about/imgHi.png');background-position:center;background-size:cover;background-repeat:no-repeat;background-clip:text;-webkit-background-clip:text}
+.about-greeting p{color:transparent}
 .about-greeting p:first-child{font-size:52px;line-height:1.2}.about-greeting p:last-child{font-size:40px;line-height:.9798999}
 .about-text-fill{background-position:center;background-size:cover;background-repeat:no-repeat;background-clip:text;-webkit-background-clip:text;color:transparent}
 .about-biography{position:absolute;left:65px;top:347px;width:625px;font-size:14px;line-height:normal;letter-spacing:.7px;opacity:.76;background-image:url('assets/about/imgUiUxAiAgent01CBaigc.png')}
