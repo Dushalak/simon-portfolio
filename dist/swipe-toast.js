@@ -32,7 +32,7 @@
     restoreFocus=trigger;returnFocus=false;resetCard();delete root.dataset.instant;
     const entering=root.dataset.phase==='gone';root.inert=false;
     root.dataset.mounted=entering?'false':'true';root.dataset.phase='open';
-    title.textContent='微信号已复制';description.textContent=value;
+    title.textContent=(trigger?.dataset.copyLabel||'内容')+'已复制';description.textContent=value;
     if(entering){void card.offsetHeight;enterFrame=requestAnimationFrame(()=>root.dataset.mounted='true');}
     burn=fuse.animate([{transform:'scaleX(1)'},{transform:'scaleX(0)'}],{duration,easing:'linear',fill:'forwards'});
     burn.onfinish=()=>close('timeout');syncFuse();

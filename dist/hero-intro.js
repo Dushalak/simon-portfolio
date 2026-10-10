@@ -1,8 +1,8 @@
 /* First-visit intro only. Scroll composition and pointer depth stay in hero-motion.js. */
 (() => {
-  const labels = Object.freeze({ introStart: 0, constructionLines: 300, frameDrawing: 800,
-    frameHold: 2200, lightReveal: 1480, backgroundReveal: 1580,
-    constructionFadeOut: 3600, contentEntrance: 2580, introComplete: 4400 });
+  const labels = Object.freeze({ introStart: 0, constructionLines: 300, frameDrawing: 100,
+    frameHold: 1000, titleEntrance:120, videoStart:480, lightReveal:1480, backgroundReveal:1580,
+    constructionFadeOut:2600, contentEntrance:1280, introComplete:3400 });
   const backgroundRevealMs = 1400;
   const clamp = value => Math.min(1, Math.max(0, value));
   const smooth = value => { const t = clamp(value); return t*t*(3-2*t); };
@@ -232,8 +232,8 @@
         t<labels.contentEntrance?'light-reveal':'content';
       const progress=smooth((t-labels.backgroundReveal)/backgroundRevealMs);
       const light=smooth((t-labels.lightReveal)/160)*(1-smooth((t-labels.backgroundReveal-100)/500));
+      if(t>=labels.videoStart&&!videoStarted){videoStarted=true;dispatchEvent(new Event('portfolio:light-reveal'));}
       if(t>=labels.lightReveal){
-        if(!videoStarted){videoStarted=true;dispatchEvent(new Event('portfolio:light-reveal'));}
         optics.draw(progress,light);
       }
     },onComplete);
@@ -245,13 +245,21 @@
     timeline.add(hero.querySelector('.hero-border path'),[{strokeDashoffset:'1'},{strokeDashoffset:'0'}],
       labels.frameHold-labels.frameDrawing,labels.frameDrawing,'cubic-bezier(.55,.01,.3,1)');
     timeline.add(scene,[{filter:'brightness(1.12) saturate(.9) blur(1.5px)'},{filter:'none'}],backgroundRevealMs,labels.backgroundReveal);
-    // Preserve the existing text keyframes, easing, positions and stagger intervals.
-    const text=[{opacity:0,filter:'blur(8px)',transform:'translate3d(0,16px,0)'},
-      {opacity:1,filter:'blur(0px)',transform:'translate3d(0,0,0)'}];
-    timeline.add(panel.querySelector('.hero-heading .hero-reveal'),text,revealMs,labels.contentEntrance);
-    timeline.add(panel.querySelector('.hero-philosophy .hero-reveal'),text,revealMs,labels.contentEntrance+170);
+    // The title appears in the frame's center, then settles at its existing top slot.
+    const heading=panel.querySelector('.hero-heading'),title=heading.querySelector('.hero-reveal');
+    const titleRange=document.createRange();titleRange.selectNodeContents(title);
+    const centerX=(panel.clientWidth-titleRange.getBoundingClientRect().width)/2-heading.offsetLeft;
+    const centerY=panel.clientHeight/2-heading.offsetTop-heading.offsetHeight/2;
+    const centered=`translate3d(${centerX}px,${centerY}px,0)`;
+    timeline.add(title,[{opacity:0,filter:'blur(5px)',transform:centered},
+      {opacity:1,filter:'blur(0px)',transform:centered,offset:.28},
+      {opacity:1,filter:'blur(0px)',transform:centered,offset:.44},
+      {opacity:1,filter:'blur(0px)',transform:'translate3d(0,0,0)'}],1080,labels.titleEntrance);
+    const unfold=[{opacity:0,filter:'blur(5px)',transform:'translate3d(0,-14px,0)',clipPath:'inset(0 0 100% 0)'},
+      {opacity:1,filter:'blur(0px)',transform:'translate3d(0,0,0)',clipPath:'inset(0 0 0 0)'}];
+    timeline.add(panel.querySelector('.hero-philosophy .hero-reveal'),unfold,revealMs,labels.contentEntrance);
     panel.querySelectorAll('.hero-nav-item .hero-reveal').forEach((node,i)=>
-      timeline.add(node,text,revealMs,labels.contentEntrance+340+i*staggerMs));
+      timeline.add(node,unfold,revealMs,labels.contentEntrance+170+i*staggerMs));
     // All three top controls share the same downward motion, start and easing.
     const topEntrance=[{opacity:0,transform:'translate3d(0,-32px,0)'},
       {opacity:1,transform:'translate3d(0,0,0)'}];
