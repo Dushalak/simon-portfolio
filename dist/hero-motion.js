@@ -37,7 +37,7 @@
     hero.dataset.intro='complete'; request();
   }
   function animateOpening() {
-    if (reduced.matches || !Element.prototype.animate || !window.PortfolioIntro) { finishIntro(); return; }
+    if (window.portfolioDirectProject || reduced.matches || !Element.prototype.animate || !window.PortfolioIntro) { finishIntro(); return; }
     try {
       introTimeline=window.PortfolioIntro.create({hero,onComplete:finishIntro,revealMs:config.revealMs,staggerMs:config.staggerMs});
       introTimeline.play();

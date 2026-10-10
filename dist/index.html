@@ -9,7 +9,8 @@
     // Every document visit starts at the opening; in-page routes still work afterwards.
     try {
       history.scrollRestoration = 'manual';
-      if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+      window.portfolioDirectProject = /^#project\/(nelu|yuxu|qingyu|aigc)$/.test(location.hash);
+      if (location.hash && !window.portfolioDirectProject) history.replaceState(null, '', location.pathname + location.search);
       const startAtTop = () => window.scrollTo({top:0,left:0,behavior:'instant'});
       startAtTop();
       document.addEventListener('DOMContentLoaded', startAtTop, {once:true});
@@ -20,7 +21,7 @@
           location.reload();
         }
       });
-      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (!window.portfolioDirectProject && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
       document.documentElement.classList.add('intro-pending');
       window.portfolioIntroLocked = true;
       const lockEvents = new AbortController();
@@ -51,6 +52,7 @@
   <link rel="stylesheet" href="about-story.css?v=20261010-optics1">
   <link rel="stylesheet" href="beam-wordmark-footer.css?v=20261009-gold2">
   <link rel="stylesheet" href="what-i-bring.css?v=20261010-tools2">
+  <link rel="stylesheet" href="projects.css?v=20261010-projects1">
 </head>
 <body>
   <a class="skip-link" href="#nelu">跳到作品</a>
@@ -146,22 +148,9 @@
         </div>
       </div>
     </section>
-    <div class="work-intro"><p class="eyebrow">SELECTED WORK / 精选作品</p><p>从理解一个人，<br>到设计一种体验。</p><span>04 PROJECTS · 2025—2026</span></div>
-    <section id="nelu" class="project section" data-project="nelu" style="--accent:#e4bb72">
-      <div class="project-copy reveal"><div class="project-meta"><span>01 / 04</span><span>AI AGENT · MOBILE APP</span></div><h2>Nelu <span class="serif-word">AI.</span></h2><h3>让陪伴，有了新的形态。</h3><p>以 AI 小猫为情感入口，将智能对话、阅读与互动融入日常。从 0 到 1，构建有温度的产品体验。</p><div class="tags"><span>0—1 产品设计</span><span>情感化体验</span><span>IP 视觉</span></div><button class="case-button" data-open="nelu">查看完整案例 <span class="plus">+</span></button><a class="next-project" href="#yuxu">下一件作品 · 予序</a></div>
-      <button class="project-art nelu-art reveal" data-open="nelu" aria-label="查看 Nelu AI 完整案例"><img src="assets/nelu-hero.webp" alt="Nelu AI 小猫应用的双手机界面样机" loading="lazy" width="949" height="1100"><span class="art-label">NELU AI / EXPERIENCE DESIGN</span><span class="art-hover">探索案例</span></button>
-    </section>
-    <section id="yuxu" class="project section" data-project="yuxu" style="--accent:#a5b3ff">
-      <div class="project-copy reveal"><div class="project-meta"><span>02 / 04</span><span>AI SOCIAL · MOBILE APP</span></div><h2>予序 <span class="serif-word">Yuxu.</span></h2><h3>予奇遇，序写新程。</h3><p>围绕 AI 角色与故事互动，梳理从发现到对话的体验路径。通过信息层级与界面迭代，让每一次相遇更自然。</p><div class="tags"><span>体验迭代</span><span>信息架构</span><span>视觉规范</span></div><button class="case-button" data-open="yuxu">查看完整案例 <span class="plus">+</span></button><a class="next-project" href="#qingyu">下一件作品 · 晴雨</a></div>
-      <button class="project-art reveal" data-open="yuxu" aria-label="查看予序完整案例"><img src="assets/yuxu-hero.webp" alt="予序 AI 社交应用在黑色石材上的手机样机" loading="lazy" width="1600" height="1200"><span class="art-label">YUXU / PRODUCT REDESIGN</span><span class="art-hover">探索案例</span></button>
-    </section>
-    <section id="qingyu" class="project section" data-project="qingyu" style="--accent:#d8c1a7">
-      <div class="project-copy reveal"><div class="project-meta"><span>03 / 04</span><span>E-COMMERCE · WEB PLATFORM</span></div><h2>晴雨 <span class="serif-word">Qingyu.</span></h2><h3>让复杂业务，清晰运转。</h3><p>面向电商运营场景，整理多角色工作流与数据呈现。将业务逻辑转译为清晰、高效、一致的后台体验。</p><div class="tags"><span>B 端设计</span><span>数据可视化</span><span>设计系统</span></div><button class="case-button" data-open="qingyu">查看完整案例 <span class="plus">+</span></button><a class="next-project" href="#aigc">下一件作品 · AIGC</a></div>
-      <button class="project-art reveal" data-open="qingyu" aria-label="查看晴雨电商完整案例"><img src="assets/qingyu-hero.webp" alt="晴雨电商后台在笔记本电脑上的报表界面" loading="lazy" width="1600" height="1200"><span class="art-label">QINGYU / ENTERPRISE DESIGN</span><span class="art-hover">探索案例</span></button>
-    </section>
-    <section id="aigc" class="project section" data-project="aigc" style="--accent:#ff9a57">
-      <div class="project-copy reveal"><div class="project-meta"><span>04 / 04</span><span>AIGC · VISUAL EXPLORATION</span></div><h2>灵感，<span class="serif-word">不设限。</span></h2><h3>把想象力，变成看得见的表达。</h3><p>从前期创意到视觉生成，再到运营页面落地。探索 AIGC 与设计工作流的结合，拓展视觉表达的可能。</p><div class="tags"><span>AIGC 探索</span><span>运营视觉</span><span>创意表达</span></div><button class="case-button" data-open="aigc">查看完整案例 <span class="plus">+</span></button><a class="next-project" href="#contact">下一次交流 · 联系我</a></div>
-      <button class="project-art reveal" data-open="aigc" aria-label="查看 AIGC 视觉完整案例"><img src="assets/aigc-hero.webp" alt="AIGC 创作的橙色运营活动页面手机展示" loading="lazy" width="1600" height="1200"><span class="art-label">AIGC / CREATIVE EXPLORATION</span><span class="art-hover">探索案例</span></button>
+    <section id="projects" class="projects-section section" aria-labelledby="projects-title">
+      <div class="projects-heading"><p class="eyebrow">SELECTED WORK / 精选作品</p><h2 id="projects-title">从理解一个人，<br>到设计一种体验。</h2><div class="projects-heading-note"><p>探索体验、产品与视觉之间的连接。</p><span>04 PROJECTS · 2025—2026</span></div></div>
+      <div class="projects-gallery" aria-label="四个精选项目"></div>
     </section>
     <section id="contact" class="contact section bwf" aria-label="联系方式">
       <div class="bwf-sky" aria-hidden="true"><div class="bwf-wash"></div><div class="bwf-bands"></div><div class="bwf-beam"></div><div class="bwf-glow"></div><div class="bwf-grain"></div></div>
@@ -176,13 +165,20 @@
   <nav class="section-rail" aria-label="快速导航"><a href="#home" aria-label="开场"><span>开场</span></a><a href="#about" aria-label="关于我"><span>关于</span></a><a href="#nelu" aria-label="Nelu AI"><span>Nelu</span></a><a href="#yuxu" aria-label="予序"><span>予序</span></a><a href="#qingyu" aria-label="晴雨"><span>晴雨</span></a><a href="#aigc" aria-label="AIGC"><span>AIGC</span></a><a href="#contact" aria-label="联系方式"><span>联系</span></a></nav>
   <dialog class="case-dialog" aria-labelledby="case-title">
     <div class="case-toolbar"><button class="case-close back-home" aria-label="返回主页">返回主页</button><details class="case-menu"><summary>⠿ 项目菜单 <span>SELECTED WORK</span></summary><div><button data-case-switch="nelu">01 · Nelu AI</button><button data-case-switch="yuxu">02 · 予序</button><button data-case-switch="qingyu">03 · 晴雨</button><button data-case-switch="aigc">04 · AIGC</button></div></details><button class="case-close" aria-label="关闭案例">关闭 <span>×</span></button></div>
-    <div class="case-intro"><p class="eyebrow case-category"></p><h2 id="case-title"></h2><p class="case-subtitle"></p><div class="case-intro-meta"><span>UI / UX DESIGN</span><span>2025—2026</span></div></div>
-    <div class="case-cover"></div>
+    <div class="case-story">
+      <div class="case-intro">
+        <div class="case-title-clip"><div class="case-scroll-title"><h2 id="case-title" data-case-entry></h2></div></div>
+        <div class="case-meta-clip"><div class="case-scroll-meta"><div class="case-meta-entry" data-case-entry><p class="case-category"></p><div class="case-intro-meta"><span>UI / UX DESIGN</span><span>2025—2026</span></div></div></div></div>
+        <div class="case-description"><div class="case-copy-clip"><div class="case-scroll-copy"><p class="case-summary" data-case-entry></p></div></div><div class="case-copy-clip"><div class="case-scroll-copy"><p class="case-subtitle" data-case-entry></p></div></div></div>
+      </div>
+      <div class="case-cover"></div>
+    </div>
     <div class="case-layout"><aside class="case-sidebar" aria-label="项目介绍和阅读进度"><div class="reading-progress"><span>READING PROGRESS</span><span class="progress-value">0%</span><div class="progress-track"><i></i></div></div><nav class="case-navigation" aria-label="案例章节"></nav><p class="sidebar-note">从需求到体验，<br>每一步设计都有来由。</p></aside><div class="case-pages"></div></div>
     <div class="case-end"><p class="eyebrow">THANK YOU FOR EXPLORING</p><h3>设计的故事，还在继续。</h3><div><button class="case-close">返回作品位置</button><button class="next-case">探索下一件作品</button></div></div>
   </dialog>
   <div class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=20261009-menu2"></script><script src="hero-intro.js?v=20261010-optics1"></script><script src="about-story.js?v=20261010-optics1"></script><script src="hero-motion.js?v=20261009-about1"></script><script src="beam-wordmark-footer.js?v=20261009-gold1"></script>
+  <script src="project-data.js?v=20261010-projects1"></script><script src="projects.js?v=20261010-projects1"></script><script src="page-transition.js?v=20261010-projects1"></script><script src="project-browser.js?v=20261010-projects1"></script>
+  <script src="app.js?v=20261010-projects1"></script><script src="hero-intro.js?v=20261010-optics1"></script><script src="about-story.js?v=20261010-optics1"></script><script src="hero-motion.js?v=20261010-project-route1"></script><script src="beam-wordmark-footer.js?v=20261009-gold1"></script>
   <script src="what-i-bring.js?v=20261010-tools2"></script>
 </body>
 </html>
