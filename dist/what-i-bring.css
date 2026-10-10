@@ -3,7 +3,7 @@
 .bring-section{font-family:'DM Sans','Bring Alibaba','Microsoft YaHei',sans-serif}
 .bring-section{--bring-bg:#e6e6e6;--bring-ease:cubic-bezier(.22,1,.36,1);position:relative;isolation:isolate;background:var(--bring-bg);color:#111;border-radius:36px;padding:160px 40px 140px;scroll-margin-top:85px;overflow:clip}
 .bring-inner{max-width:800px;margin:0 auto}
-.bring-title{font-size:clamp(52px,6.5625vw,96px);font-weight:500;line-height:1;letter-spacing:-.04em;margin:0}
+.bring-title{font-family:Georgia,'Songti SC',serif;font-style:italic;font-size:clamp(52px,6.5625vw,96px);font-weight:400;line-height:1;letter-spacing:-.04em;margin:0}
 .bring-title-mask{overflow:hidden;padding:8px 0 12px}
 .bring-title-secondary{text-align:right;margin-top:10px}
 .bring-tools{list-style:none;margin:14px 0 12px;padding:10px 3px 20px;display:flex;align-items:center;justify-content:space-between;gap:15px;min-height:90px}
