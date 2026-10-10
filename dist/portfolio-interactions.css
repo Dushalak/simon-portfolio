@@ -4,8 +4,11 @@
 .bring-copy{margin-top:48px;margin-left:24px}
 .bring-cards{gap:30px;margin-top:32px}.bring-column{gap:30px}.bring-column-left{padding-top:50px}
 .bring-card{padding:34px 34px 64px;min-height:300px}
-.bring-aurora{position:absolute;inset:-12px;z-index:-1;pointer-events:none;opacity:.16;filter:blur(16px) saturate(.2);mask-image:radial-gradient(ellipse at 100% 0%,#000 12%,transparent 78%);-webkit-mask-image:radial-gradient(ellipse at 100% 0%,#000 12%,transparent 78%);--aurora-base:repeating-linear-gradient(100deg,#f0efeb 0%,#f0efeb 7%,transparent 10%,transparent 12%,#f0efeb 16%);--aurora-colors:repeating-linear-gradient(100deg,#8a939f 10%,#b8b4bd 15%,#adb7b9 20%,#cdc7be 25%,#9baaa5 30%);background-image:var(--aurora-base),var(--aurora-colors);background-size:300%,200%;background-position:50% 50%,50% 50%}
-.bring-aurora:after{content:'';position:absolute;inset:0;background-image:var(--aurora-base),var(--aurora-colors);background-size:200%,100%;mix-blend-mode:difference;animation:bringAurora 60s linear infinite;animation-play-state:paused}
+/* AuroraBackground's layered repeating gradients, softened for the light panel.
+   Invert is essential to the supplied component's light appearance: it gives
+   the ribbons definition without increasing brightness or covering content. */
+.bring-aurora{position:absolute;inset:-24px;z-index:-1;pointer-events:none;opacity:.14;filter:blur(22px) invert(1) saturate(.18);mask-image:radial-gradient(ellipse at 92% 12%,#000 16%,#0009 46%,transparent 86%);-webkit-mask-image:radial-gradient(ellipse at 92% 12%,#000 16%,#0009 46%,transparent 86%);--aurora-base:repeating-linear-gradient(100deg,#f4f3f0 0%,#f4f3f0 7%,transparent 10%,transparent 12%,#f4f3f0 16%);--aurora-colors:repeating-linear-gradient(100deg,#aeb8c5 10%,#c8beb2 15%,#b5c2bd 20%,#d0c9d2 25%,#a6b1be 30%);background-image:var(--aurora-base),var(--aurora-colors);background-size:300%,200%;background-position:50% 50%,50% 50%}
+.bring-aurora:after{content:'';position:absolute;inset:0;background-image:var(--aurora-base),var(--aurora-colors);background-size:200%,160%;mix-blend-mode:difference;animation:bringAurora 38s ease-in-out -19s infinite alternate;animation-play-state:paused}
 .bring-aurora[data-motion=running]:after{animation-play-state:running}
 @keyframes bringAurora{from{background-position:50% 50%,50% 50%}to{background-position:350% 50%,350% 50%}}
 /* The header's own dark fade remains present under an expanded menu. */
@@ -34,5 +37,5 @@
 .project-view-bubble.is-pressed{transform:scale(.9)}
 @media(min-width:721px) and (hover:hover) and (pointer:fine){.projects-gallery .project-card.is-view-cursor-active,.projects-gallery .project-card.is-view-cursor-active *{cursor:none!important}}
 @media(max-width:1000px){.bring-section{padding-top:92px;padding-bottom:82px}.bring-copy{margin-top:40px;margin-left:20px}}
-@media(max-width:720px){.bring-section{padding-top:64px;padding-bottom:64px}.bring-copy{margin:32px 0 0}.bring-cards{gap:24px;margin-top:30px}.bring-card{padding:30px 28px 72px;min-height:0}.portfolio-pointer-layer{display:none}.about-holo-rotor{box-shadow:none}.bring-aurora{opacity:.12}}
+@media(max-width:720px){.bring-section{padding-top:64px;padding-bottom:64px}.bring-copy{margin:32px 0 0}.bring-cards{gap:24px;margin-top:30px}.bring-card{padding:30px 28px 72px;min-height:0}.portfolio-pointer-layer{display:none}.about-holo-rotor{box-shadow:none}.bring-aurora{opacity:.1}}
 @media(prefers-reduced-motion:reduce){.bring-aurora:after{animation:none}.portfolio-pointer-layer{display:none}.proximity-glyph{transform:none;-webkit-text-stroke:0}.work-light-piece{transition:none}}
