@@ -96,7 +96,7 @@
           $('.case-year').textContent=projects[key].year;
           $('.case-summary').textContent=projects[key].detailSummary;$('.case-subtitle').textContent=projects[key].detailInsight;
           $('.case-cover').replaceChildren(content.cover);$('.case-cover').classList.remove('is-nelu');pages.replaceChildren(content.fragment);$('.case-navigation').replaceChildren(content.navigation);
-          if(!dialog.open)dialog.showModal();dialog.scrollTop=0;atmosphere.setProject(projects[key]);pauseVideo();document.title=projects[key].detailTitle+' · 金王亮设计作品集';updateCase();
+          if(!dialog.open)dialog.showModal();window.PortfolioProximity?.prepare($('#case-title'));dialog.scrollTop=0;atmosphere.setProject(projects[key]);pauseVideo();document.title=projects[key].detailTitle+' · 金王亮设计作品集';updateCase();
         },{direction:switching?'switch':'enter',dialog,homeScroll,onReady:entrance});
         $('.back-home').focus({preventScroll:true});
       }catch(error){dialog.classList.remove('case-preparing');toast('作品暂未加载成功，请稍后重试。');}

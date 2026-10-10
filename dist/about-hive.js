@@ -7,7 +7,7 @@
   const section = canvas.closest('#about');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const events = new AbortController();
-  const settings = { speed: .24, saturation: .45, maxPixels: 520000, fps: 30 };
+  const settings = { speed: .55, saturation: .45, maxPixels: 520000, fps: 30 };
   const vertex = `#version 300 es
     layout(location=0) in vec2 a_pos;
     void main(){ gl_Position=vec4(a_pos,0.0,1.0); }`;

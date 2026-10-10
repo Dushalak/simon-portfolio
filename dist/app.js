@@ -66,7 +66,7 @@
   motion.addEventListener('click',()=>{if(paused)playVideo();else{paused=true;pauseVideo();motionLabel();}});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseVideo();else if(!introVideoWaiting&&!paused&&!dialog.open)playVideo();});
   let toastTimer;function toast(text){const e=$('.toast');e.textContent=text;e.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove('show'),3000);}
-  document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.copy);toast('微信号已复制：'+b.dataset.copy);}catch{toast('微信号：'+b.dataset.copy+'，请长按复制');}}));
+  document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.copy);window.PortfolioSwipeToast.show(b.dataset.copy,b);}catch{toast('微信号：'+b.dataset.copy+'，请长按复制');}}));
   window.PortfolioProjectBrowser.init({dialog,pages,reduced,toast,closeMenu,setCaseMenu,pauseVideo,
     resumeVideo(){if(!paused)playVideo();},updateHome});
 })();

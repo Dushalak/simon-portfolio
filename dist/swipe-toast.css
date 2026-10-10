@@ -1,0 +1,19 @@
+/* SwipeToast supplied by the user, adapted to the portfolio's black/white palette. */
+.swipe-toast{--st-bg:rgba(21,21,21,.9);--st-ink:#e3e1de;--st-fuse:#e3e1de;--st-w:286px;--st-radius:20px;--st-slide:400ms;--st-offset:32px;--st-ease:cubic-bezier(.23,1,.32,1);position:fixed;right:var(--st-offset);bottom:calc(var(--st-offset) + env(safe-area-inset-bottom,0px));z-index:60;width:min(var(--st-w),calc(100vw - 2 * var(--st-offset)));color:var(--st-ink);font:13px/1.5 'DM Sans','Microsoft YaHei','PingFang SC',sans-serif;pointer-events:none}
+.swipe-toast__lift{opacity:1;transform:translateY(0);transition:transform var(--st-slide) var(--st-ease),opacity calc(var(--st-slide) * .6) ease}
+.swipe-toast[data-phase=closing] .swipe-toast__lift{opacity:0;transform:translateY(100%);transition-duration:280ms,200ms}
+.swipe-toast[data-phase=gone] .swipe-toast__lift{opacity:0;visibility:hidden;transform:translateY(100%)}
+.swipe-toast[data-phase=open]{pointer-events:auto}
+.swipe-toast[data-mounted=false] .swipe-toast__lift{opacity:0;transform:translateY(100%)}
+.swipe-toast[data-instant] .swipe-toast__lift{transition-duration:0s}
+.swipe-toast__card{position:relative;display:flex;align-items:center;gap:20px;padding:19px 22px;border:1px solid rgba(255,255,255,.1);border-radius:var(--st-radius);overflow:hidden;background:var(--st-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 4px 16px #0002,0 18px 48px #0004;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;outline:none;will-change:auto}
+.swipe-toast__card:focus-visible{outline:1px solid #e3e1de88;outline-offset:4px}
+.swipe-toast__card[data-swiping]{cursor:grabbing}
+.swipe-toast__icon{display:inline-flex;flex:none;width:20px;height:20px;color:#e3e1de}
+.swipe-toast__icon svg{width:100%;height:100%}
+.swipe-toast__body{display:flex;flex:1 1 auto;flex-direction:column;gap:3px;min-width:0}
+.swipe-toast__title{font-size:14px;font-weight:500;line-height:1.5}
+.swipe-toast__desc{font-size:12px;font-weight:400;line-height:1.4;letter-spacing:.055em;color:rgba(227,225,222,.6)}
+.swipe-toast__fuse{position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,transparent,#e3e1de55 18%,var(--st-fuse) 38%,var(--st-fuse) 62%,#e3e1de55 82%,transparent);opacity:.65;transform-origin:left center;pointer-events:none}
+@media(max-width:600px){.swipe-toast{--st-offset:16px}.swipe-toast__card{padding:17px 20px}}
+@media(prefers-reduced-motion:reduce){.swipe-toast__lift{transform:none!important;transition:opacity 200ms ease}}
