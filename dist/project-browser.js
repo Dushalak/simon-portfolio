@@ -10,6 +10,7 @@
       element.style.transform=`translate3d(0,${amount*offset}px,0) scale(${1-amount*(1-scale)})`;
     }
     const preference=matchMedia('(prefers-reduced-motion:reduce)');
+    const atmosphere=window.PortfolioProjectAtmosphere.create(dialog);
     const dataReady=fetch('assets/projects.json').then(response=>{if(!response.ok)throw Error('Case assets unavailable');return response.json();});dataReady.catch(()=>{});
     let currentCase=null,lastTrigger=null,homeScroll=0,homeHash='#nelu',busy=false,queued,frame=0,contentAnimations=[];
     let homeAnchor=null,homeOffset=0,homeWidth=innerWidth,homeHeight=innerHeight;
@@ -32,8 +33,9 @@
     }
     function updateCase(){
       frame=0;if(!dialog.open)return;
-      const travel=Math.max(1,dialog.clientHeight*.86),progress=clamp(dialog.scrollTop/travel);
+      const travel=Math.max(1,Math.min(dialog.clientHeight*.86,$('.case-intro').offsetHeight*.9)),progress=clamp(dialog.scrollTop/travel);
       const p=preference.matches?0:progress;dialog.dataset.heroProgress=progress.toFixed(4);
+      atmosphere.setProgress(progress);
       // Fade the whole text group before the rising cover reaches it. Unclipped
       // wrappers keep the blur soft instead of cutting letters on a straight edge.
       soften($('.case-scroll-title'),fadeProgress(p,.10,.60),32,12,.97);
@@ -88,10 +90,11 @@
         else if(switching&&location.hash!=='#project/'+key)history.replaceState({...history.state,project:key,portfolioHome:homeRecord()},'','#project/'+key);
         await window.PortfolioPageTransition.run(()=>{
           contentAnimations.forEach(animation=>animation.cancel());dialog.classList.add('case-preparing');
-          currentCase=key;$('#case-title').textContent=projects[key].title;$('.case-category').textContent=projects[key].category;
-          $('.case-summary').textContent=projects[key].description;$('.case-subtitle').textContent=projects[key].subtitle;
+          currentCase=key;$('#case-title').textContent=projects[key].detailTitle;$('.case-category').textContent=projects[key].detailCategory;
+          $('.case-year').textContent=projects[key].year;
+          $('.case-summary').textContent=projects[key].detailSummary;$('.case-subtitle').textContent=projects[key].detailInsight;
           $('.case-cover').replaceChildren(content.cover);$('.case-cover').classList.remove('is-nelu');pages.replaceChildren(content.fragment);$('.case-navigation').replaceChildren(content.navigation);
-          if(!dialog.open)dialog.showModal();dialog.scrollTop=0;pauseVideo();document.title=projects[key].title+' · 金王亮设计作品集';updateCase();
+          if(!dialog.open)dialog.showModal();dialog.scrollTop=0;atmosphere.setProject(projects[key]);pauseVideo();document.title=projects[key].detailTitle+' · 金王亮设计作品集';updateCase();
         },{direction:switching?'switch':'enter',dialog,homeScroll});
         entrance();$('.back-home').focus({preventScroll:true});
       }catch(error){dialog.classList.remove('case-preparing');toast('作品暂未加载成功，请稍后重试。');}
@@ -103,7 +106,7 @@
         if(homeWidth!==innerWidth||homeHeight!==innerHeight)await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
         resizeHomePosition();
         await window.PortfolioPageTransition.run(()=>{
-          dialog.close();currentCase=null;document.title='金王亮 · UI/UX 设计作品集';restoreHome();
+          atmosphere.stop();dialog.close();currentCase=null;document.title='金王亮 · UI/UX 设计作品集';restoreHome();
           history.replaceState({...history.state,portfolioHome:homeRecord()},'',location.href);
         },{direction:'return',dialog,homeScroll});
         dialog.classList.remove('case-preparing');lastTrigger?.focus({preventScroll:true});resumeVideo();updateHome();
