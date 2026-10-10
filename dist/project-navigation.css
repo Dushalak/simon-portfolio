@@ -1,8 +1,8 @@
 /* Case navigation shares the homepage menu's dimensions, colors and timing. */
 .projects-heading h2{font-style:italic}
 .projects-heading-lead,.projects-heading-statement{transform:skewX(2deg)}
-.case-pages{border-radius:16px;overflow:hidden}
-.case-pages .case-group{margin:0}
+.case-pages{--case-page-gap:clamp(8px,1.1vw,18px);display:grid;gap:var(--case-page-gap);border-radius:16px;overflow:hidden}
+.case-pages .case-group{display:grid;gap:var(--case-page-gap);margin:0}
 .case-pages figure{margin:0;border-radius:0}
 .reading-progress{color:rgba(255,255,255,.55)}
 .progress-track{background:rgba(255,255,255,.12)}
