@@ -67,19 +67,19 @@
     nelu:{detailTitle:'Nelu AI Agent',detailCategory:'AI陪伴 · 情感交互 · 智能体验',year:'2026',
       detailSummary:'以AI小猫为情感入口，将智能对话、多模态交互与内容体验融入日常陪伴，从0到1构建具有温度的智能陪伴产品。',
       detailInsight:'探索AI Agent时代下人与智能体建立长期关系的新形态，让陪伴从工具使用走向情感连接。',
-      atmosphere:{name:'obsidian-gold',depth:'#0e0d0b',rayColor1:'#cbb68b',rayColor2:'#8d6b49',origin:'top-right',tilt:-12,spread:1.8,speed:.55,intensity:1.6,blend:.38,saturation:.85,falloff:1.5,opacity:.6}},
+      atmosphere:{name:'obsidian-gold',depth:'#0e0d0b',rayColor1:'#e2cea3',rayColor2:'#ad8653',origin:'top-right',tilt:-12,spread:1.8,speed:1.6,intensity:3.2,blend:.38,saturation:.85,falloff:1.25,opacity:.95}},
     yuxu:{detailTitle:'予序 AI剧本聊天软件',detailCategory:'AI互动 · 剧情探索 · 沉浸体验',year:'2025',
       detailSummary:'一款融合AI对话与互动剧情的智能聊天应用，通过角色塑造与内容体验设计，让用户探索更自由、更沉浸的故事世界。',
       detailInsight:'重新定义人与AI交流的方式，让每一次对话都成为开启故事的新入口。',
-      atmosphere:{name:'glacier-blue',depth:'#090e18',rayColor1:'#90bfd8',rayColor2:'#3c67b5',origin:'top-left',tilt:10,spread:1.4,speed:.45,intensity:1.8,blend:.68,saturation:1.1,falloff:1.35,opacity:.65}},
+      atmosphere:{name:'glacier-blue',depth:'#090e18',rayColor1:'#9acfe7',rayColor2:'#4779cc',origin:'top-left',tilt:10,spread:1.4,speed:1.25,intensity:3.2,blend:.6,saturation:1.05,falloff:1.2,opacity:.95}},
     qingyu:{detailTitle:'晴雨电商智配中枢',detailCategory:'数据决策 · 商业效率 · 智能运营',year:'2025',
       detailSummary:'面向电商运营场景打造的数据管理平台，通过信息架构优化与可视化设计，帮助用户快速理解业务状态并提升运营效率。',
       detailInsight:'将复杂业务数据转化为清晰、高效的决策体验，连接数据洞察与商业增长。',
-      atmosphere:{name:'caramel-amber',depth:'#140e09',rayColor1:'#d6a06a',rayColor2:'#a96739',origin:'top-right',tilt:8,spread:2.35,speed:.5,intensity:1.7,blend:.55,saturation:1,falloff:1.65,opacity:.6}},
+      atmosphere:{name:'caramel-amber',depth:'#140e09',rayColor1:'#e6b47e',rayColor2:'#b77541',origin:'top-right',tilt:8,spread:2.35,speed:1.45,intensity:3.1,blend:.5,saturation:.95,falloff:1.25,opacity:.95}},
     aigc:{detailTitle:'AIGC运营页设计',detailCategory:'AI辅助 · 视觉生成 · 创意表达',year:'2025',
       detailSummary:'探索AIGC工具在视觉设计流程中的应用，通过智能生成与创意整合，快速构建具有传播力的营销视觉方案。',
       detailInsight:'让AI成为设计创作伙伴，拓展视觉表达边界，提高从概念到成品的创造效率。',
-      atmosphere:{name:'mint-nature',depth:'#09130f',rayColor1:'#9ad2bf',rayColor2:'#508b72',origin:'top-left',tilt:-8,spread:1.9,speed:.6,intensity:1.55,blend:.48,saturation:.9,falloff:1.5,opacity:.6}}
+      atmosphere:{name:'mint-nature',depth:'#09130f',rayColor1:'#b0ddcb',rayColor2:'#5c9b80',origin:'top-left',tilt:-8,spread:1.9,speed:1.4,intensity:3.15,blend:.48,saturation:.9,falloff:1.2,opacity:.95}}
   };
   Object.entries(projects).forEach(([key,project],i)=>Object.assign(project,cards[key],introductions[key],{key,number:i+1,href:"#project/"+key}));
   window.PortfolioProjects=projects;

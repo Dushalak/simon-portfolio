@@ -38,7 +38,12 @@
 .case-toolbar .back-home{border-color:transparent;background:#ffffff06}
 .case-menu summary{background:#ffffff0d;backdrop-filter:blur(16px)}
 .case-atmosphere{position:absolute;top:0;left:0;right:0;height:650px;z-index:-1;overflow:hidden;pointer-events:none;background:radial-gradient(ellipse at var(--case-light-x,82%) -15%,var(--case-glow-1,#cbb68b4a),transparent 65%),radial-gradient(ellipse at 45% 10%,var(--case-glow-2,#8d6b4966),transparent 75%),linear-gradient(var(--case-depth,#0e0d0b),#0b0b0b);mask-image:linear-gradient(#000 55%,transparent 100%);-webkit-mask-image:linear-gradient(#000 55%,transparent 100%)}
+.case-atmosphere[data-renderer=webgl]{background:linear-gradient(var(--case-depth),#0b0b0b)}
 .case-side-rays{display:block;width:100%;height:100%}
+.case-atmosphere[data-renderer=gradient] .case-side-rays,.case-end[data-renderer=gradient] .case-end-rays{visibility:hidden}
+.case-end{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at var(--case-light-x,82%) 120%,var(--case-glow-1),transparent 72%),radial-gradient(ellipse at 45% 105%,var(--case-glow-2),transparent 80%),linear-gradient(#0b0b0b,var(--case-depth))}
+.case-end[data-renderer=webgl]{background:linear-gradient(#0b0b0b,var(--case-depth))}
+.case-end-rays{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;mask-image:linear-gradient(transparent,#000 45%);-webkit-mask-image:linear-gradient(transparent,#000 45%)}
 .case-dialog::-webkit-scrollbar{display:none}
 .case-dialog::backdrop{background:transparent;backdrop-filter:none}
 .case-story{position:relative;isolation:isolate;padding-bottom:75px}

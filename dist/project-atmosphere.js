@@ -54,80 +54,109 @@
     }`;
   const rgb=hex=>hex.slice(1).match(/../g).map(value=>parseInt(value,16)/255);
   window.PortfolioProjectAtmosphere={create(dialog){
-    const layer=dialog.querySelector('.case-atmosphere'),canvas=layer.querySelector('canvas');
+    const layer=dialog.querySelector('.case-atmosphere'),ending=dialog.querySelector('.case-end');
     const intro=dialog.querySelector('.case-intro'),toolbar=dialog.querySelector('.case-toolbar');
     const media=matchMedia('(prefers-reduced-motion:reduce)'),events=new AbortController();
-    let gl,program,buffer,uniforms={},theme,frame=0,lastFrame=0,progress=0,visible=true,lost=false,destroyed=false;
-    let shaders=[];
-    function setup(){
+    // A single clock/RAF drives the same supplied shader at the two ends of a case.
+    // Only a visible surface allocates WebGL or draws; long case pages cost no GPU time.
+    const surfaces=[
+      {layer,canvas:layer.querySelector('canvas'),bottom:false},
+      {layer:ending,canvas:ending.querySelector('.case-end-rays'),bottom:true}
+    ].map(surface=>({...surface,gl:null,program:null,buffer:null,uniforms:{},shaders:[],visible:false,lost:false,failed:false,reported:-1,draws:0}));
+    let theme,frame=0,lastFrame=0,lastTick=0,clock=0,progress=0,destroyed=false,suspended=false;
+    function setup(surface){
+      if(surface.failed||surface.lost||media.matches)return;
       try{
-        gl ||= canvas.getContext('webgl',{alpha:true,antialias:false,premultipliedAlpha:false,depth:false,stencil:false});
-        if(!gl)return;
+        const gl=surface.gl ||= surface.canvas.getContext('webgl',{alpha:true,antialias:false,premultipliedAlpha:false,depth:false,stencil:false});
+        if(!gl){surface.failed=true;return;}
         function compile(type,source){
           const shader=gl.createShader(type);gl.shaderSource(shader,source);gl.compileShader(shader);
           if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS)){gl.deleteShader(shader);throw Error('Shader unavailable');}
-          shaders.push(shader);return shader;
+          surface.shaders.push(shader);return shader;
         }
-        program=gl.createProgram();gl.attachShader(program,compile(gl.VERTEX_SHADER,vertex));gl.attachShader(program,compile(gl.FRAGMENT_SHADER,fragment));gl.linkProgram(program);
+        const program=surface.program=gl.createProgram();gl.attachShader(program,compile(gl.VERTEX_SHADER,vertex));gl.attachShader(program,compile(gl.FRAGMENT_SHADER,fragment));gl.linkProgram(program);
         if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error('Shader unavailable');
-        gl.useProgram(program);buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+        gl.useProgram(program);surface.buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,surface.buffer);
         gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
         const position=gl.getAttribLocation(program,'position');gl.enableVertexAttribArray(position);gl.vertexAttribPointer(position,2,gl.FLOAT,false,0,0);
-        ['iTime','iResolution','iSpeed','iRayColor1','iRayColor2','iIntensity','iSpread','iFlipX','iFlipY','iTilt','iSaturation','iBlend','iFalloff','iOpacity'].forEach(name=>uniforms[name]=gl.getUniformLocation(program,name));
-        layer.dataset.renderer='webgl';
-      }catch{release();gl=null;layer.dataset.renderer='gradient';}
+        ['iTime','iResolution','iSpeed','iRayColor1','iRayColor2','iIntensity','iSpread','iFlipX','iFlipY','iTilt','iSaturation','iBlend','iFalloff','iOpacity'].forEach(name=>surface.uniforms[name]=gl.getUniformLocation(program,name));
+      }catch{release(surface);surface.failed=true;}
     }
-    function release(){
+    function release(surface){
+      const {gl,buffer,program,shaders}=surface;
       if(!gl)return;
       if(buffer)gl.deleteBuffer(buffer);if(program)gl.deleteProgram(program);
-      shaders.forEach(shader=>gl.deleteShader(shader));shaders=[];buffer=program=null;
+      shaders.forEach(shader=>gl.deleteShader(shader));surface.shaders=[];surface.buffer=surface.program=null;
+    }
+    function size(surface){
+      const {gl,canvas,layer}=surface;if(!gl||!surface.program||surface.lost)return;
+      const dpr=Math.min(devicePixelRatio||1,innerWidth<=720?1:1.25);
+      const width=Math.max(1,Math.round(layer.clientWidth*dpr)),height=Math.max(1,Math.round(layer.clientHeight*dpr));
+      if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}
+      gl.viewport(0,0,width,height);
+    }
+    function draw(surface){
+      const {gl,program,uniforms,canvas}=surface;if(!gl||!program||surface.lost||!theme)return;
+      gl.useProgram(program);gl.uniform1f(uniforms.iTime,clock);
+      gl.uniform2f(uniforms.iResolution,canvas.width,canvas.height);
+      gl.uniform3fv(uniforms.iRayColor1,rgb(theme.rayColor1));gl.uniform3fv(uniforms.iRayColor2,rgb(theme.rayColor2));
+      const flipY=theme.origin.startsWith('bottom')?1:0;
+      gl.uniform1f(uniforms.iFlipX,theme.origin.endsWith('left')?1:0);gl.uniform1f(uniforms.iFlipY,surface.bottom?1-flipY:flipY);
+      ['Speed','Intensity','Spread','Tilt','Saturation','Blend','Falloff','Opacity'].forEach(name=>gl.uniform1f(uniforms['i'+name],theme[name[0].toLowerCase()+name.slice(1)]));
+      gl.drawArrays(gl.TRIANGLES,0,3);
+      surface.draws++;
+      if(clock-surface.reported>=1){surface.layer.dataset.rayTime=clock.toFixed(2);surface.layer.dataset.drawCount=String(surface.draws);surface.reported=clock;}
+    }
+    const visibleSurface=surface=>surface.visible&&(surface.bottom||progress<1);
+    const canAnimate=surface=>!destroyed&&!suspended&&theme&&dialog.open&&visibleSurface(surface)&&surface.program&&!surface.lost&&!document.hidden&&!media.matches;
+    function visibility(){
+      const bounds=dialog.getBoundingClientRect();
+      surfaces.forEach(surface=>{const rect=surface.layer.getBoundingClientRect();surface.visible=rect.bottom>bounds.top&&rect.top<bounds.bottom&&rect.width>0;});
     }
     function measure(){
       if(destroyed||!dialog.open)return;
-      layer.style.height=(toolbar.offsetHeight+intro.offsetHeight+110)+'px';
-      if(!gl||lost)return;
-      const dpr=Math.min(devicePixelRatio||1,innerWidth<=720?1:1.5);
-      const width=Math.max(1,Math.round(layer.clientWidth*dpr)),height=Math.max(1,Math.round(layer.clientHeight*dpr));
-      if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}
-      gl.viewport(0,0,width,height);draw(performance.now());
+      layer.style.height=Math.max(dialog.clientHeight,toolbar.offsetHeight+intro.offsetHeight+160)+'px';
+      visibility();surfaces.forEach(surface=>{size(surface);if(visibleSurface(surface))draw(surface);});sync();
     }
-    function draw(time){
-      if(!gl||!program||lost||!theme)return;
-      gl.useProgram(program);gl.uniform1f(uniforms.iTime,media.matches?0:time*.001);
-      gl.uniform2f(uniforms.iResolution,canvas.width,canvas.height);
-      gl.uniform3fv(uniforms.iRayColor1,rgb(theme.rayColor1));gl.uniform3fv(uniforms.iRayColor2,rgb(theme.rayColor2));
-      gl.uniform1f(uniforms.iFlipX,theme.origin.endsWith('left')?1:0);gl.uniform1f(uniforms.iFlipY,theme.origin.startsWith('bottom')?1:0);
-      ['Speed','Intensity','Spread','Tilt','Saturation','Blend','Falloff','Opacity'].forEach(name=>gl.uniform1f(uniforms['i'+name],theme[name[0].toLowerCase()+name.slice(1)]));
-      gl.drawArrays(gl.TRIANGLES,0,3);
-    }
-    const canAnimate=()=>!destroyed&&gl&&!lost&&theme&&dialog.open&&visible&&progress<1&&!document.hidden&&!media.matches;
     function tick(time){
-      frame=0;if(!canAnimate()){layer.dataset.motion='paused';return;}
-      if(time-lastFrame>=32){draw(time);lastFrame=time;}
+      frame=0;const active=surfaces.filter(canAnimate);if(!active.length){sync();return;}
+      if(lastTick)clock+=Math.min((time-lastTick)*.001,.1);lastTick=time;
+      if(time-lastFrame>=32){active.forEach(draw);lastFrame=time;}
       frame=requestAnimationFrame(tick);
     }
-    function stop(){cancelAnimationFrame(frame);frame=0;layer.dataset.motion='paused';}
+    function halt(){cancelAnimationFrame(frame);frame=0;lastTick=0;surfaces.forEach(surface=>surface.layer.dataset.motion='paused');}
+    function stop(){suspended=true;halt();}
     function sync(){
-      if(canAnimate()){if(!frame){layer.dataset.motion='running';frame=requestAnimationFrame(tick);}}
-      else{stop();if(media.matches&&dialog.open){draw(0);layer.dataset.motion='static';}}
+      let running=false;
+      surfaces.forEach(surface=>{
+        if(!suspended&&dialog.open&&theme&&visibleSurface(surface)&&!surface.program&&!document.hidden){setup(surface);size(surface);draw(surface);}
+        surface.layer.dataset.renderer=surface.program&&!surface.lost&&!media.matches?'webgl':'gradient';
+        const animate=canAnimate(surface);surface.layer.dataset.motion=media.matches?'static':animate?'running':'paused';running ||= animate;
+      });
+      if(running){if(!frame){lastTick=0;frame=requestAnimationFrame(tick);}}
+      else{cancelAnimationFrame(frame);frame=0;lastTick=0;}
     }
-    const resize=new ResizeObserver(()=>{measure();sync();});resize.observe(intro);resize.observe(toolbar);
-    const intersection=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;sync();},{root:dialog,threshold:0});intersection.observe(layer);
+    const resize=new ResizeObserver(measure);[intro,toolbar,ending].forEach(el=>resize.observe(el));
+    const intersection=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{const surface=surfaces.find(surface=>surface.layer===entry.target);surface.visible=entry.isIntersecting;});sync();
+    },{root:dialog,threshold:0});surfaces.forEach(surface=>intersection.observe(surface.layer));
     media.addEventListener('change',sync,{signal:events.signal});document.addEventListener('visibilitychange',sync,{signal:events.signal});
-    canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();lost=true;stop();layer.dataset.renderer='gradient';},{signal:events.signal});
-    canvas.addEventListener('webglcontextrestored',()=>{lost=false;program=buffer=null;shaders=[];setup();measure();sync();},{signal:events.signal});
+    surfaces.forEach(surface=>{
+      surface.canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();surface.lost=true;sync();},{signal:events.signal});
+      surface.canvas.addEventListener('webglcontextrestored',()=>{surface.lost=false;surface.failed=false;surface.program=surface.buffer=null;surface.shaders=[];measure();},{signal:events.signal});
+    });
     addEventListener('pagehide',event=>{
-      stop();if(event.persisted)return;
-      destroyed=true;resize.disconnect();intersection.disconnect();events.abort();release();
-    },{signal:events.signal});addEventListener('pageshow',sync,{signal:events.signal});
+      halt();if(event.persisted)return;
+      destroyed=true;resize.disconnect();intersection.disconnect();events.abort();surfaces.forEach(release);
+    },{signal:events.signal});addEventListener('pageshow',measure,{signal:events.signal});
     return {
       setProject(project){
-        theme=project.atmosphere;progress=0;visible=true;dialog.dataset.projectTheme=theme.name;
-        layer.style.setProperty('--case-depth',theme.depth);layer.style.setProperty('--case-glow-1',theme.rayColor1+'4a');layer.style.setProperty('--case-glow-2',theme.rayColor2+'66');
-        layer.style.setProperty('--case-light-x',theme.origin.endsWith('left')?'18%':'82%');layer.style.opacity='1';
-        if(!gl&&!lost){layer.dataset.renderer='gradient';setup();}measure();sync();
+        halt();theme=project.atmosphere;progress=clock=0;suspended=false;dialog.dataset.projectTheme=theme.name;
+        dialog.style.setProperty('--case-depth',theme.depth);dialog.style.setProperty('--case-glow-1',theme.rayColor1+'55');dialog.style.setProperty('--case-glow-2',theme.rayColor2+'66');
+        dialog.style.setProperty('--case-light-x',theme.origin.endsWith('left')?'18%':'82%');layer.style.opacity='1';
+        surfaces.forEach(surface=>{surface.reported=-1;surface.draws=0;surface.layer.dataset.rayTime='0';surface.layer.dataset.drawCount='0';});measure();
       },
-      setProgress(value){progress=value;layer.style.opacity=String(1-value*.85);sync();},stop
+      setProgress(value){progress=value;layer.style.opacity=String(1-value*.72);visibility();sync();},stop
     };
   }};
 })();
