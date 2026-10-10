@@ -56,16 +56,22 @@
   });
   const halo=document.createElement('div');halo.className='work-spotlight-halo';halo.setAttribute('aria-hidden','true');board.querySelector('.about-work-title').before(halo);
   function workMode(){board.classList.toggle('work-spotlight-enabled',fine.matches);if(!fine.matches){workAmount=0;workPieces.forEach(c=>{c.value=0;c.piece.style.removeProperty('--work-strength');});workRows.forEach(row=>row.style.removeProperty('--work-row-strength'));halo.style.setProperty('--work-halo','0');}request();}
-  function hideView(){currentCard?.classList.remove('is-view-cursor-active');currentCard=null;bubble.classList.remove('is-visible','is-pressed');}
+  let viewEntrance;
+  function hideView(){viewEntrance?.cancel();currentCard?.classList.remove('is-view-cursor-active');currentCard=null;bubble.classList.remove('is-visible','is-pressed');}
   function enterCard(card,e){
     if(!fine.matches||reduce.matches||e.pointerType==='touch'||dialog.open)return;
     hideView();currentCard=card;pointer={x:e.clientX,y:e.clientY,inside:true};bx=pointer.x;by=pointer.y;
-    card.classList.add('is-view-cursor-active');position.style.transform=`translate3d(${bx-49}px,${by-49}px,0)`;bubble.classList.add('is-visible');request();
+    card.classList.add('is-view-cursor-active');position.style.transform=`translate3d(${bx-41}px,${by-41}px,0)`;bubble.classList.add('is-visible');
+    viewEntrance=bubble.animate([{transform:'scale(.16)',opacity:.3},
+      {transform:'scale(.48)',opacity:1,offset:.3},
+      {transform:'scale(1.075)',opacity:1,offset:.8},
+      {transform:'scale(1)',opacity:1}],{duration:620,easing:'cubic-bezier(.25,.65,.3,1)'});
+    request();
   }
   document.querySelectorAll('.projects-gallery .project-card').forEach(card=>{
     card.addEventListener('pointerenter',e=>enterCard(card,e),{signal:events.signal});
     card.addEventListener('pointerleave',()=>{if(currentCard===card)hideView();request();},{signal:events.signal});
-    card.addEventListener('pointerdown',()=>bubble.classList.add('is-pressed'),{signal:events.signal});
+    card.addEventListener('pointerdown',()=>{viewEntrance?.cancel();bubble.classList.add('is-pressed');},{signal:events.signal});
     card.addEventListener('pointerup',()=>bubble.classList.remove('is-pressed'),{signal:events.signal});
   });
   function request(){if(!frame&&!document.hidden)frame=requestAnimationFrame(render);}
@@ -76,7 +82,7 @@
     const glowTarget=pointerActive&&!currentCard? .46:0;
     gx+=(pointer.x-gx)*fast;gy+=(pointer.y-gy)*fast;glowOpacity+=(glowTarget-glowOpacity)*fast;
     glow.style.transform=`translate3d(${gx-140}px,${gy-140}px,0)`;glow.style.opacity=glowOpacity.toFixed(3);
-    if(currentCard){bx+=(pointer.x-bx)*follow;by+=(pointer.y-by)*follow;position.style.transform=`translate3d(${bx-49}px,${by-49}px,0)`;moving ||= Math.abs(pointer.x-bx)+Math.abs(pointer.y-by)>.1;}
+    if(currentCard){bx+=(pointer.x-bx)*follow;by+=(pointer.y-by)*follow;position.style.transform=`translate3d(${bx-41}px,${by-41}px,0)`;moving ||= Math.abs(pointer.x-bx)+Math.abs(pointer.y-by)>.1;}
     moving ||= Math.abs(pointer.x-gx)+Math.abs(pointer.y-gy)>.1||Math.abs(glowTarget-glowOpacity)>.002;
     const menuOpen=document.body.classList.contains('menu-open')||dialog.classList.contains('case-menu-open');
     typography.forEach(({title,cells})=>{
