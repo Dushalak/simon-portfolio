@@ -25,9 +25,11 @@
     function entrance(){
       contentAnimations.forEach(animation=>animation.cancel());contentAnimations=[];dialog.classList.remove('case-preparing');
       if(preference.matches)return;
-      dialog.querySelectorAll('[data-case-entry]').forEach((el,index)=>{
+      // All copy reveals together while the page is still pushing up, rather
+      // than waiting for the full page transition and then staggering it.
+      dialog.querySelectorAll('[data-case-entry]').forEach(el=>{
         const animation=el.animate([{opacity:0,transform:'translate3d(0,24px,0)',filter:'blur(6px)'},{opacity:1,transform:'none',filter:'blur(0px)'}],
-          {duration:760,delay:index*120,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'});
+          {duration:620,delay:0,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'});
         contentAnimations.push(animation);
       });
     }
@@ -95,8 +97,8 @@
           $('.case-summary').textContent=projects[key].detailSummary;$('.case-subtitle').textContent=projects[key].detailInsight;
           $('.case-cover').replaceChildren(content.cover);$('.case-cover').classList.remove('is-nelu');pages.replaceChildren(content.fragment);$('.case-navigation').replaceChildren(content.navigation);
           if(!dialog.open)dialog.showModal();dialog.scrollTop=0;atmosphere.setProject(projects[key]);pauseVideo();document.title=projects[key].detailTitle+' · 金王亮设计作品集';updateCase();
-        },{direction:switching?'switch':'enter',dialog,homeScroll});
-        entrance();$('.back-home').focus({preventScroll:true});
+        },{direction:switching?'switch':'enter',dialog,homeScroll,onReady:entrance});
+        $('.back-home').focus({preventScroll:true});
       }catch(error){dialog.classList.remove('case-preparing');toast('作品暂未加载成功，请稍后重试。');}
       finally{busy=false;trigger?.removeAttribute('aria-busy');flush();}
     }
