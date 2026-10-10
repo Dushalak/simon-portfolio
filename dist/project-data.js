@@ -71,7 +71,7 @@
     yuxu:{detailTitle:'予序 AI剧本聊天软件',detailCategory:'AI互动 · 剧情探索 · 沉浸体验',year:'2025',
       detailSummary:'一款融合AI对话与互动剧情的智能聊天应用，通过角色塑造与内容体验设计，让用户探索更自由、更沉浸的故事世界。',
       detailInsight:'重新定义人与AI交流的方式，让每一次对话都成为开启故事的新入口。',
-      atmosphere:{name:'glacier-blue',depth:'#090e18',rayColor1:'#9acfe7',rayColor2:'#4779cc',origin:'top-left',tilt:10,spread:1.4,speed:1.25,intensity:3.2,blend:.6,saturation:1.05,falloff:1.2,opacity:.95}},
+      atmosphere:{name:'glacier-blue',depth:'#090e18',rayColor1:'#9acfe7',rayColor2:'#4779cc',origin:'top-right',tilt:10,spread:1.4,speed:1.25,intensity:3.2,blend:.6,saturation:1.05,falloff:1.2,opacity:.95}},
     qingyu:{detailTitle:'晴雨电商智配中枢',detailCategory:'数据决策 · 商业效率 · 智能运营',year:'2025',
       detailSummary:'面向电商运营场景打造的数据管理平台，通过信息架构优化与可视化设计，帮助用户快速理解业务状态并提升运营效率。',
       detailInsight:'将复杂业务数据转化为清晰、高效的决策体验，连接数据洞察与商业增长。',
@@ -79,7 +79,7 @@
     aigc:{detailTitle:'AIGC运营页设计',detailCategory:'AI辅助 · 视觉生成 · 创意表达',year:'2025',
       detailSummary:'探索AIGC工具在视觉设计流程中的应用，通过智能生成与创意整合，快速构建具有传播力的营销视觉方案。',
       detailInsight:'让AI成为设计创作伙伴，拓展视觉表达边界，提高从概念到成品的创造效率。',
-      atmosphere:{name:'mint-nature',depth:'#09130f',rayColor1:'#b0ddcb',rayColor2:'#5c9b80',origin:'top-left',tilt:-8,spread:1.9,speed:1.4,intensity:3.15,blend:.48,saturation:.9,falloff:1.2,opacity:.95}}
+      atmosphere:{name:'mint-nature',depth:'#09130f',rayColor1:'#b0ddcb',rayColor2:'#5c9b80',origin:'top-right',tilt:-8,spread:1.9,speed:1.4,intensity:3.15,blend:.48,saturation:.9,falloff:1.2,opacity:.95}}
   };
   Object.entries(projects).forEach(([key,project],i)=>Object.assign(project,cards[key],introductions[key],{key,number:i+1,href:"#project/"+key}));
   window.PortfolioProjects=projects;

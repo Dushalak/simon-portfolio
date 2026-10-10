@@ -53,6 +53,7 @@
   <link rel="stylesheet" href="beam-wordmark-footer.css?v=20261010-e3e1de1">
   <link rel="stylesheet" href="what-i-bring.css?v=20261010-serif1">
   <link rel="stylesheet" href="projects.css?v=20261010-reversible1">
+  <link rel="stylesheet" href="project-navigation.css?v=20261010-unified1">
   <link rel="stylesheet" href="fold-text.css?v=20261010-shared1">
 </head>
 <body>
@@ -171,7 +172,8 @@
   <nav class="section-rail" aria-label="快速导航"><a href="#home" aria-label="开场"><span>开场</span></a><a href="#about" aria-label="关于我"><span>关于</span></a><a href="#nelu" aria-label="Nelu AI"><span>Nelu</span></a><a href="#yuxu" aria-label="予序"><span>予序</span></a><a href="#qingyu" aria-label="晴雨"><span>晴雨</span></a><a href="#aigc" aria-label="AIGC"><span>AIGC</span></a><a href="#contact" aria-label="联系方式"><span>联系</span></a></nav>
   <dialog class="case-dialog" aria-labelledby="case-title">
     <div class="case-atmosphere" aria-hidden="true"><canvas class="case-side-rays"></canvas></div>
-    <div class="case-toolbar"><button class="case-close back-home" aria-label="返回主页">返回主页</button><details class="case-menu"><summary>⠿ 项目菜单 <span>SELECTED WORK</span></summary><div><button data-case-switch="nelu">01 · Nelu AI</button><button data-case-switch="yuxu">02 · 予序</button><button data-case-switch="qingyu">03 · 晴雨</button><button data-case-switch="aigc">04 · AIGC</button></div></details><button class="case-close" aria-label="关闭案例">关闭 <span>×</span></button></div>
+    <div class="case-menu-backdrop" aria-hidden="true"></div>
+    <div class="case-toolbar"><button class="case-close back-home" aria-label="返回主页">返回主页</button><details class="case-menu"><summary role="button" aria-label="打开项目菜单" aria-controls="case-menu-panel"><i class="menu-symbol" aria-hidden="true">⠿</i><span class="case-menu-label">项目菜单</span><small>SELECTED WORK</small></summary><div id="case-menu-panel" inert><p class="case-menu-heading">精选项目 <span>Selected works</span></p><button data-case-switch="nelu"><span class="menu-cn">Nelu AI</span><span class="menu-en">01</span></button><button data-case-switch="yuxu"><span class="menu-cn">予序</span><span class="menu-en">02</span></button><button data-case-switch="qingyu"><span class="menu-cn">晴雨</span><span class="menu-en">03</span></button><button data-case-switch="aigc"><span class="menu-cn">AIGC</span><span class="menu-en">04</span></button></div></details><button class="case-close case-toolbar-close" aria-label="关闭案例"><span class="case-close-label">关闭</span><i class="case-close-dot" aria-hidden="true"></i></button></div>
     <div class="case-story">
       <div class="case-intro">
         <div class="case-title-clip"><div class="case-scroll-title"><h2 id="case-title" data-case-entry></h2></div></div>
@@ -180,12 +182,12 @@
       </div>
       <div class="case-cover"></div>
     </div>
-    <div class="case-layout"><aside class="case-sidebar" aria-label="项目介绍和阅读进度"><div class="reading-progress"><span>READING PROGRESS</span><span class="progress-value">0%</span><div class="progress-track"><i></i></div></div><nav class="case-navigation" aria-label="案例章节"></nav><p class="sidebar-note">从需求到体验，<br>每一步设计都有来由。</p></aside><div class="case-pages"></div></div>
+    <div class="case-layout"><aside class="case-sidebar" aria-label="项目介绍和阅读进度"><div class="reading-progress"><span>READING PROGRESS</span><span class="progress-value">0%</span><div class="progress-track"><i></i></div></div><nav class="case-navigation" aria-label="案例章节"></nav></aside><div class="case-pages"></div></div>
     <div class="case-end"><canvas class="case-end-rays" aria-hidden="true"></canvas><p class="eyebrow">THANK YOU FOR EXPLORING</p><h3>设计的故事，还在继续。</h3><div><button class="case-close">返回作品位置</button><button class="next-case">探索下一件作品</button></div></div>
   </dialog>
   <div class="toast" role="status" aria-live="polite"></div>
-  <script src="fold-text.js?v=20261010-selective1"></script><script src="scroll-reveal.js?v=20261010-reversible1"></script><script src="project-data.js?v=20261010-rays-motion2"></script><script src="projects.js?v=20261010-reversible1"></script><script src="page-transition.js?v=20261010-early-copy1"></script><script src="project-atmosphere.js?v=20261010-rays-motion2"></script><script src="project-browser.js?v=20261010-early-copy1"></script>
-  <script src="app.js?v=20261010-shared-fold1"></script><script src="hero-intro.js?v=20261010-earlier1"></script><script src="about-story.js?v=20261010-figma-fill2"></script><script src="about-hive.js?v=20261010-hive1"></script><script src="hero-motion.js?v=20261010-project-route1"></script><script src="beam-wordmark-footer.js?v=20261009-gold1"></script>
+  <script src="fold-text.js?v=20261010-case-menu1"></script><script src="scroll-reveal.js?v=20261010-reversible1"></script><script src="project-data.js?v=20261010-right-rays1"></script><script src="projects.js?v=20261010-reversible1"></script><script src="page-transition.js?v=20261010-early-copy1"></script><script src="project-atmosphere.js?v=20261010-paired-rays1"></script><script src="project-browser.js?v=20261010-continuous1"></script>
+  <script src="app.js?v=20261010-case-menu1"></script><script src="hero-intro.js?v=20261010-earlier1"></script><script src="about-story.js?v=20261010-figma-fill2"></script><script src="about-hive.js?v=20261010-hive1"></script><script src="hero-motion.js?v=20261010-project-route1"></script><script src="beam-wordmark-footer.js?v=20261009-gold1"></script>
   <script src="what-i-bring.js?v=20261010-reversible1"></script>
 </body>
 </html>

@@ -57,7 +57,7 @@
       const project=projects[key],fragment=document.createDocumentFragment(),navigation=document.createDocumentFragment(),firstImages=[];
       project.groups.forEach((group,i)=>{
         const section=document.createElement('section');section.className='case-group';section.id='chapter-'+key+'-'+i;
-        const heading=document.createElement('h3');heading.textContent=group.title;section.append(heading);
+        section.setAttribute('aria-label',group.title);
         group.indices.forEach(index=>{const page=data[key][index];if(!page)return;
           const figure=document.createElement('figure'),img=document.createElement('img');img.src=page.src;img.alt=page.label;img.width=page.width;img.height=page.height;img.loading=index<2?'eager':'lazy';img.decoding='async';figure.append(img);section.append(figure);if(index<2)firstImages.push(img);
         });fragment.append(section);

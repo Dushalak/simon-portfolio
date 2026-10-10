@@ -33,11 +33,21 @@
   menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeMenu));
   document.addEventListener('click',e=>{if(toggle.getAttribute('aria-expanded')==='true'&&!menu.contains(e.target)&&!toggle.contains(e.target))closeMenu();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeMenu();setCaseMenu(false);}});
-  const caseMenu=$('.case-menu'),caseSummary=caseMenu.querySelector('summary');let caseMenuTimer;
-  function setCaseMenu(open){clearTimeout(caseMenuTimer);caseSummary.setAttribute('aria-expanded',String(open));caseMenu.querySelector('div').inert=!open;
-    if(open){caseMenu.open=true;requestAnimationFrame(()=>caseMenu.classList.add('menu-expanded'));}
-    else{caseMenu.classList.remove('menu-expanded');caseMenuTimer=setTimeout(()=>caseMenu.open=false,reduced?0:450);}}
+  const caseMenu=$('.case-menu'),caseSummary=caseMenu.querySelector('summary'),casePanel=$('#case-menu-panel');let caseMenuTimer,caseHoverTimer;
+  const caseContent=[...dialog.querySelectorAll('.case-story,.case-layout,.case-end')];
+  function setCaseMenu(open){
+    clearTimeout(caseMenuTimer);clearTimeout(caseHoverTimer);caseSummary.setAttribute('aria-expanded',String(open));
+    caseSummary.setAttribute('aria-label',open?'关闭项目菜单':'打开项目菜单');
+    window.PortfolioFoldText.setText($('.case-menu-label'),open?'关闭菜单':'项目菜单');
+    casePanel.inert=!open;caseContent.forEach(el=>el.inert=open);dialog.classList.toggle('case-menu-open',open);
+    if(open){caseMenu.open=true;void casePanel.offsetWidth;caseMenu.classList.add('menu-expanded');}
+    else{caseMenu.classList.remove('menu-expanded');if(casePanel.contains(document.activeElement))caseSummary.focus({preventScroll:true});caseMenuTimer=setTimeout(()=>caseMenu.open=false,reduced?0:660);}
+  }
   caseSummary.setAttribute('aria-expanded','false');caseSummary.addEventListener('click',e=>{e.preventDefault();setCaseMenu(caseSummary.getAttribute('aria-expanded')!=='true');});
+  [caseSummary,casePanel].forEach(node=>{
+    node.addEventListener('mouseenter',event=>{if(!menuHover.matches||event.pointerType==='touch'||!dialog.open||window.PortfolioPageTransition.busy)return;clearTimeout(caseHoverTimer);if(caseSummary.getAttribute('aria-expanded')!=='true')setCaseMenu(true);});
+    node.addEventListener('mouseleave',event=>{if(!menuHover.matches||event.pointerType==='touch'||event.relatedTarget&&caseMenu.contains(event.relatedTarget))return;clearTimeout(caseHoverTimer);caseHoverTimer=setTimeout(()=>{if(!caseMenu.matches(':hover')&&!casePanel.contains(document.activeElement))setCaseMenu(false);},220);});
+  });
   dialog.addEventListener('click',e=>{if(!caseMenu.contains(e.target))setCaseMenu(false);});
   // Native looping keeps playback reliable when switching tabs or opening a case.
   const video=$('.bg-video');let paused=reduced;

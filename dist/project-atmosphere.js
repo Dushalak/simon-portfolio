@@ -14,6 +14,7 @@
     uniform float iSpread;
     uniform float iFlipX;
     uniform float iFlipY;
+    uniform float iMirrorPair;
     uniform float iTilt;
     uniform float iSaturation;
     uniform float iBlend;
@@ -28,9 +29,7 @@
         (0.3+0.2*cos(-cosAngle*seedB+iTime*speed)),0.0,1.0)*
         clamp((iResolution.x-length(sourceToCoord))/iResolution.x,0.5,1.0);
     }
-    void main(){
-      vec2 fragCoord=gl_FragCoord.xy;
-      if(iFlipX>0.5)fragCoord.x=iResolution.x-fragCoord.x;
+    vec4 sampleRays(vec2 fragCoord){
       if(iFlipY>0.5)fragCoord.y=iResolution.y-fragCoord.y;
       vec2 coord=vec2(fragCoord.x,iResolution.y-fragCoord.y);
       vec2 rayPos=vec2(iResolution.x*1.1,-0.5*iResolution.y);
@@ -50,6 +49,15 @@
       float gray=dot(color.rgb,vec3(0.299,0.587,0.114));
       color.rgb=mix(vec3(gray),color.rgb,iSaturation);
       color.a=max(color.r,max(color.g,color.b))*iOpacity;
+      return color;
+    }
+    void main(){
+      vec2 fragCoord=gl_FragCoord.xy;
+      if(iFlipX>0.5)fragCoord.x=iResolution.x-fragCoord.x;
+      vec4 color=sampleRays(fragCoord);
+      if(iMirrorPair>0.5){
+        color=(color+sampleRays(vec2(iResolution.x-fragCoord.x,fragCoord.y)))*0.72;
+      }
       gl_FragColor=color;
     }`;
   const rgb=hex=>hex.slice(1).match(/../g).map(value=>parseInt(value,16)/255);
@@ -79,7 +87,7 @@
         gl.useProgram(program);surface.buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,surface.buffer);
         gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
         const position=gl.getAttribLocation(program,'position');gl.enableVertexAttribArray(position);gl.vertexAttribPointer(position,2,gl.FLOAT,false,0,0);
-        ['iTime','iResolution','iSpeed','iRayColor1','iRayColor2','iIntensity','iSpread','iFlipX','iFlipY','iTilt','iSaturation','iBlend','iFalloff','iOpacity'].forEach(name=>surface.uniforms[name]=gl.getUniformLocation(program,name));
+        ['iTime','iResolution','iSpeed','iRayColor1','iRayColor2','iIntensity','iSpread','iFlipX','iFlipY','iMirrorPair','iTilt','iSaturation','iBlend','iFalloff','iOpacity'].forEach(name=>surface.uniforms[name]=gl.getUniformLocation(program,name));
       }catch{release(surface);surface.failed=true;}
     }
     function release(surface){
@@ -100,8 +108,8 @@
       gl.useProgram(program);gl.uniform1f(uniforms.iTime,clock);
       gl.uniform2f(uniforms.iResolution,canvas.width,canvas.height);
       gl.uniform3fv(uniforms.iRayColor1,rgb(theme.rayColor1));gl.uniform3fv(uniforms.iRayColor2,rgb(theme.rayColor2));
-      const flipY=theme.origin.startsWith('bottom')?1:0;
-      gl.uniform1f(uniforms.iFlipX,theme.origin.endsWith('left')?1:0);gl.uniform1f(uniforms.iFlipY,surface.bottom?1-flipY:flipY);
+      gl.uniform1f(uniforms.iFlipX,0);gl.uniform1f(uniforms.iFlipY,surface.bottom?1:0);
+      gl.uniform1f(uniforms.iMirrorPair,surface.bottom?1:0);
       ['Speed','Intensity','Spread','Tilt','Saturation','Blend','Falloff','Opacity'].forEach(name=>gl.uniform1f(uniforms['i'+name],theme[name[0].toLowerCase()+name.slice(1)]));
       gl.drawArrays(gl.TRIANGLES,0,3);
       surface.draws++;
@@ -153,8 +161,8 @@
       setProject(project){
         halt();theme=project.atmosphere;progress=clock=0;suspended=false;dialog.dataset.projectTheme=theme.name;
         dialog.style.setProperty('--case-depth',theme.depth);dialog.style.setProperty('--case-glow-1',theme.rayColor1+'55');dialog.style.setProperty('--case-glow-2',theme.rayColor2+'66');
-        dialog.style.setProperty('--case-light-x',theme.origin.endsWith('left')?'18%':'82%');layer.style.opacity='1';
-        surfaces.forEach(surface=>{surface.reported=-1;surface.draws=0;surface.layer.dataset.rayTime='0';surface.layer.dataset.drawCount='0';});measure();
+        dialog.style.setProperty('--case-light-x','82%');layer.style.opacity='1';
+        surfaces.forEach(surface=>{surface.reported=-1;surface.draws=0;surface.layer.dataset.rayOrigin=surface.bottom?'bottom-pair':'top-right';surface.layer.dataset.rayTime='0';surface.layer.dataset.drawCount='0';});measure();
       },
       setProgress(value){progress=value;layer.style.opacity=String(1-value*.72);visibility();sync();},stop
     };
