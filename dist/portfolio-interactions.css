@@ -20,15 +20,21 @@
 .about-portrait[data-holo-renderer=webgl] .about-holo-canvas{opacity:1}
 .about-portrait .about-portrait-fade{z-index:2}
 .about-holo-rotor img{user-select:none;-webkit-user-drag:none}
-.work-spotlight-halo{position:absolute;left:55px;top:461px;width:665px;height:230px;pointer-events:none;opacity:var(--work-halo,0);background:radial-gradient(circle 180px at var(--work-x,50%) var(--work-y,50%),rgba(255,255,255,.045),transparent 100%)}
-.work-spotlight-enabled .about-work-title,.work-spotlight-enabled .about-experience .about-text-fill{background-image:none;color:#f2f2f2}
-.work-spotlight-enabled .about-work-row>*,.work-spotlight-enabled .about-work-description{opacity:1}
-.work-spotlight-enabled .work-light-piece{opacity:calc(.35 + var(--work-strength,0)*.65);filter:brightness(calc(.6 + var(--work-strength,0)*.6));text-shadow:0 0 calc(var(--work-strength,0)*20px) rgba(255,255,255,calc(var(--work-strength,0)*.35))}
+/* Work text has a steady readable tone; proximity changes its structure only. */
+#about .about-work-title,#about .about-experience .about-text-fill{background-image:none;color:#c8c6c2}
+#about .about-work-row>*,#about .about-work-description{opacity:1}
+.about-board #about-title:has(.proximity-cell),.about-script:has(.proximity-cell){background-image:none}
+#about-title .proximity-glyph{background-image:var(--about-title-fill);background-clip:text;-webkit-background-clip:text;-webkit-text-stroke-color:#deddd9}
+.about-script .proximity-glyph{background-image:linear-gradient(123.50951deg,rgba(124,140,105,.8) 21.156%,#ab5c33 35.215%,#d59f5f 70.3%,rgba(171,92,51,.6) 97.41%);background-clip:text;-webkit-background-clip:text;-webkit-text-stroke-color:#bd9860}
+.proximity-script-line{display:inline-block;white-space:nowrap;flex-shrink:0}
+.about-greeting:has(.proximity-cell){background-image:none}
+.about-greeting:has(.proximity-cell) p,.about-greeting .proximity-glyph{color:#ddd9d4}
 .proximity-word{white-space:nowrap;display:inline-block}
 .proximity-cell{display:inline-block;position:relative;vertical-align:baseline;white-space:pre;line-height:inherit;font:inherit;letter-spacing:inherit}
 /* Continuous weight buildup preserves the original font's outlines and avoids
    discrete normal/bold jumps in the existing non-variable serif/CJK fonts. */
-.proximity-glyph{display:inline-block;line-height:inherit;transform-origin:50% 70%;transform:translateY(calc(var(--proximity,0)*-2px)) scale(calc(1 + var(--proximity,0)*.08),calc(1 + var(--proximity,0)*.045));-webkit-text-stroke:calc(var(--proximity,0)*.017em) currentColor}
+.proximity-glyph{display:inline-block;line-height:inherit;transform-origin:50% 70%;transform:translateY(calc(var(--proximity,0)*var(--proximity-lift,-3px))) scale(calc(1 + var(--proximity,0)*var(--proximity-x,.16)),calc(1 + var(--proximity,0)*var(--proximity-y,.10)));-webkit-text-stroke:calc(var(--proximity,0)*var(--proximity-stroke,.038em)) currentColor}
+.about-biography,.about-work-row>*,.about-work-description{--proximity-x:.055;--proximity-y:.035;--proximity-lift:-1px;--proximity-stroke:.012em}
 .portfolio-pointer-layer{position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;background:none;overflow:hidden;pointer-events:none;z-index:1000}
 .portfolio-pointer-layer::backdrop{background:none;pointer-events:none}
 .hero-light{display:none!important}
@@ -40,4 +46,4 @@
 @media(min-width:721px) and (hover:hover) and (pointer:fine){.projects-gallery .project-card.is-view-cursor-active,.projects-gallery .project-card.is-view-cursor-active *{cursor:none!important}}
 @media(max-width:1000px){.bring-section{padding-top:92px;padding-bottom:82px}.bring-copy{margin-top:40px;margin-left:20px}}
 @media(max-width:720px){.bring-section{padding-top:64px;padding-bottom:64px}.bring-copy{margin:32px 0 0}.bring-cards{gap:24px;margin-top:30px}.bring-card{padding:30px 28px 72px;min-height:0}.portfolio-pointer-layer{display:none}.about-holo-rotor{box-shadow:none}.bring-aurora{opacity:.15;filter:blur(32px)}}
-@media(prefers-reduced-motion:reduce){.bring-aurora:after{animation:none}.portfolio-pointer-layer{display:none}.proximity-glyph{transform:none;-webkit-text-stroke:0}.work-light-piece{transition:none}}
+@media(prefers-reduced-motion:reduce){.bring-aurora:after{animation:none}.portfolio-pointer-layer{display:none}.proximity-glyph{transform:none;-webkit-text-stroke:0}}

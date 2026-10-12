@@ -55,7 +55,7 @@
   document.querySelectorAll('[data-case-switch]').forEach(button=>bind(button,[button.querySelector('.menu-cn'),button.querySelector('.menu-en')],{stagger:24}));
   const caseClose=document.querySelector('.case-toolbar-close');
   bind(caseClose,[caseClose.querySelector('.case-close-label')],{stagger:24});
-  const about=document.querySelector('#about-title');bind(about,[about],{stagger:28});
+  // About headings use the same proximity typography as its left-column text.
   [motion,pointer].forEach(media=>media.addEventListener('change',()=>all.forEach(fold=>fold.reset()),{signal:events.signal}));
   addEventListener('pagehide',event=>{if(event.persisted)return;events.abort();all.forEach(fold=>fold.reset());all.clear();},{signal:events.signal});
 })();
