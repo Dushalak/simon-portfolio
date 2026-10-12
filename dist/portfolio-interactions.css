@@ -20,6 +20,12 @@
 .about-portrait[data-holo-renderer=webgl] .about-holo-canvas{opacity:1}
 .about-portrait .about-portrait-fade{z-index:2}
 .about-holo-rotor img{user-select:none;-webkit-user-drag:none}
+/* Magic UI ShineBorder's masked gradient, softened around the existing portrait. */
+.about-holo-rotor::after{content:'';position:absolute;inset:0;z-index:3;padding:1.3px;border-radius:inherit;pointer-events:none;opacity:.35;filter:saturate(.55);background-image:radial-gradient(transparent,transparent,#A07CFE,#FE8FB5,#FFBE7B,transparent,transparent);background-size:300% 300%;background-position:0% 0%;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;-webkit-mask-composite:xor;animation:portraitShine 20s linear infinite;animation-play-state:paused}
+.about-portrait[data-shine-motion=running] .about-holo-rotor::after{animation-play-state:running}
+@keyframes portraitShine{0%,100%{background-position:0% 0%}50%{background-position:100% 100%}}
+@media(max-width:720px),(pointer:coarse){.about-holo-rotor::after{opacity:.25}}
+@media(prefers-reduced-motion:reduce){.about-holo-rotor::after{animation:none}}
 /* Work text has a steady readable tone; proximity changes its structure only. */
 #about .about-work-title,#about .about-experience .about-text-fill{background-image:none;color:#c8c6c2}
 #about .about-work-row>*,#about .about-work-description{opacity:1}

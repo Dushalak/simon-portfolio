@@ -334,7 +334,10 @@ void main() {
     const remaining=Math.abs(tx-state.x)+Math.abs(ty-state.y)+Math.abs(lift-state.lift)*40+(Math.abs(lx-state.lx)+Math.abs(ly-state.ly))*60+Math.abs(velocity.x)+Math.abs(velocity.y)+Math.abs(velocity.lift)*40+(Math.abs(velocity.lx)+Math.abs(velocity.ly))*60;
     if(idle||enabled&&remaining>.002)wake();
   }
-  function wake(){if(allowed()&&!frame)frame=requestAnimationFrame(tick);}
+  function wake(){
+    root.dataset.shineMotion=allowed()&&fine.matches&&!reduce.matches?'running':'paused';
+    if(allowed()&&!frame)frame=requestAnimationFrame(tick);
+  }
   function track(e){if(!fine.matches||reduce.matches||e.pointerType==='touch')return;const rect=root.getBoundingClientRect();pointer={x:Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width)),y:Math.max(0,Math.min(1,(e.clientY-rect.top)/rect.height)),inside:true};wake();}
   root.addEventListener('pointerenter',track,{passive:true,signal:events.signal});root.addEventListener('pointermove',track,{passive:true,signal:events.signal});['pointerleave','pointercancel'].forEach(type=>root.addEventListener(type,()=>{pointer.inside=false;wake();},{signal:events.signal}));
   const intersection=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;wake();});intersection.observe(root);
