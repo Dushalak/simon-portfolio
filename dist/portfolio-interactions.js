@@ -9,7 +9,7 @@
   // A manual, non-interactive top-layer overlay also covers native case dialogs.
   const topLayer=Boolean(layer.showPopover);if(topLayer)layer.setAttribute('popover','manual');
   function surface(){
-    hideView();
+    hideView(true);
     if(topLayer){if(layer.matches(':popover-open'))layer.hidePopover();if(fine.matches&&!reduce.matches)layer.showPopover();}
     else(dialog.open?dialog:document.body).append(layer);
     request();
@@ -72,13 +72,32 @@
   }
   typographyMode();
   window.PortfolioProximity={prepare};
-  let viewEntrance;
-  function hideView(){viewEntrance?.cancel();currentCard?.classList.remove('is-view-cursor-active');currentCard=null;bubble.classList.remove('is-visible','is-pressed');}
+  let viewEntrance,viewExit,viewLeaving=false,hitPending=false;
+  function clearView(){
+    viewEntrance?.cancel();viewExit?.cancel();viewEntrance=viewExit=null;viewLeaving=false;
+    currentCard?.classList.remove('is-view-cursor-active');currentCard=null;
+    bubble.classList.remove('is-visible','is-pressed');document.body.classList.remove('project-view-held');
+  }
+  function hideView(immediate=false){
+    if(immediate){clearView();return;}
+    if(!currentCard||viewLeaving)return;
+    const visual=getComputedStyle(bubble),start={transform:visual.transform,opacity:visual.opacity};
+    viewEntrance?.cancel();viewEntrance=null;
+    currentCard.classList.remove('is-view-cursor-active');currentCard=null;viewLeaving=true;
+    bubble.classList.remove('is-pressed');
+    // Keep the custom cursor at the pointer until its shrink has finished.
+    viewExit=bubble.animate([start,{transform:'scale(.04)',opacity:0}],{duration:340,easing:'cubic-bezier(.22,1,.36,1)',fill:'forwards'});
+    viewExit.onfinish=()=>{clearView();request();};request();
+  }
   function enterCard(card,e){
     if(!fine.matches||reduce.matches||e.pointerType==='touch'||dialog.open)return;
-    hideView();currentCard=card;pointer={x:e.clientX,y:e.clientY,inside:true};bx=pointer.x;by=pointer.y;
+    if(currentCard===card)return;
+    const continuing=Boolean(currentCard||viewLeaving);
+    clearView();currentCard=card;pointer={x:e.clientX,y:e.clientY,inside:true};
+    if(!continuing){bx=pointer.x;by=pointer.y;}
+    document.body.classList.add('project-view-held');
     card.classList.add('is-view-cursor-active');position.style.transform=`translate3d(${bx-41}px,${by-41}px,0)`;bubble.classList.add('is-visible');
-    viewEntrance=bubble.animate([{transform:'scale(.16)',opacity:.3},
+    if(!continuing)viewEntrance=bubble.animate([{transform:'scale(.16)',opacity:.3},
       {transform:'scale(.48)',opacity:1,offset:.3},
       {transform:'scale(1.075)',opacity:1,offset:.8},
       {transform:'scale(1)',opacity:1}],{duration:620,easing:'cubic-bezier(.25,.65,.3,1)'});
@@ -86,19 +105,24 @@
   }
   document.querySelectorAll('.projects-gallery .project-card').forEach(card=>{
     card.addEventListener('pointerenter',e=>enterCard(card,e),{signal:events.signal});
-    card.addEventListener('pointerleave',()=>{if(currentCard===card)hideView();request();},{signal:events.signal});
+    card.addEventListener('pointerleave',()=>{hitPending=true;request();},{signal:events.signal});
     card.addEventListener('pointerdown',()=>{viewEntrance?.cancel();bubble.classList.add('is-pressed');},{signal:events.signal});
     card.addEventListener('pointerup',()=>bubble.classList.remove('is-pressed'),{signal:events.signal});
   });
   function request(){if(!frame&&!document.hidden)frame=requestAnimationFrame(render);}
   function render(now){
     frame=0;const dt=Math.min(40,last?now-last:16.7);last=now;
+    if(hitPending){
+      hitPending=false;
+      const card=pointer.inside&&!dialog.open?document.elementFromPoint(pointer.x,pointer.y)?.closest('.projects-gallery .project-card'):null;
+      if(card)enterCard(card,{clientX:pointer.x,clientY:pointer.y});else hideView();
+    }
     const enabled=fine.matches&&!reduce.matches,pointerActive=enabled&&pointer.inside&&!window.portfolioIntroLocked;
     const fast=1-Math.exp(-dt/35),follow=1-Math.exp(-dt/70),recover=1-Math.exp(-dt/150);let moving=false;
-    const glowTarget=pointerActive&&!currentCard? .46:0;
+    const glowTarget=pointerActive&&!currentCard&&!viewLeaving? .46:0;
     gx+=(pointer.x-gx)*fast;gy+=(pointer.y-gy)*fast;glowOpacity+=(glowTarget-glowOpacity)*fast;
     glow.style.transform=`translate3d(${gx-140}px,${gy-140}px,0)`;glow.style.opacity=glowOpacity.toFixed(3);
-    if(currentCard){bx+=(pointer.x-bx)*follow;by+=(pointer.y-by)*follow;position.style.transform=`translate3d(${bx-41}px,${by-41}px,0)`;moving ||= Math.abs(pointer.x-bx)+Math.abs(pointer.y-by)>.1;}
+    if(currentCard||viewLeaving){bx+=(pointer.x-bx)*follow;by+=(pointer.y-by)*follow;position.style.transform=`translate3d(${bx-41}px,${by-41}px,0)`;moving ||= Math.abs(pointer.x-bx)+Math.abs(pointer.y-by)>.1;}
     moving ||= Math.abs(pointer.x-gx)+Math.abs(pointer.y-gy)>.1||Math.abs(glowTarget-glowOpacity)>.002;
     const menuOpen=document.body.classList.contains('menu-open')||dialog.classList.contains('case-menu-open');
     typography.forEach(({title,cells})=>{
@@ -123,15 +147,15 @@
     dirty=false;if(moving&&fine.matches&&!document.hidden)request();
   }
   const passive={passive:true,signal:events.signal};
-  document.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;pointer={x:e.clientX,y:e.clientY,inside:true};const card=e.target.closest('.projects-gallery .project-card');if(card&&card!==currentCard)enterCard(card,e);request();},passive);
-  document.addEventListener('pointerleave',()=>{pointer.inside=false;hideView();request();},passive);
-  addEventListener('blur',()=>{pointer.inside=false;hideView();request();},{signal:events.signal});
-  document.addEventListener('visibilitychange',()=>{pointer.inside=false;hideView();if(document.hidden){cancelAnimationFrame(frame);frame=0;}else request();},{signal:events.signal});
-  addEventListener('scroll',()=>{hideView();dirty=true;request();},{capture:true,...passive});
-  addEventListener('resize',()=>{dirty=true;request();},passive);
+  document.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;pointer={x:e.clientX,y:e.clientY,inside:true};hitPending=true;request();},passive);
+  document.addEventListener('pointerleave',()=>{pointer.inside=false;hideView(true);request();},passive);
+  addEventListener('blur',()=>{pointer.inside=false;hideView(true);request();},{signal:events.signal});
+  document.addEventListener('visibilitychange',()=>{pointer.inside=false;hideView(true);if(document.hidden){cancelAnimationFrame(frame);frame=0;}else request();},{signal:events.signal});
+  addEventListener('scroll',()=>{hitPending=true;dirty=true;request();},{capture:true,...passive});
+  addEventListener('resize',()=>{hitPending=true;dirty=true;request();},passive);
   fine.addEventListener('change',()=>{typographyMode();surface();},{signal:events.signal});reduce.addEventListener('change',()=>{typographyMode();surface();},{signal:events.signal});
   const modalObserver=new MutationObserver(surface);modalObserver.observe(dialog,{attributes:true,attributeFilter:['open']});
   surface();
   document.fonts.ready.then(typographyMode);
-  addEventListener('pagehide',e=>{if(e.persisted)return;events.abort();modalObserver.disconnect();cancelAnimationFrame(frame);layer.remove();},{signal:events.signal});
+  addEventListener('pagehide',e=>{if(e.persisted)return;clearView();events.abort();modalObserver.disconnect();cancelAnimationFrame(frame);layer.remove();},{signal:events.signal});
 })();
