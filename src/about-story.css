@@ -38,7 +38,7 @@
 .about-portrait span{position:absolute;inset:0;background:linear-gradient(180deg,transparent 65.909%,#060606 97.803%);pointer-events:none}
 .about-bottom-shadow{position:absolute;left:709px;top:799px;width:521px;height:71px;opacity:.5;background:linear-gradient(0deg,#020507,rgba(51,42,27,0) 108.64%);pointer-events:none}
 .about-optics{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:none}
-.about-skills{position:relative;padding:35px 7% 65px;background:#040404;scroll-margin-top:110px}.about-skills .about-facts{max-width:950px;margin:0 auto}.about-skills>.text-link{display:block;width:fit-content;margin:25px auto 0}
+.about-skills{position:relative;padding:35px 7% 65px;background:#040404;scroll-margin-top:110px}
 /* One existing sticky Hero, one overlapping flow section; no second pin/spacer. */
 @media(min-width:1000px){
  .about-story-enabled{--hero-scroll-distance:210svh}

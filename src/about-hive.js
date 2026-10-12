@@ -36,8 +36,7 @@
       float luminance=dot(o.rgb,vec3(.2126,.7152,.0722));
       fragColor=vec4(mix(vec3(luminance),o.rgb,u_saturation),1.0);
     }`;
-  const gl = canvas.getContext('webgl2', { alpha:false, antialias:false, depth:false, premultipliedAlpha:false });
-  if (!gl) return; // The existing dark board is the fallback.
+  let gl,failed=false;
   let program, buffer, resolution, timeUniform, frame=0, time=2.4, last=0, drawn=0, destroyed=false, lost=false;
   function compile(type, source) {
     const shader=gl.createShader(type);
@@ -46,6 +45,8 @@
     return shader;
   }
   function setup() {
+    gl ||= canvas.getContext('webgl2', { alpha:false, antialias:false, depth:false, premultipliedAlpha:false });
+    if(!gl){failed=true;return false;}
     const shaders=[];
     try {
       shaders.push(compile(gl.VERTEX_SHADER,vertex));
@@ -88,6 +89,11 @@
     frame=requestAnimationFrame(tick);
   }
   function update() {
+    const approaching=section.dataset.storyVisible==='true'||!matchMedia('(min-width:1000px)').matches||reduced.matches;
+    if(!program&&!failed&&!destroyed&&!lost&&!document.hidden&&approaching){
+      const rect=canvas.getBoundingClientRect();
+      if(rect.bottom>0&&rect.top<innerHeight){if(setup())resize();else failed=true;}
+    }
     if(!visible() || reduced.matches){cancelAnimationFrame(frame);frame=0;last=0;}
     else if(!frame){last=0;frame=requestAnimationFrame(tick);}
   }
@@ -107,5 +113,5 @@
   addEventListener('pageshow',resize,{signal:events.signal});
   addEventListener('pagehide',dispose,{signal:events.signal});
   observer.observe(canvas);sizeObserver.observe(canvas);modeObserver.observe(section,{attributes:true,attributeFilter:['data-story-mode','data-story-visible']});
-  if(setup())resize();
+  update();
 })();

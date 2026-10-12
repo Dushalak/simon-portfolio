@@ -1,6 +1,6 @@
 (() => {
   const fine=matchMedia('(min-width:721px) and (hover:hover) and (pointer:fine)'),reduce=matchMedia('(prefers-reduced-motion:reduce)');
-  const events=new AbortController(),dialog=document.querySelector('.case-dialog'),board=document.querySelector('.about-board');
+  const events=new AbortController(),dialog=document.querySelector('.case-dialog');
   const clamp=v=>Math.max(0,Math.min(1,v)),nearRect=(x,y,r)=>Math.hypot(Math.max(r.left-x,0,x-r.right),Math.max(r.top-y,0,y-r.bottom));
   const layer=document.createElement('div');layer.className='portfolio-pointer-layer';layer.setAttribute('aria-hidden','true');
   const glow=document.createElement('div');glow.className='portfolio-pointer-light';
@@ -15,7 +15,7 @@
     request();
   }
   let pointer={x:innerWidth/2,y:innerHeight/2,inside:false},gx=pointer.x,gy=pointer.y,bx=gx,by=gy,glowOpacity=0;
-  let frame=0,last=0,currentCard=null,dirty=true;
+  let frame=0,last=0,currentCard=null;
   const typography=new Map();
   function prepare(title){
     if(!title||!fine.matches||reduce.matches)return;
@@ -57,7 +57,7 @@
         }else textNode.replaceWith(fragment);
       });
     });
-    typography.set(title,{title,cells,originals});dirty=true;request();
+    typography.set(title,{title,cells,originals});request();
   }
   const aboutText='#about-title,.about-script,.about-greeting p,.about-biography,.about-work-title,.about-work-row>*,.about-work-description';
   // The complete About left column and only the previously selected headings elsewhere.
@@ -150,15 +150,15 @@
         if(c.output!==output){c.cell.style.setProperty('--proximity',output);c.output=output;}
         moving ||= Math.abs(target-c.value)>.001;
       }));
-    dirty=false;if(moving&&fine.matches&&!document.hidden)request();
+    if(moving&&fine.matches&&!document.hidden)request();
   }
   const passive={passive:true,signal:events.signal};
   document.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;pointer={x:e.clientX,y:e.clientY,inside:true};hitPending=true;request();},passive);
   document.addEventListener('pointerleave',()=>{pointer.inside=false;hideView(true);request();},passive);
   addEventListener('blur',()=>{pointer.inside=false;hideView(true);request();},{signal:events.signal});
   document.addEventListener('visibilitychange',()=>{pointer.inside=false;hideView(true);if(document.hidden){cancelAnimationFrame(frame);frame=0;}else request();},{signal:events.signal});
-  addEventListener('scroll',()=>{hitPending=true;dirty=true;request();},{capture:true,...passive});
-  addEventListener('resize',()=>{hitPending=true;dirty=true;request();},passive);
+  addEventListener('scroll',()=>{hitPending=true;request();},{capture:true,...passive});
+  addEventListener('resize',()=>{hitPending=true;request();},passive);
   fine.addEventListener('change',()=>{typographyMode();surface();},{signal:events.signal});reduce.addEventListener('change',()=>{typographyMode();surface();},{signal:events.signal});
   const modalObserver=new MutationObserver(surface);modalObserver.observe(dialog,{attributes:true,attributeFilter:['open']});
   surface();

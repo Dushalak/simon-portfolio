@@ -1,6 +1,6 @@
 /* Existing hash routes and case chapter data, with a reversible scroll hero. */
 (() => {
-  window.PortfolioProjectBrowser={init({dialog,pages,reduced,toast,closeMenu,setCaseMenu,pauseVideo,resumeVideo,updateHome}){
+  window.PortfolioProjectBrowser={init({dialog,pages,toast,closeMenu,setCaseMenu,pauseVideo,resumeVideo,updateHome}){
     const projects=window.PortfolioProjects,events=new AbortController();
     const $=selector=>dialog.querySelector(selector),clamp=value=>Math.max(0,Math.min(1,value));
     const fadeProgress=(progress,start,end)=>{const t=clamp((progress-start)/(end-start));return t*t*(3-2*t);};
@@ -11,7 +11,15 @@
     }
     const preference=matchMedia('(prefers-reduced-motion:reduce)');
     const atmosphere=window.PortfolioProjectAtmosphere.create(dialog);
-    const dataReady=fetch('assets/projects.json?v=20261012-yuxu-pdf48').then(response=>{if(!response.ok)throw Error('Case assets unavailable');return response.json();});dataReady.catch(()=>{});
+    let dataReady;
+    function getData(){
+      if(!dataReady)dataReady=fetch('assets/projects.json?v=20261012-yuxu-pdf48').then(response=>{if(!response.ok)throw Error('Case assets unavailable');return response.json();}).catch(error=>{dataReady=null;throw error;});
+      return dataReady;
+    }
+    const prefetch=()=>{getData().catch(()=>{});};
+    const dataObserver=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){prefetch();dataObserver.disconnect();}},{rootMargin:'600px'});
+    dataObserver.observe(document.querySelector('.projects-gallery'));
+    document.querySelectorAll('[data-open]').forEach(link=>{link.addEventListener('pointerenter',prefetch,{once:true,signal:events.signal});link.addEventListener('focus',prefetch,{once:true,signal:events.signal});});
     let currentCase=null,lastTrigger=null,homeScroll=0,homeHash='#nelu',busy=false,queued,frame=0,contentAnimations=[];
     let homeAnchor=null,homeOffset=0,homeWidth=innerWidth,homeHeight=innerHeight;
     const homeRecord=()=>({scroll:homeScroll,hash:homeHash,anchor:homeAnchor,offset:homeOffset,width:homeWidth,height:homeHeight});
@@ -65,7 +73,7 @@
         const section=document.createElement('section');section.className='case-group';section.id='chapter-'+key+'-'+i;
         section.setAttribute('aria-label',group.title);
         group.indices.forEach(index=>{const page=data[key][index];if(!page)return;
-          const figure=document.createElement('figure'),img=document.createElement('img');if(key==='yuxu')figure.className='case-page-yuxu';img.src=page.src;img.alt=page.label;img.width=page.width;img.height=page.height;img.loading=index<2?'eager':'lazy';img.decoding='async';figure.append(img);section.append(figure);if(index<2)firstImages.push(img);
+          const figure=document.createElement('figure'),img=document.createElement('img');if(key==='yuxu')figure.className='case-page-yuxu';img.loading=index<2?'eager':'lazy';img.decoding='async';img.alt=page.label;img.width=page.width;img.height=page.height;img.src=page.src;figure.append(img);section.append(figure);if(index<2)firstImages.push(img);
         });fragment.append(section);
         const button=document.createElement('button');button.className='chapter-card';button.setAttribute('aria-controls',section.id);
         const label=document.createElement('span');label.className='chapter-label';label.textContent=String(i+1).padStart(2,'0')+' / '+group.title;
@@ -80,7 +88,7 @@
       if(!projects[key]||busy||currentCase===key&&dialog.open)return;
       busy=true;trigger?.setAttribute('aria-busy','true');
       try{
-        const data=await dataReady,content=build(key,data);await content.ready;
+        const data=await getData(),content=build(key,data);await content.ready;
         if(queued!==undefined&&queued!==key)return;
         if(queued===key)queued=undefined;
         const switching=dialog.open;
@@ -137,6 +145,6 @@
     addEventListener('popstate',route,{signal:events.signal});addEventListener('hashchange',route,{signal:events.signal});
     preference.addEventListener('change',request,{signal:events.signal});
     if(location.hash.startsWith('#project/'))route();
-    addEventListener('pagehide',event=>{if(event.persisted)return;events.abort();cancelAnimationFrame(frame);contentAnimations.forEach(animation=>animation.cancel());},{once:true});
+    addEventListener('pagehide',event=>{if(event.persisted)return;dataObserver.disconnect();events.abort();cancelAnimationFrame(frame);contentAnimations.forEach(animation=>animation.cancel());},{once:true});
   }};
 })();

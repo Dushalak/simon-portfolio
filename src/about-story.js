@@ -45,8 +45,7 @@
         piece.style.setProperty('--about-fill-x',-piece.parentElement.offsetLeft+'px');
         piece.style.setProperty('--about-fill-y',-piece.parentElement.offsetTop+'px');
       });
-      if(enabled){
-        optics ||= window.PortfolioIntro.createOpticalField(viewport,{canvas,overlay:true});
+      if(enabled&&optics){
         const image=optics.maskImage();fieldReady=Boolean(image);
         if(fieldReady)fieldImage.setAttribute('href',image);
         fieldImage.style.display=fieldReady?'':'none';maskGroup.style.display=fieldReady?'none':'';
@@ -65,6 +64,10 @@
     function render(scrollProgress,introDone){
       if(!enabled)return {exit:0,advance:scrollProgress*.035};
       const p=clamp(scrollProgress/completionAt);
+      if(p>0){
+        warmAssets();
+        if(!optics){optics=window.PortfolioIntro.createOpticalField(viewport,{canvas,overlay:true});measure();}
+      }
       const exit=smooth(phase(p,...timing.heroExit));
       if(previous===scrollProgress)return {exit,advance:smooth(phase(p,0,.25))*.045};
       previous=scrollProgress;about.dataset.storyProgress=p.toFixed(4);
@@ -104,9 +107,12 @@
       const target=link.hash==='#home'?hero:about;
       window.scrollTo({top:scrollY+target.getBoundingClientRect().top,behavior:reduced.matches?'instant':'smooth'});
     },{signal:events.signal}));
-    // Decode assets and resolve fonts before they are needed, without blocking intro.
-    about.querySelectorAll('img').forEach(img=>img.decode?.().catch(()=>{}));
-    Promise.allSettled(['14px "About Alibaba"','64px "About Erya"','32px "About Script"'].map(font=>document.fonts.load(font))).then(()=>dispatchEvent(new Event('portfolio:about-ready')));
+    let assetsWarmed=false;
+    function warmAssets(){
+      if(assetsWarmed)return;assetsWarmed=true;
+      about.querySelectorAll('img').forEach(img=>{window.PortfolioAssets.load(img);img.decode?.().catch(()=>{});});
+      Promise.allSettled(['14px "About Alibaba"','64px "About Erya"','32px "About Script"'].map(font=>document.fonts.load(font))).then(()=>dispatchEvent(new Event('portfolio:about-ready')));
+    }
     measure();
     return {measure,render,dispose(){destroyed=true;events.abort();svg.remove();optics?.dispose();canvas.width=canvas.height=0;document.documentElement.classList.remove('about-story-enabled');}};
   }};

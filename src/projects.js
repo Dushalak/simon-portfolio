@@ -12,7 +12,8 @@
     const section=node('article','project section');section.id=project.key;section.dataset.project=project.key;
     const stage=node('div','project-stage'),link=node('a','project-card');
     link.href=project.href;link.dataset.open=project.key;link.setAttribute('aria-label','查看 '+project.title+' 完整案例');
-    const image=node('img','project-image');image.src=project.cover;image.alt=project.title+' 项目封面';image.loading='lazy';image.decoding='async';image.width=1600;image.height=1200;
+    const image=node('img','project-image');image.dataset.src=project.cover;image.alt=project.title+' 项目封面';image.loading='lazy';image.decoding='async';image.width=1600;image.height=1200;
+    window.PortfolioAssets.observe(image,section);
     const tags=node('div','project-tags');project.tags.forEach(tag=>tags.append(node('span','',tag)));
     const title=node('h3','project-title',project.displayTitle),category=node('p','project-card-category',project.category);
     const fold=window.PortfolioFoldText.create(title,project.displayTitle);folds.push(fold);
@@ -48,6 +49,11 @@
     ...cards.map(card=>({nodes:[card.querySelector('.project-stage')],anchor:card,duration:950,y:70,scale:.98,blur:8,start:.95,end:.48}))
   ]);
   function revealAt(position){
+    // A return-transition snapshot must carry real src attributes, including a direct case visit.
+    cards.forEach(card=>{
+      const top=card.getBoundingClientRect().top+scrollY;
+      if(top<position+innerHeight+600&&top+card.offsetHeight>position-600)window.PortfolioAssets.load(card.querySelector('.project-image'));
+    });
     entrance.measure();entrance.renderAt(position);
   }
   reduced.addEventListener('change',()=>{if(reduced.matches)folds.forEach(fold=>fold.reset());},{signal:events.signal});

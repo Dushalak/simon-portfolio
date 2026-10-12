@@ -1,11 +1,23 @@
 /* The canvas-confetti engine used by Magic UI Confetti, fired only after a successful copy. */
 (() => {
   const reduce=matchMedia('(prefers-reduced-motion:reduce)'),events=new AbortController();
-  let canvas,instance,generation=0,lastFire=-Infinity,cleanupTimer;
+  let canvas,instance,generation=0,lastFire=-Infinity,cleanupTimer,engineReady;
+  function loadEngine(){
+    if(typeof window.confetti==='function')return Promise.resolve();
+    if(!engineReady)engineReady=new Promise((resolve,reject)=>{
+      const script=document.createElement('script');script.src='assets/vendor/canvas-confetti-1.9.4.js';script.async=true;
+      script.onload=resolve;script.onerror=()=>{engineReady=null;script.remove();reject(Error('Confetti unavailable'));};document.head.append(script);
+    });
+    return engineReady;
+  }
+  const preload=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){loadEngine().catch(()=>{});preload.disconnect();}},{rootMargin:'800px'});
+  preload.observe(document.querySelector('#contact'));
   function stop(){
     generation++;clearTimeout(cleanupTimer);instance?.reset();if(canvas)canvas.hidden=true;
   }
-  function fire(){
+  async function fire(){
+    if(reduce.matches||document.hidden)return;
+    try{await loadEngine();}catch{return;}
     if(reduce.matches||document.hidden||typeof window.confetti!=='function')return;
     const now=performance.now();if(now-lastFire<450)return;lastFire=now;
     try{
@@ -23,6 +35,6 @@
   }
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();},{signal:events.signal});
   reduce.addEventListener('change',()=>{if(reduce.matches)stop();},{signal:events.signal});
-  addEventListener('pagehide',()=>{stop();events.abort();canvas?.remove();},{signal:events.signal});
+  addEventListener('pagehide',()=>{preload.disconnect();stop();events.abort();canvas?.remove();},{signal:events.signal});
   window.PortfolioCopyConfetti={fire};
 })();

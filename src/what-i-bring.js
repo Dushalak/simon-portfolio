@@ -3,11 +3,11 @@
   if(!section)return;
   const tools=[
     ['Figma','figma.svg','https://www.figma.com/','#222',false],
-    ['ProtoPie','protopie.png','https://www.protopie.io/','#fff',false],
+    ['ProtoPie','protopie.webp','https://www.protopie.io/','#fff',false],
     ['Cinema 4D','cinema4d.svg','https://www.maxon.net/en/cinema-4d','#fff',false],
     ['OpenAI','openai.svg','https://openai.com/','#fff',false],
     ['Claude','claude.svg','https://claude.ai/','#faf3e8',false],
-    ['Google AI Studio','google-ai-studio.png','https://aistudio.google.com/','#fff',false],
+    ['Google AI Studio','google-ai-studio.webp','https://aistudio.google.com/','#fff',false],
     ['Adobe Photoshop','photoshop.svg','https://www.adobe.com/products/photoshop.html','#001e36',true],
     ['Adobe Premiere Pro','premierepro.svg','https://www.adobe.com/products/premiere.html','#00005b',true],
     ['Adobe After Effects','aftereffects.svg','https://www.adobe.com/products/aftereffects.html','#00005b',true],
@@ -19,7 +19,8 @@
     const item=document.createElement('li');item.className='bring-tool-item';item.dataset.bringEnter='tool';
     const link=document.createElement('a');link.className='bring-tool-link';link.href=tool.url;
     link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label',tool.name+' · 打开官网');link.style.setProperty('--tool-bg',tool.bg);
-    const img=new Image();img.src=tool.src;img.alt=tool.name;img.width=60;img.height=60;img.loading='lazy';img.decoding='async';if(tool.full)img.className='tool-full';
+    const img=new Image();img.dataset.src=tool.src;img.alt=tool.name;img.width=60;img.height=60;img.loading='lazy';img.decoding='async';if(tool.full)img.className='tool-full';
+    window.PortfolioAssets.observe(img,section);
     const tip=document.createElement('span');tip.className='bring-tool-tip';tip.textContent=tool.tip;tip.setAttribute('aria-hidden','true');
     link.append(img,tip);item.append(link);fragment.append(item);
   });

@@ -279,12 +279,13 @@ void main() {
   fade.classList.add('about-portrait-fade');root.append(rotor);rotor.append(image,canvas,fade);
   const fine=matchMedia('(min-width:721px) and (hover:hover) and (pointer:fine)'),reduce=matchMedia('(prefers-reduced-motion:reduce)'),events=new AbortController();
   const settings={preset:4,intensity:.16,scale:1,edge:0,frame:0,glare:.06,tiltMax:15,hoverScale:1.04,radius:14,idle:true};
-  const gl=canvas.getContext('webgl2',{alpha:true,premultipliedAlpha:true,antialias:false});
+  let gl,initialized=false;
   let program,buffer,texture,uniforms={},ready=false,lost=false,visible=false,frame=0,last=0,lastDraw=0,clock=0,alive=true;
   let pointer={x:.5,y:.5,inside:false},state={x:0,y:0,lx:.36,ly:.26,lift:1};
   const velocity={x:0,y:0,lx:0,ly:0,lift:0};
   function compile(type,source){const shader=gl.createShader(type);gl.shaderSource(shader,source);gl.compileShader(shader);if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS)){gl.deleteShader(shader);throw Error('Holo shader unavailable');}return shader;}
   function setup(){
+    initialized=true;gl ||= canvas.getContext('webgl2',{alpha:true,premultipliedAlpha:true,antialias:false});
     if(!gl)return;
     const shaders=[];
     try{
@@ -336,6 +337,7 @@ void main() {
     if(idle||enabled&&remaining>.002)wake();
   }
   function wake(){
+    if(!initialized&&visible&&!document.hidden&&root.closest('#about').dataset.storyVisible!=='false')setup();
     root.dataset.shineMotion=allowed()&&fine.matches&&!reduce.matches?'running':'paused';
     if(allowed()&&!frame)frame=requestAnimationFrame(tick);
   }
@@ -346,5 +348,5 @@ void main() {
   image.addEventListener('load',load,{signal:events.signal});document.addEventListener('visibilitychange',wake,{signal:events.signal});fine.addEventListener('change',wake,{signal:events.signal});reduce.addEventListener('change',wake,{signal:events.signal});
   canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();lost=true;root.dataset.holoRenderer='image';},{signal:events.signal});canvas.addEventListener('webglcontextrestored',()=>{lost=false;ready=false;setup();resize();},{signal:events.signal});
   addEventListener('pagehide',e=>{if(e.persisted)return;alive=false;events.abort();intersection.disconnect();size.disconnect();mode.disconnect();cancelAnimationFrame(frame);if(gl){gl.deleteTexture(texture);gl.deleteBuffer(buffer);gl.deleteProgram(program);}},{signal:events.signal});
-  setup();
+  wake();
 })();
