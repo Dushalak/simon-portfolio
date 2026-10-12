@@ -41,24 +41,10 @@
    discrete normal/bold jumps in the existing non-variable serif/CJK fonts. */
 .proximity-glyph{display:inline-block;line-height:inherit;transform-origin:50% 70%;transform:translateY(calc(var(--proximity,0)*var(--proximity-lift,-3px))) scale(calc(1 + var(--proximity,0)*var(--proximity-x,.16)),calc(1 + var(--proximity,0)*var(--proximity-y,.10)));-webkit-text-stroke:calc(var(--proximity,0)*var(--proximity-stroke,.038em)) currentColor}
 .about-biography,.about-work-row>*,.about-work-description{--proximity-x:.055;--proximity-y:.035;--proximity-lift:-1px;--proximity-stroke:.012em}
-/* KineticText's character weight/spacing ripple, with the existing font and base weight. */
-.kinetic-text .proximity-cell{box-sizing:content-box;padding-inline:0;transition:padding .4s ease}
-.kinetic-text .proximity-glyph{transform:none;-webkit-text-stroke-width:0;-webkit-text-stroke-color:transparent;transition:font-weight .4s ease,-webkit-text-stroke-color .4s ease,-webkit-text-stroke-width .4s ease;text-shadow:none;filter:none}
-.kinetic-text .is-kinetic-main,.kinetic-text .is-kinetic-near{padding-inline:.083333em}
-.kinetic-text .is-kinetic-main .proximity-glyph{font-weight:900;-webkit-text-stroke-width:.014em;-webkit-text-stroke-color:currentColor}
-.kinetic-text .is-kinetic-near .proximity-glyph{font-weight:600}
-.kinetic-text .is-kinetic-far .proximity-glyph{font-weight:400}
-.about-board #about-title.kinetic-text{pointer-events:auto}
-#about-title.kinetic-text .proximity-glyph{-webkit-text-stroke-color:transparent}
-#about-title.kinetic-text .is-kinetic-main .proximity-glyph{-webkit-text-stroke-color:#deddd9}
-.projects-heading-lead.kinetic-text,.projects-heading-statement.kinetic-text{white-space:nowrap}
-.projects-heading-statement{color:#898989;-webkit-text-fill-color:transparent;-webkit-text-stroke:.012em #898989}
-.projects-heading-statement.kinetic-text .proximity-glyph{-webkit-text-fill-color:transparent;-webkit-text-stroke:.012em #898989}
-.projects-heading-statement.kinetic-text .is-kinetic-main .proximity-glyph{-webkit-text-stroke-width:.018em}
 .portfolio-pointer-layer{position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;background:none;overflow:hidden;pointer-events:none;z-index:1000}
 .portfolio-pointer-layer::backdrop{background:none;pointer-events:none}
 .hero-light{display:none!important}
-.portfolio-pointer-light{display:none}
+.portfolio-pointer-light{position:absolute;left:0;top:0;width:280px;height:280px;opacity:0;background:radial-gradient(circle,#fff3,#f9e5d014 22%,transparent 67%);pointer-events:none}
 .project-view-position{position:absolute;left:0;top:0;pointer-events:none}
 .project-view-bubble{width:82px;height:82px;display:flex;align-items:center;justify-content:center;gap:7px;border-radius:50%;background:rgba(245,242,236,.92);color:#181818;font:500 12px/1 'DM Sans',sans-serif;letter-spacing:.035em;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 4px 20px #0002;opacity:0;visibility:hidden;transform:scale(.16);transition:transform .26s cubic-bezier(.16,1,.3,1),opacity .25s,visibility 0s .28s;pointer-events:none}
 .project-view-bubble.is-visible{opacity:1;visibility:visible;transform:scale(1);transition:transform .26s cubic-bezier(.16,1,.3,1),opacity .25s,visibility 0s}
