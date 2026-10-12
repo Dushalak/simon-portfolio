@@ -43,7 +43,6 @@
     target.addEventListener('focusout',leave,{signal:events.signal});
   }
   window.PortfolioFoldText={create,setText(el,text){const fold=controllers.get(el);if(fold)fold.setText(text);else el.textContent=text;}};
-  document.querySelectorAll('.bring-card').forEach(card=>bind(card,[card.querySelector('h3')],{stagger:28}));
   document.querySelectorAll('.contact-links > a,.contact-links > button').forEach(link=>bind(link,[link.querySelector('strong')],{stagger:18}));
   document.querySelectorAll('.hero-nav-item').forEach(link=>bind(link,[link.querySelector('.hero-reveal > span:first-child')],{stagger:24}));
   document.querySelectorAll('#mobile-nav > a').forEach(link=>bind(link,[link.querySelector('.menu-cn'),link.querySelector('.menu-en')],{stagger:24}));

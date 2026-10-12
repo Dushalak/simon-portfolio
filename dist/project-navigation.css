@@ -8,7 +8,8 @@
 .progress-track{background:rgba(255,255,255,.12)}
 .progress-track i{background:rgba(255,255,255,.75)}
 .case-toolbar{z-index:26;overflow:visible;opacity:1;visibility:visible;transition:opacity .32s ease,visibility 0s}
-.case-toolbar.is-reading{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .32s ease,visibility 0s .32s}
+.case-toolbar .case-menu,.case-toolbar .case-toolbar-close{opacity:1;visibility:visible;transition:opacity .32s ease,visibility 0s}
+.case-toolbar.is-reading .case-menu,.case-toolbar.is-reading .case-toolbar-close{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .32s ease,visibility 0s .32s}
 .case-toolbar .case-menu{position:absolute;left:50%;top:var(--menu-top);transform:translateX(-50%);width:var(--menu-width);height:60px;z-index:27;pointer-events:none;color:#ececec}
 .case-menu summary{position:relative;margin:auto;width:280px;height:60px;display:flex;justify-content:flex-start;align-items:center;gap:9px;padding:0 20px;border:0;border-radius:20px;background:rgba(21,21,21,.8);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#ececec;user-select:none;pointer-events:auto;z-index:2;transition:background .3s,box-shadow .3s}
 .case-menu summary:hover{background:rgba(32,32,32,.9)}
