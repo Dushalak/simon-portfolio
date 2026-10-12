@@ -1,10 +1,11 @@
 /* SwipeToast supplied by the user, adapted to the portfolio's black/white palette. */
-.swipe-toast{--st-bg:rgba(21,21,21,.9);--st-ink:#e3e1de;--st-fuse:#e3e1de;--st-w:306px;--st-radius:20px;--st-slide:400ms;--st-offset:24px;--st-ease:cubic-bezier(.23,1,.32,1);position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;width:min(var(--st-w),calc(100vw - 2 * var(--st-offset)));color:var(--st-ink);font:13px/1.5 'DM Sans','Microsoft YaHei','PingFang SC',sans-serif;pointer-events:none}
-.swipe-toast__lift{opacity:1;transform:translateY(0);transition:transform var(--st-slide) var(--st-ease),opacity calc(var(--st-slide) * .6) ease}
+.swipe-toast{--st-bg:rgba(21,21,21,.9);--st-ink:#e3e1de;--st-fuse:#e3e1de;--st-w:306px;--st-radius:20px;--st-slide:400ms;--st-offset:24px;--st-ease:cubic-bezier(.23,1,.32,1);position:fixed;left:50%;top:auto;bottom:max(var(--st-offset),calc(env(safe-area-inset-bottom,0px) + 16px));transform:translateX(-50%);z-index:60;width:min(var(--st-w),calc(100vw - 2 * var(--st-offset)));color:var(--st-ink);font:13px/1.5 'DM Sans','Microsoft YaHei','PingFang SC',sans-serif;pointer-events:none}
+.copy-confetti{position:fixed;inset:0;width:100%;height:100%;z-index:59;pointer-events:none;opacity:.8}
+.swipe-toast__lift{opacity:1;transform:translateY(0) scale(1);transform-origin:50% 100%;transition:transform 520ms cubic-bezier(.16,1,.3,1),opacity 280ms ease}
 .swipe-toast[data-phase=closing] .swipe-toast__lift{opacity:0;transform:translateY(100%);transition-duration:280ms,200ms}
-.swipe-toast[data-phase=gone] .swipe-toast__lift{opacity:0;visibility:hidden;transform:translateY(100%)}
+.swipe-toast[data-phase=gone] .swipe-toast__lift{opacity:0;visibility:hidden;transform:translateY(calc(100% + var(--st-offset) + 16px)) scale(.96)}
 .swipe-toast[data-phase=open]{pointer-events:auto}
-.swipe-toast[data-mounted=false] .swipe-toast__lift{opacity:0;transform:translateY(100%)}
+.swipe-toast[data-mounted=false] .swipe-toast__lift{opacity:0;transform:translateY(calc(100% + var(--st-offset) + 16px)) scale(.96)}
 .swipe-toast[data-instant] .swipe-toast__lift{transition-duration:0s}
 .swipe-toast__card{position:relative;display:flex;align-items:center;gap:28px;padding:19px 24px;border:1px solid rgba(255,255,255,.1);border-radius:var(--st-radius);overflow:hidden;background:var(--st-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 4px 16px #0002,0 18px 48px #0004;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;outline:none;will-change:auto}
 .swipe-toast__card:focus-visible{outline:1px solid #e3e1de88;outline-offset:4px}

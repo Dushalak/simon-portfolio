@@ -35,7 +35,7 @@
     title.textContent=(trigger?.dataset.copyLabel||'内容')+'已复制';description.textContent=value;
     if(entering){void card.offsetHeight;enterFrame=requestAnimationFrame(()=>root.dataset.mounted='true');}
     burn=fuse.animate([{transform:'scaleX(1)'},{transform:'scaleX(0)'}],{duration,easing:'linear',fill:'forwards'});
-    burn.onfinish=()=>close('timeout');syncFuse();
+    burn.onfinish=()=>close('timeout');syncFuse();window.PortfolioCopyConfetti?.fire();
   }
   function settle(){
     const current=y;resetCard();
