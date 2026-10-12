@@ -42,7 +42,7 @@
 /* Continuous weight buildup preserves the original font's outlines and avoids
    discrete normal/bold jumps in the existing non-variable serif/CJK fonts. */
 .proximity-glyph{display:inline-block;line-height:inherit;transform-origin:50% 70%;transform:translateY(calc(var(--proximity,0)*var(--proximity-lift,-3px))) scale(calc(1 + var(--proximity,0)*var(--proximity-x,.16)),calc(1 + var(--proximity,0)*var(--proximity-y,.10)));-webkit-text-stroke:calc(var(--proximity,0)*var(--proximity-stroke,.038em)) currentColor}
-.about-biography,.about-work-row>*,.about-work-description{--proximity-x:.055;--proximity-y:.035;--proximity-lift:-1px;--proximity-stroke:.012em}
+.hero-heading,.about-biography,.about-work-row>*,.about-work-description{--proximity-x:.055;--proximity-y:.035;--proximity-lift:-1px;--proximity-stroke:.012em}
 /* Opaque gray keeps fill and stroke identical, without alpha layers brightening the edge. */
 .projects-heading-statement{color:#999}
 .projects-heading-statement .proximity-glyph{-webkit-text-stroke-color:#999}

@@ -65,7 +65,8 @@
   function typographyMode(){
     restoreTypography();
     if(fine.matches&&!reduce.matches){
-      document.querySelectorAll('.bring-title,.projects-heading h2,'+aboutText).forEach(prepare);
+      // Keep the hero's animated reveal wrapper intact; split only its two text spans.
+      document.querySelectorAll('.hero-heading .hero-reveal > span,.bring-title,.projects-heading h2,'+aboutText).forEach(prepare);
       if(dialog.open)prepare(document.querySelector('#case-title'));
     }
     request();
