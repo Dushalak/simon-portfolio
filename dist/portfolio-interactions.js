@@ -131,11 +131,7 @@
   addEventListener('resize',()=>{dirty=true;request();},passive);
   fine.addEventListener('change',()=>{typographyMode();surface();},{signal:events.signal});reduce.addEventListener('change',()=>{typographyMode();surface();},{signal:events.signal});
   const modalObserver=new MutationObserver(surface);modalObserver.observe(dialog,{attributes:true,attributeFilter:['open']});
-  const aurora=document.createElement('div');aurora.className='bring-aurora';aurora.setAttribute('aria-hidden','true');const bring=document.querySelector('.bring-section');bring.prepend(aurora);
-  let auroraVisible=false;function auroraMotion(){aurora.dataset.motion=auroraVisible&&!document.hidden&&!dialog.open&&!reduce.matches?'running':'paused';}
-  const auroraObserver=new IntersectionObserver(entries=>{auroraVisible=entries[0].isIntersecting;auroraMotion();});auroraObserver.observe(bring);
-  document.addEventListener('visibilitychange',auroraMotion,{signal:events.signal});dialog.addEventListener('toggle',auroraMotion,{signal:events.signal});reduce.addEventListener('change',auroraMotion,{signal:events.signal});
   surface();
   document.fonts.ready.then(typographyMode);
-  addEventListener('pagehide',e=>{if(e.persisted)return;events.abort();modalObserver.disconnect();auroraObserver.disconnect();cancelAnimationFrame(frame);layer.remove();},{signal:events.signal});
+  addEventListener('pagehide',e=>{if(e.persisted)return;events.abort();modalObserver.disconnect();cancelAnimationFrame(frame);layer.remove();},{signal:events.signal});
 })();
