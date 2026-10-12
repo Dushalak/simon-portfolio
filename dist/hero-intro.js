@@ -4,6 +4,7 @@
     frameHold: 1000, titleEntrance:120, videoStart:480, lightReveal:1480, backgroundReveal:1580,
     constructionFadeOut:2600, contentEntrance:1280, introComplete:3400 });
   const backgroundRevealMs = 1400;
+  const introPlaybackRate = .65;
   const clamp = value => Math.min(1, Math.max(0, value));
   const smooth = value => { const t = clamp(value); return t*t*(3-2*t); };
 
@@ -23,7 +24,7 @@
     }
     tick(now) {
       this.frame = 0; if (this.done || document.hidden) return;
-      if (this.last !== null) this.time += now - this.last;
+      if (this.last !== null) this.time += (now - this.last) * introPlaybackRate;
       this.last = now;
       // Hold the completed frame only when the real photograph is still decoding.
       // Loading begins immediately; a cached image adds no wait to the timeline.
@@ -245,12 +246,10 @@
     timeline.add(hero.querySelector('.hero-border path'),[{strokeDashoffset:'1'},{strokeDashoffset:'0'}],
       labels.frameHold-labels.frameDrawing,labels.frameDrawing,'cubic-bezier(.55,.01,.3,1)');
     timeline.add(scene,[{filter:'brightness(1.12) saturate(.9) blur(1.5px)'},{filter:'none'}],backgroundRevealMs,labels.backgroundReveal);
-    // The title appears in the frame's center, then settles at its existing top slot.
+    // The title starts at the frame's vertical center, aligned to its left inset.
     const heading=panel.querySelector('.hero-heading'),title=heading.querySelector('.hero-reveal');
-    const titleRange=document.createRange();titleRange.selectNodeContents(title);
-    const centerX=(panel.clientWidth-titleRange.getBoundingClientRect().width)/2-heading.offsetLeft;
     const centerY=panel.clientHeight/2-heading.offsetTop-heading.offsetHeight/2;
-    const centered=`translate3d(${centerX}px,${centerY}px,0)`;
+    const centered=`translate3d(0,${centerY}px,0)`;
     timeline.add(title,[{opacity:0,filter:'blur(5px)',transform:centered},
       {opacity:1,filter:'blur(0px)',transform:centered,offset:.28},
       {opacity:1,filter:'blur(0px)',transform:centered,offset:.44},
