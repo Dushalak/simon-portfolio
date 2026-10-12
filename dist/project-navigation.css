@@ -46,6 +46,12 @@
 .case-toolbar button.case-close.case-toolbar-close{position:absolute;right:3.4%;top:26px;display:flex;align-items:center;gap:21px;padding:14px 21px;border:0;border-radius:19px;background:#f4f2ef;color:#181818;font-size:13px;line-height:normal}
 .case-toolbar button.case-close.case-toolbar-close .case-close-label{font-size:inherit;line-height:inherit}
 .case-close-dot{width:5px;height:5px;border-radius:50%;background:#181818;flex:none}
+.case-end button.button-ripple-host{position:relative}
+.button-ripple-host{isolation:isolate;--button-ripple-color:#81725f}
+.button-ripple-dark{--button-ripple-color:#f1e3ca}
+.button-ripple-label{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;gap:inherit;pointer-events:none}
+.button-ripple-surface{position:absolute;inset:0;z-index:0;border-radius:inherit;overflow:hidden;pointer-events:none}
+.button-ripple-wave{position:absolute;border-radius:50%;background:var(--button-ripple-color);pointer-events:none}
 .case-end{background:radial-gradient(ellipse at 0% 120%,var(--case-glow-1),transparent 60%),radial-gradient(ellipse at 100% 120%,var(--case-glow-1),transparent 60%),linear-gradient(#0b0b0b,var(--case-depth))}
 @media(max-width:720px){
  .case-toolbar .case-menu{height:48px}

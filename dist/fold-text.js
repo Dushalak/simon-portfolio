@@ -46,14 +46,11 @@
   document.querySelectorAll('.contact-links > a,.contact-links > button').forEach(link=>bind(link,[link.querySelector('strong')],{stagger:18}));
   document.querySelectorAll('.hero-nav-item').forEach(link=>bind(link,[link.querySelector('.hero-reveal > span:first-child')],{stagger:24}));
   document.querySelectorAll('#mobile-nav > a').forEach(link=>bind(link,[link.querySelector('.menu-cn'),link.querySelector('.menu-en')],{stagger:24}));
-  const toggle=document.querySelector('.menu-toggle'),contact=document.querySelector('.header-contact');
+  const toggle=document.querySelector('.menu-toggle');
   bind(toggle,[toggle.querySelector('.menu-label')],{stagger:18});
-  bind(contact,[contact.querySelector('.header-contact-label')],{stagger:24});
   const caseToggle=document.querySelector('.case-menu summary');
   bind(caseToggle,[caseToggle.querySelector('.case-menu-label')],{stagger:18});
   document.querySelectorAll('[data-case-switch]').forEach(button=>bind(button,[button.querySelector('.menu-cn'),button.querySelector('.menu-en')],{stagger:24}));
-  const caseClose=document.querySelector('.case-toolbar-close');
-  bind(caseClose,[caseClose.querySelector('.case-close-label')],{stagger:24});
   // About headings use the same proximity typography as its left-column text.
   [motion,pointer].forEach(media=>media.addEventListener('change',()=>all.forEach(fold=>fold.reset()),{signal:events.signal}));
   addEventListener('pagehide',event=>{if(event.persisted)return;events.abort();all.forEach(fold=>fold.reset());all.clear();},{signal:events.signal});
