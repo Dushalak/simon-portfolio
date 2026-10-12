@@ -306,13 +306,14 @@ void main() {
     if(!program||lost)return;const dpr=Math.min(devicePixelRatio||1,1.25),width=Math.max(1,Math.round(root.clientWidth*dpr)),height=Math.max(1,Math.round(root.clientHeight*dpr));
     if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}draw();wake();
   }
+  const foilUniform=new Float32Array([226,230,236].map(c=>Math.pow(c/255,2.2)));
   function draw(){
     if(!program||lost||!ready)return;
     gl.viewport(0,0,canvas.width,canvas.height);gl.useProgram(program);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);
     gl.uniform1i(uniforms.uArt,0);gl.uniform2f(uniforms.uSize,canvas.width,canvas.height);gl.uniform1f(uniforms.uAspect,canvas.height/canvas.width);
     gl.uniform2f(uniforms.uTilt,state.x*Math.PI/180,state.y*Math.PI/180);gl.uniform2f(uniforms.uLight,state.lx,state.ly);gl.uniform1f(uniforms.uDistance,1100/root.clientWidth);
     gl.uniform1i(uniforms.uPreset,settings.preset);gl.uniform1f(uniforms.uIntensity,settings.intensity);gl.uniform1f(uniforms.uScale,settings.scale);gl.uniform1f(uniforms.uEdge,settings.edge);gl.uniform1f(uniforms.uFrame,settings.frame);gl.uniform1f(uniforms.uRadius,settings.radius/root.clientWidth);gl.uniform1f(uniforms.uGlare,settings.glare);
-    gl.uniform3fv(uniforms.uFoil,[226,230,236].map(c=>Math.pow(c/255,2.2)));gl.uniform1f(uniforms.uReady,1);gl.drawArrays(gl.TRIANGLES,0,3);
+    gl.uniform3fv(uniforms.uFoil,foilUniform);gl.uniform1f(uniforms.uReady,1);gl.drawArrays(gl.TRIANGLES,0,3);
   }
   const allowed=()=>alive&&visible&&!document.hidden&&!document.querySelector('.case-dialog').open&&!root.closest('[inert]')&&!lost;
   // Use the supplied component's spring response, with small integration steps.

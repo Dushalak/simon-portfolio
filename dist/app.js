@@ -51,20 +51,24 @@
   dialog.addEventListener('click',e=>{if(!caseMenu.contains(e.target))setCaseMenu(false);});
   // Native looping keeps playback reliable when switching tabs or opening a case.
   const video=$('.bg-video');let paused=reduced;
+  let videoVisible=video.getBoundingClientRect().bottom>0&&video.getBoundingClientRect().top<innerHeight;
   let introVideoWaiting=!!window.portfolioIntroLocked;
   const motion=$('.motion-toggle');
   function motionLabel(){motion.innerHTML=paused?'播放动画 <span>▶</span>':'暂停动画 <span>Ⅱ</span>';motion.setAttribute('aria-label',paused?'播放背景动画':'暂停背景动画');}
   function pauseVideo(){video.pause();}
   async function playVideo(){try{await video.play();paused=false;motionLabel();}catch(error){if(error.name!=='AbortError'){paused=true;motionLabel();}}}
+  function syncVideo(){if(document.hidden||introVideoWaiting||paused||dialog.open||!videoVisible)pauseVideo();else playVideo();}
+  const videoObserver=new IntersectionObserver(entries=>{videoVisible=entries[0].isIntersecting;syncVideo();});videoObserver.observe(video);
+  addEventListener('pagehide',event=>{if(!event.persisted)videoObserver.disconnect();});
   video.muted=true;video.loop=true;video.addEventListener('playing',()=>video.classList.add('video-ready'));
   function startIntroVideo(){if(!introVideoWaiting)return;introVideoWaiting=false;
-    if(video.currentTime>.01)video.currentTime=0;if(!paused&&!dialog.open)playVideo();}
+    if(video.currentTime>.01)video.currentTime=0;syncVideo();}
   addEventListener('portfolio:light-reveal',startIntroVideo);
   addEventListener('portfolio:intro-complete',startIntroVideo);
   addEventListener('portfolio:intro-timeout',startIntroVideo);
   if(reduced||introVideoWaiting)pauseVideo();else playVideo();motionLabel();
   motion.addEventListener('click',()=>{if(paused)playVideo();else{paused=true;pauseVideo();motionLabel();}});
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseVideo();else if(!introVideoWaiting&&!paused&&!dialog.open)playVideo();});
+  document.addEventListener('visibilitychange',syncVideo);
   let toastTimer;function toast(text){const e=$('.toast');e.textContent=text;e.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove('show'),3000);}
   document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',async()=>{
     b.getAnimations().forEach(a=>a.cancel());
@@ -73,5 +77,5 @@
     catch{toast((b.dataset.copyLabel||'内容')+'：'+b.dataset.copy+'，请长按复制');}
   }));
   window.PortfolioProjectBrowser.init({dialog,pages,reduced,toast,closeMenu,setCaseMenu,pauseVideo,
-    resumeVideo(){if(!paused)playVideo();},updateHome});
+    resumeVideo:syncVideo,updateHome});
 })();

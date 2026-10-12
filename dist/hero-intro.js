@@ -267,14 +267,17 @@
     timeline.add(hero.querySelector('.hero-bottom'),[{opacity:0},{opacity:1}],600,labels.contentEntrance+170);
     timeline.add(document.querySelector('.section-rail'),[{opacity:0},{opacity:1}],600,labels.contentEntrance+340);
     timeline.duration=Math.max(labels.introComplete,labels.contentEntrance+340+4*staggerMs+revealMs);
-    // Decode the fallback and wait for a real video frame during construction.
+    // Hidden photo layers are retained as a fallback without requesting them in video mode.
+    const videoMode=Boolean(hero.querySelector('.is-video-scene'));
+    if(!videoMode)hero.querySelectorAll('img[data-fallback-src]').forEach(img=>img.src=img.dataset.fallbackSrc);
+    // Preserve the timeline and video readiness gate; only decode visible scene assets.
     const video=hero.querySelector('video');
     const videoReady=video.readyState>=2?Promise.resolve():new Promise(resolve=>{
       const ready=()=>{video.removeEventListener('loadeddata',ready);video.removeEventListener('error',ready);resolve();};
       video.addEventListener('loadeddata',ready,{once:true,signal:events.signal});
       video.addEventListener('error',ready,{once:true,signal:events.signal});
     });
-    Promise.all([videoReady,...[...hero.querySelectorAll('.hero-photo img,.hero-light-plane img,.scene-poster')].map(img=>
+    Promise.all([videoReady,...[...hero.querySelectorAll(videoMode?'.scene-poster':'.hero-photo img,.hero-light-plane img,.scene-poster')].map(img=>
       img.decode?img.decode().catch(()=>{}):Promise.resolve())]).then(()=>{timeline.assetsReady=true;});
     document.addEventListener('visibilitychange',()=>document.hidden?timeline.pause():timeline.play(),{signal:events.signal});
     addEventListener('resize',auxiliary.resize,{passive:true,signal:events.signal});

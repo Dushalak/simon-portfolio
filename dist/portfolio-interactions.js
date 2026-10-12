@@ -125,6 +125,7 @@
     if(currentCard||viewLeaving){bx+=(pointer.x-bx)*follow;by+=(pointer.y-by)*follow;position.style.transform=`translate3d(${bx-41}px,${by-41}px,0)`;moving ||= Math.abs(pointer.x-bx)+Math.abs(pointer.y-by)>.1;}
     moving ||= Math.abs(pointer.x-gx)+Math.abs(pointer.y-gy)>.1||Math.abs(glowTarget-glowOpacity)>.002;
     const menuOpen=document.body.classList.contains('menu-open')||dialog.classList.contains('case-menu-open');
+    const typographyUpdates=[];
     typography.forEach(({title,cells})=>{
       if(!title.isConnected){typography.delete(title);return;}
       const r=title.getBoundingClientRect(),inCase=Boolean(title.closest('dialog'));
@@ -138,12 +139,16 @@
         const distance=Math.hypot(pointer.x-(rect.left+rect.width/2),pointer.y-(rect.top+rect.height/2));
         const t=clamp((1-distance/radius)*1.22);return t*t*(3-2*t);
       });
-      cells.forEach((c,i)=>{
+      typographyUpdates.push({cells,targets});
+    });
+    // Finish measuring every title before writing any glyph style.
+    typographyUpdates.forEach(({cells,targets})=>cells.forEach((c,i)=>{
         const target=targets[i];c.value+=(target-c.value)*(target>c.value?fast:recover);
         if(c.value<.001)c.value=0;
-        c.cell.style.setProperty('--proximity',c.value.toFixed(4));moving ||= Math.abs(target-c.value)>.001;
-      });
-    });
+        const output=c.value.toFixed(4);
+        if(c.output!==output){c.cell.style.setProperty('--proximity',output);c.output=output;}
+        moving ||= Math.abs(target-c.value)>.001;
+      }));
     dirty=false;if(moving&&fine.matches&&!document.hidden)request();
   }
   const passive={passive:true,signal:events.signal};
