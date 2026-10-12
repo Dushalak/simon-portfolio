@@ -107,16 +107,22 @@
     if(!suppliedCanvas){veil.append(canvas);stage.prepend(veil);}
     const resources = [], events = new AbortController();
     let gl, program, buffer, uniforms, fallback = false, lastSize = '', maskKey = '', maskURL = null;
+    let dummy,fieldTexture,fieldBuffer,fieldKey='',floatFields=false;
     const vertex = `attribute vec2 aPosition;varying vec2 vUv;
       void main(){vUv=aPosition*.5+.5;gl_Position=vec4(aPosition,0.,1.);}`;
     const fragment = `precision highp float;
-      varying vec2 vUv;uniform vec2 uResolution;uniform float uProgress,uLight,uMode;
+      varying vec2 vUv;uniform vec2 uResolution;uniform float uProgress,uLight,uMode,uCached;
+      uniform highp sampler2D uField;
       float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
       float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
         return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+1.),f.x),f.y);}
       float fbm(vec2 p){float n=0.,a=.5;for(int i=0;i<4;i++){n+=a*noise(p);p=p*2.03+vec2(13.7,9.2);a*=.5;}return n;}
       void main(){
+        if(uProgress<=0.&&uLight<=0.&&uMode<.5){gl_FragColor=vec4(0.,0.,0.,1.);return;}
         if(uProgress>=1.&&uMode<1.5){gl_FragColor=vec4(0.);return;}
+        float field,texture,precursor;
+        if(uCached>.5){vec4 data=texture2D(uField,vUv);field=data.r*2.;texture=data.g;precursor=data.b*2.;}
+        else{
         vec2 uv=vec2(vUv.x,1.-vUv.y), ratio=vec2(uResolution.x/uResolution.y,1.);
         vec2 q=uv*ratio;
         vec2 warp=vec2(fbm(q*3.1+vec2(7.2,1.8)),fbm(q*3.4+vec2(1.3,8.6)));
@@ -129,17 +135,19 @@
         float c=length((uv-vec2(.78,.66))*ratio);
         float d=length((uv-vec2(.57,.82))*ratio);
         float distance=min(min(a,b),min(c,d));
-        float field=coarse*.88+medium*.08+detail*.035+min(distance,.8)*.28+(grain-.5)*.014;
+        field=coarse*.88+medium*.08+detail*.035+min(distance,.8)*.28+(grain-.5)*.014;
+        texture=mix(.02,1.,smoothstep(.35,.74,noise(q*185.)))*mix(.35,1.,grain);
+        precursor=(exp(-a*a/.024)+exp(-b*b/.018)+exp(-c*c/.035)+exp(-d*d/.015));
+        }
+        if(uMode>2.5){gl_FragColor=vec4(field*.5,texture,precursor*.5,1.);return;}
         if(uMode>1.5){gl_FragColor=vec4(vec3(field),1.);return;}
         float threshold=mix(.25,.95,uProgress);
         float edge=field-threshold;
         float open=(1.-smoothstep(-.008,.014,edge))*smoothstep(.001,.05,uProgress);
         float envelope=smoothstep(.005,.10,uProgress)*(1.-smoothstep(.83,1.,uProgress));
-        float texture=mix(.02,1.,smoothstep(.35,.74,noise(q*185.)))*mix(.35,1.,grain);
         float rim=exp(-abs(edge)*155.)*texture*.85*envelope;
         float bloom=exp(-abs(edge)*27.)*.16*envelope;
-        float precursor=(exp(-a*a/.024)+exp(-b*b/.018)+exp(-c*c/.035)+exp(-d*d/.015))*uLight*.23;
-        float light=rim+bloom+precursor;
+        float light=rim+bloom+precursor*uLight*.23;
         float alpha=clamp(1.-open+light,0.,1.);
         vec3 silver=vec3(1.,.96,.86)*light;
         if(uMode>.5){alpha=clamp(light,0.,1.);}
@@ -168,10 +176,35 @@
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]), gl.STATIC_DRAW);
       const attribute = gl.getAttribLocation(program, 'aPosition');
       gl.enableVertexAttribArray(attribute); gl.vertexAttribPointer(attribute,2,gl.FLOAT,false,0,0);
-      uniforms = Object.fromEntries(['uResolution','uProgress','uLight','uMode'].map(name=>[name,gl.getUniformLocation(program,name)]));
+      uniforms = Object.fromEntries(['uResolution','uProgress','uLight','uMode','uCached','uField'].map(name=>[name,gl.getUniformLocation(program,name)]));
+      dummy=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,dummy);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+      gl.uniform1i(uniforms.uField,0);
+      floatFields=Boolean(gl.getExtension('OES_texture_float')&&gl.getExtension('WEBGL_color_buffer_float'));
       veil.dataset.renderer = 'webgl';
       canvas.addEventListener('webglcontextlost', event=>{event.preventDefault();gradientFallback();}, {signal:events.signal});
     } catch (_) { gradientFallback(); }
+    function fields(width,height,w,h){
+      if(!floatFields){gl.bindTexture(gl.TEXTURE_2D,dummy);gl.uniform1f(uniforms.uCached,0);return;}
+      const key=`${width}x${height}/${w}x${h}`;
+      if(key!==fieldKey){
+        fieldTexture ||= gl.createTexture();fieldBuffer ||= gl.createFramebuffer();
+        gl.bindTexture(gl.TEXTURE_2D,fieldTexture);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+        // Float32 stores the original field without quantizing its fine dissolution edge.
+        gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,width,height,0,gl.RGBA,gl.FLOAT,null);
+        if(gl.getError()!==gl.NO_ERROR){floatFields=false;fieldKey='';fields(width,height,w,h);return;}
+        gl.bindFramebuffer(gl.FRAMEBUFFER,fieldBuffer);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,fieldTexture,0);
+        if(gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE){
+          gl.bindFramebuffer(gl.FRAMEBUFFER,null);floatFields=false;fieldKey='';fields(width,height,w,h);return;
+        }
+        gl.bindTexture(gl.TEXTURE_2D,dummy);gl.uniform1f(uniforms.uCached,0);
+        gl.uniform2f(uniforms.uResolution,w,h);gl.uniform1f(uniforms.uMode,3);gl.uniform1f(uniforms.uProgress,0);gl.uniform1f(uniforms.uLight,0);
+        gl.drawArrays(gl.TRIANGLES,0,6);gl.bindFramebuffer(gl.FRAMEBUFFER,null);fieldKey=key;
+      }
+      gl.bindTexture(gl.TEXTURE_2D,fieldTexture);gl.uniform1f(uniforms.uCached,1);veil.dataset.field='cached';
+    }
     function draw(progress, light = 0) {
       if (progress >= 1) { veil.style.visibility = 'hidden'; return; }
       if (overlay && progress <= 0 && light <= 0) { veil.style.visibility = 'hidden'; return; }
@@ -192,6 +225,7 @@
       const scale=Math.min(devicePixelRatio,1.25,1440/w,1000/h);
       const size=`${w}x${h}`;
       if(size!==lastSize){canvas.width=Math.max(1,Math.round(w*scale));canvas.height=Math.max(1,Math.round(h*scale));gl.viewport(0,0,canvas.width,canvas.height);lastSize=size;}
+      if(progress>0||light>0)fields(canvas.width,canvas.height,w,h);
       gl.uniform2f(uniforms.uResolution,w,h);
       gl.uniform1f(uniforms.uProgress,progress);gl.uniform1f(uniforms.uLight,light);
       gl.uniform1f(uniforms.uMode,overlay?1:0);
@@ -205,6 +239,7 @@
       if(key===maskKey)return maskURL;
       const mw=512,mh=Math.max(1,Math.round(mw*h/w));
       canvas.width=mw;canvas.height=mh;gl.viewport(0,0,mw,mh);
+      fields(mw,mh,w,h);
       gl.uniform2f(uniforms.uResolution,w,h);gl.uniform1f(uniforms.uProgress,.5);
       gl.uniform1f(uniforms.uLight,0);gl.uniform1f(uniforms.uMode,2);gl.drawArrays(gl.TRIANGLES,0,6);
       const pixels=new Uint8Array(mw*mh*4);gl.readPixels(0,0,mw,mh,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
@@ -215,9 +250,10 @@
       return maskURL;
     }
     draw(0);
-    return { draw, maskImage, renderer:veil.dataset.renderer, dispose() {
+    return { draw, maskImage, renderer:veil.dataset.renderer, get field(){return fieldKey?'cached':'analytic';}, dispose() {
       events.abort();veil.remove();
       if(gl){resources.forEach(shader=>gl.deleteShader(shader));if(buffer)gl.deleteBuffer(buffer);if(program)gl.deleteProgram(program);
+        if(dummy)gl.deleteTexture(dummy);if(fieldTexture)gl.deleteTexture(fieldTexture);if(fieldBuffer)gl.deleteFramebuffer(fieldBuffer);
         gl.getExtension('WEBGL_lose_context')?.loseContext();}
     }};
   }
@@ -236,6 +272,7 @@
       if(t>=labels.videoStart&&!videoStarted){videoStarted=true;dispatchEvent(new Event('portfolio:light-reveal'));}
       if(t>=labels.lightReveal){
         optics.draw(progress,light);
+        hero.dataset.introField=optics.field;
       }
     },onComplete);
     auxiliary.lines.forEach(({node,group,at})=>{

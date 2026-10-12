@@ -29,6 +29,8 @@
   --bwf-rh: 100%;
   --bwf-top: 0px;
   --bwf-bot: 100%;
+}
+.bwf-beam,.bwf-glow,.bwf-l {
   /* Both the canvas and each letter paint this exact spectrum in Contact's
      coordinate space. The existing measured offsets keep refraction in sync. */
   --bwf-prism: linear-gradient(var(--bwf-ang),
@@ -45,6 +47,8 @@
     radial-gradient(ellipse 16cqw 24cqw at calc(var(--bwf-px) - 4cqw) var(--bwf-py),rgba(var(--bwf-red),calc(var(--bwf-g) * var(--bwf-glow-strength) * .65)),transparent 72%),
     radial-gradient(ellipse 16cqw 24cqw at calc(var(--bwf-px) + 4cqw) var(--bwf-py),rgba(var(--bwf-cyan),calc(var(--bwf-g) * var(--bwf-glow-strength))),transparent 72%),
     radial-gradient(circle 20cqw at calc(var(--bwf-px) + 8cqw) calc(var(--bwf-py) + 2cqw),rgba(var(--bwf-violet),calc(var(--bwf-g) * var(--bwf-glow-strength) * .55)),transparent 72%);
+}
+#contact.bwf {
   isolation: isolate;
   overflow: hidden;
   container-type: inline-size;
@@ -77,6 +81,7 @@
 .bwf-bands { opacity: .4; }
 .bwf-beam { opacity: var(--bwf-beam-opacity); }
 .bwf-grain { opacity: .1; }
+.bwf-beam.bwf-optics-cached,.bwf-glow.bwf-optics-cached{background:none;overflow:hidden}
 .bwf-word { position: relative; z-index: 1; overflow: hidden; margin-top: 36px; margin-inline: calc(-100% * 7 / 86); height: 35cqw; flex: 0 0 auto; }
 /* Use the existing Contact content width instead of a second template grid. */
 .bwf-word-box { padding: 0 7%; width: 100%; margin: 0 auto; box-sizing: border-box; }

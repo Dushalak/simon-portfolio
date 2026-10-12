@@ -23,6 +23,10 @@
   let targetX=0,targetY=0,x=0,y=0,glow=0,targetGlow=0;
   let pointerX=0,pointerY=0,lightX=0,lightY=0,lastTime=0;
   const events = new AbortController();
+  const videoMode=Boolean(hero.querySelector('.is-video-scene'));
+  let offscreenSettled=false;
+  const writes=new WeakMap();
+  function write(node,key,value){let values=writes.get(node);if(!values){values={};writes.set(node,values);}if(values[key]!==value){node.style[key]=value;values[key]=value;}}
   const aboutStory=window.PortfolioAbout?.create({hero,stage,reduced});
 
   // 1. Intro delegates to one master timeline, then hands off to the interactions.
@@ -47,6 +51,7 @@
   // 2. Crossing one threshold starts a timed layout transition. Stopping the
   // wheel cannot leave the text halfway; reversing below the threshold returns it.
   function measure() {
+    offscreenSettled=false;
     aboutStory?.measure();
     const w=stage.clientWidth,h=stage.clientHeight;
     const left=panel.offsetLeft-panel.offsetWidth/2;
@@ -68,6 +73,8 @@
     frame=0; if(!active||!geometry)return;
     const rect=hero.getBoundingClientRect();
     const visible=rect.bottom>0&&rect.top<innerHeight;
+    if(!visible&&rect.bottom<=0&&offscreenSettled){write(atmosphere,'animationPlayState','paused');return;}
+    offscreenSettled=!visible&&rect.bottom<=0;
     const p=reduced.matches?0:clamp(-rect.top/geometry.pin);
     hero.dataset.scrollProgress=p.toFixed(3);
     const story=aboutStory?.render(p,introDone)||{exit:0,advance:p*.035};
@@ -88,21 +95,21 @@
     lightX+=(pointerX-lightX)*alpha;lightY+=(pointerY-lightY)*alpha;glow+=(targetGlow-glow)*alpha;
     // Text settles into its reading layout; the background keeps its independent depth.
     const panelMovement=(1-layoutValue)*(canTilt?1:0),sceneMovement=canTilt?1:0;
-    panel.style.transform=`translate(-50%,-50%) translate3d(0,${-26*story.exit}px,0) rotateX(${-y*config.tiltDeg*panelMovement}deg) rotateY(${x*config.tiltDeg*panelMovement}deg)`;
-    panel.style.opacity=String(1-story.exit);
+    write(panel,'transform',`translate(-50%,-50%) translate3d(0,${-26*story.exit}px,0) rotateX(${-y*config.tiltDeg*panelMovement}deg) rotateY(${x*config.tiltDeg*panelMovement}deg)`);
+    write(panel,'opacity',String(1-story.exit));
     panel.inert=story.exit>.96;
-    if(introDone)hero.querySelector('.hero-bottom').style.opacity=String(1-story.exit);
-    border.style.opacity=String(.72*(1-layoutValue));
+    if(introDone)write(hero.querySelector('.hero-bottom'),'opacity',String(1-story.exit));
+    write(border,'opacity',String(.72*(1-layoutValue)));
     pieces.forEach((node,i)=>{
       const t=layoutValue,slot=geometry.slots[i],scale=i===0?(geometry.w<=720?1.08:1.2):1;
-      node.style.transform=`translate3d(${slot.dx*t}px,${slot.dy*t}px,0) scale(${1+(scale-1)*t})`;
+      write(node,'transform',`translate3d(${slot.dx*t}px,${slot.dy*t}px,0) scale(${1+(scale-1)*t})`);
     });
-    photo.style.transform=`translate3d(${x*config.photoPx*sceneMovement}px,calc(-50% + ${y*config.photoY*sceneMovement-p*14}px),0) scale(${1+p*.035})`;
-    lightPlane.style.transform=`translate3d(${x*config.lightPx*sceneMovement}px,calc(-50% + ${y*config.lightY*sceneMovement-p*20}px),0) scale(${1+p*.04})`;
-    videoPlane.style.transform=`translate3d(${x*config.lightPx*sceneMovement}px,${y*config.lightY*sceneMovement}px,0) rotateX(${-y*config.tiltDeg*.42*sceneMovement}deg) rotateY(${x*config.tiltDeg*.42*sceneMovement}deg) scale(${1+story.advance})`;
+    if(!videoMode){write(photo,'transform',`translate3d(${x*config.photoPx*sceneMovement}px,calc(-50% + ${y*config.photoY*sceneMovement-p*14}px),0) scale(${1+p*.035})`);
+    write(lightPlane,'transform',`translate3d(${x*config.lightPx*sceneMovement}px,calc(-50% + ${y*config.lightY*sceneMovement-p*20}px),0) scale(${1+p*.04})`);}
+    write(videoPlane,'transform',`translate3d(${x*config.lightPx*sceneMovement}px,${y*config.lightY*sceneMovement}px,0) rotateX(${-y*config.tiltDeg*.42*sceneMovement}deg) rotateY(${x*config.tiltDeg*.42*sceneMovement}deg) scale(${1+story.advance})`);
     cursorLight.style.transform=`translate3d(${lightX-140}px,${lightY-140}px,0)`;
     cursorLight.style.opacity=String(glow*.75*(1-p));
-    atmosphere.style.animationPlayState=!introDone||hero.querySelector('video').paused?'paused':'running';
+    write(atmosphere,'animationPlayState',!visible||!introDone||hero.querySelector('video').paused?'paused':'running');
     const unsettled=Math.abs(targetX-x)+Math.abs(targetY-y)>.002 || Math.abs(pointerX-lightX)+Math.abs(pointerY-lightY)>.25 || Math.abs(targetGlow-glow)>.002;
     if(visible&&(unsettled||layoutElapsed<1)&&!reduced.matches)request();
   }

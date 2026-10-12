@@ -36,16 +36,22 @@
   const ptr = { u: 0.5, x: 0, y: 0, inside: false };
   const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
   const events = new AbortController();
+  const optics=window.PortfolioFooterOptics.create(root),dialog=document.querySelector('.case-dialog');
   let alive = true, visible = false, seen = false, reduced = mq.matches;
   let fitFrame = 0, raf = 0;
+  let warmed=false,pointerRect=null,rectDirty=true;
+  const letters=[...inner.querySelectorAll('.bwf-l')],writes=new WeakMap();
+  const property=(node,name,value)=>{
+    let values=writes.get(node);if(!values){values=new Map();writes.set(node,values);}
+    if(values.get(name)!==value){node.style.setProperty(name,value);values.set(name,value);}
+  };
   root.dataset.in = reduced ? 'true' : 'false';
 
   const place = () => {
     const r = root.getBoundingClientRect();
-    root.style.setProperty('--bwf-rw', r.width + 'px');
-    root.style.setProperty('--bwf-rh', r.height + 'px');
+    pointerRect=r;rectDirty=false;
     let top = 0;
-    inner.querySelectorAll('.bwf-l').forEach((s, i) => {
+    const offsets=letters.map((s, i) => {
       // Offset chains deliberately ignore the letters' reveal/hover translate.
       let x = 0, y = 0, el = s;
       while (el && el !== root) {
@@ -53,20 +59,22 @@
         y += el.offsetTop;
         el = el.offsetParent;
       }
-      s.style.setProperty('--bwf-x', x + 'px');
-      s.style.setProperty('--bwf-y', y + 'px');
       if (i === 0) top = y;
+      return {s,x,y};
     });
-    root.style.setProperty('--bwf-top', top + 'px');
-    root.style.setProperty('--bwf-bot', top + (parseFloat(inner.style.fontSize) || 0) * 0.92 + 'px');
+    if(warmed){const style=getComputedStyle(root);optics.resize(r.width,r.height,root.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight));}
+    property(root,'--bwf-rw',r.width+'px');property(root,'--bwf-rh',r.height+'px');
+    offsets.forEach(({s,x,y})=>{property(s,'--bwf-x',x+'px');property(s,'--bwf-y',y+'px');});
+    property(root,'--bwf-top',top+'px');property(root,'--bwf-bot',top+(parseFloat(inner.style.fontSize)||0)*.92+'px');
   };
   const fit = () => {
     const wb = inner.parentElement ?? box;
     const pad = parseFloat(getComputedStyle(wb).paddingLeft) || 0;
     const target = wb.clientWidth - pad * 2;
+    const family=getComputedStyle(inner).fontFamily;
     inner.style.fontSize = '100px';
     const measured = inner.offsetWidth;
-    const base = measureBaseline(getComputedStyle(inner).fontFamily, wordWeight, word);
+    const base = measureBaseline(family, wordWeight, word);
     const next = fitSize(measured, target, target * 0.42);
     inner.style.fontSize = next + 'px';
     box.style.height = wordHeight(next, base, cut) + 'px';
@@ -80,19 +88,24 @@
   const ro = new ResizeObserver(schedule);
   ro.observe(root);
   document.fonts?.ready.then(() => alive && schedule());
+  document.fonts?.addEventListener?.('loadingdone',()=>alive&&schedule(),{signal:events.signal});
+  const warmup=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){warmed=true;place();warmup.disconnect();}},{rootMargin:'600px'});warmup.observe(root);
 
   const set = (b, px, py, g) => {
-    root.style.setProperty('--bwf-b', b.toFixed(2) + '%');
-    root.style.setProperty('--bwf-px', px.toFixed(1) + 'px');
-    root.style.setProperty('--bwf-py', py.toFixed(1) + 'px');
-    root.style.setProperty('--bwf-g', g.toFixed(3));
+    const beam=b.toFixed(2),x=px.toFixed(1),y=py.toFixed(1),gain=g.toFixed(3);
+    property(inner,'--bwf-b',beam+'%');property(inner,'--bwf-px',x+'px');property(inner,'--bwf-py',y+'px');property(inner,'--bwf-g',gain);
+    if(root.dataset.optics!=='cached'){
+      property(root.querySelector('.bwf-beam'),'--bwf-b',beam+'%');
+      const glow=root.querySelector('.bwf-glow');property(glow,'--bwf-px',x+'px');property(glow,'--bwf-py',y+'px');property(glow,'--bwf-g',gain);
+    }
+    optics.update(Number(beam),Number(x),Number(y),Number(gain));
   };
   const syncMotion = () => {
     cancelAnimationFrame(raf);
     raf = 0;
     root.dataset.motion = reduced ? 'reduced' : 'full';
     root.dataset.running = 'false';
-    if (reduced || !visible || document.hidden) {
+    if (reduced || !visible || document.hidden || dialog.open || root.closest('[inert]')) {
       set(58, ptr.x, ptr.y, ptr.inside ? 1 : 0);
       return;
     }
@@ -141,7 +154,8 @@
   };
   mq.addEventListener('change', onMq);
   const onPointer = e => {
-    const r = e.currentTarget.getBoundingClientRect();
+    if(rectDirty||!pointerRect){pointerRect=root.getBoundingClientRect();rectDirty=false;}
+    const r = pointerRect;
     ptr.x = e.clientX - r.left;
     ptr.y = e.clientY - r.top;
     ptr.u = r.width ? ptr.x / r.width : 0.5;
@@ -160,6 +174,8 @@
     el.addEventListener('animationend', () => el.classList.remove('is-hop'), { signal: events.signal });
   });
   document.addEventListener('visibilitychange', syncMotion, { signal: events.signal });
+  addEventListener('scroll',()=>{rectDirty=true;},{passive:true,signal:events.signal});
+  const modal=new MutationObserver(syncMotion);modal.observe(dialog,{attributes:true,attributeFilter:['open']});modal.observe(document.querySelector('main'),{attributes:true,attributeFilter:['inert']});
   window.addEventListener('pageshow', syncMotion, { signal: events.signal });
   window.addEventListener('pagehide', e => {
     cancelAnimationFrame(raf);
@@ -167,6 +183,7 @@
     alive = false;
     cancelAnimationFrame(fitFrame);
     io.disconnect();
+    warmup.disconnect();modal.disconnect();optics.dispose();
     ro.disconnect();
     mq.removeEventListener('change', onMq);
     events.abort();
