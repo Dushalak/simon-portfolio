@@ -9,7 +9,7 @@
 .bring-sparkles svg{position:absolute;width:var(--sparkle-size);height:var(--sparkle-size);overflow:visible;opacity:0;transform:translate(-50%,-50%) scale(0) rotate(75deg);fill:var(--sparkle-color)}
 .has-title-sparkles .bring-sparkles{opacity:1}
 .has-title-sparkles .bring-sparkles svg{animation:bringTitleSparkle var(--sparkle-duration) ease-in-out var(--sparkle-delay) infinite}
-@keyframes bringTitleSparkle{0%,100%{opacity:0;transform:translate(-50%,-50%) scale(0) rotate(75deg)}50%{opacity:.85;transform:translate(-50%,-50%) scale(1) rotate(120deg)}100%{transform:translate(-50%,-50%) scale(0) rotate(150deg)}}
+@keyframes bringTitleSparkle{0%,100%{opacity:0;transform:translate(-50%,-50%) scale(0) rotate(75deg)}50%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(120deg)}100%{transform:translate(-50%,-50%) scale(0) rotate(150deg)}}
 @media(hover:none),(pointer:coarse),(prefers-reduced-motion:reduce){.bring-sparkles{display:none}}
 .bring-section{--bring-bg:#f5f5f3}
 .bring-inner{position:relative;z-index:1}
