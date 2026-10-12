@@ -11,7 +11,7 @@
     }
     const preference=matchMedia('(prefers-reduced-motion:reduce)');
     const atmosphere=window.PortfolioProjectAtmosphere.create(dialog);
-    const dataReady=fetch('assets/projects.json').then(response=>{if(!response.ok)throw Error('Case assets unavailable');return response.json();});dataReady.catch(()=>{});
+    const dataReady=fetch('assets/projects.json?v=20261012-yuxu-pdf1').then(response=>{if(!response.ok)throw Error('Case assets unavailable');return response.json();});dataReady.catch(()=>{});
     let currentCase=null,lastTrigger=null,homeScroll=0,homeHash='#nelu',busy=false,queued,frame=0,contentAnimations=[];
     let homeAnchor=null,homeOffset=0,homeWidth=innerWidth,homeHeight=innerHeight;
     const homeRecord=()=>({scroll:homeScroll,hash:homeHash,anchor:homeAnchor,offset:homeOffset,width:homeWidth,height:homeHeight});
