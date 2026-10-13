@@ -9,6 +9,8 @@
   const videoPlane = hero.querySelector('.hero-bg');
   const atmosphere = hero.querySelector('.hero-atmosphere');
   const cursorLight = hero.querySelector('.hero-light');
+  const heroBottom=hero.querySelector('.hero-bottom'),video=hero.querySelector('video'),scene=hero.querySelector('.hero-scene'),dialog=document.querySelector('.case-dialog');
+  const policy=window.PortfolioHeroPerformance,interval=1000/policy.profile.motionFps;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const desktop = matchMedia('(min-width: 721px) and (hover: hover) and (pointer: fine)');
 
@@ -21,7 +23,9 @@
   let layoutTarget=0,layoutFrom=0,layoutValue=0,layoutStart=0;
   let introTimeline, introDone=false, frame=0, active=true, geometry;
   let targetX=0,targetY=0,x=0,y=0,glow=0,targetGlow=0;
-  let pointerX=0,pointerY=0,lightX=0,lightY=0,lastTime=0;
+  let pointerX=0,pointerY=0,lightX=0,lightY=0,lastTime=0,lastRender=-Infinity;
+  let pointerDirty=false,clientX=0,clientY=0;
+  const defaultStory={exit:0,advance:0};
   const events = new AbortController();
   const videoMode=Boolean(hero.querySelector('.is-video-scene'));
   let offscreenSettled=false;
@@ -71,13 +75,17 @@
   function request() { if(active&&!frame&&!document.hidden)frame=requestAnimationFrame(render); }
   function render(now) {
     frame=0; if(!active||!geometry)return;
+    if(now-lastRender<interval-1){request();return;}lastRender=now;
     const rect=hero.getBoundingClientRect();
     const visible=rect.bottom>0&&rect.top<innerHeight;
     if(!visible&&rect.bottom<=0&&offscreenSettled){write(atmosphere,'animationPlayState','paused');return;}
     offscreenSettled=!visible&&rect.bottom<=0;
     const p=reduced.matches?0:clamp(-rect.top/geometry.pin);
     hero.dataset.scrollProgress=p.toFixed(3);
-    const story=aboutStory?.render(p,introDone)||{exit:0,advance:p*.035};
+    defaultStory.advance=p*.035;
+    const story=aboutStory?.render(p,introDone)||defaultStory;
+    const sceneVisible=visible&&Number(scene.style.opacity||1)>.005;
+    if(hero.dataset.sceneVisible!==String(sceneVisible))hero.dataset.sceneVisible=String(sceneVisible);
     if(!introDone&&scrollY>0)window.scrollTo({top:0,left:0,behavior:'instant'});
     const scrollDistance=Math.max(0,-rect.top);
     const nextLayout=reduced.matches?0:scrollDistance>=(layoutTarget?geometry.threshold-18:geometry.threshold)?1:0;
@@ -89,8 +97,12 @@
     hero.dataset.layoutProgress=layoutValue.toFixed(3);
     const dt=Math.min(40,lastTime?now-lastTime:16.67);lastTime=now;
     const alpha=1-Math.pow(1-config.interpolation,dt/16.67);
-    const canTilt=desktop.matches&&!reduced.matches&&introDone&&visible&&!document.querySelector('.case-dialog')?.open;
-    if(!canTilt)targetX=targetY=targetGlow=0;
+    const canTilt=desktop.matches&&!reduced.matches&&introDone&&visible&&!dialog?.open&&!hero.closest('[inert]')&&policy.profile.tier!=='low';
+    if(pointerDirty&&canTilt){
+      const bounds=stage.getBoundingClientRect();pointerX=clientX-bounds.left;pointerY=clientY-bounds.top;
+      targetX=clamp(pointerX/geometry.w*2-1,-1,1);targetY=clamp(pointerY/geometry.h*2-1,-1,1);pointerDirty=false;
+    }
+    if(!canTilt){pointerDirty=false;targetX=targetY=targetGlow=0;}
     x+=(targetX-x)*alpha;y+=(targetY-y)*alpha;
     lightX+=(pointerX-lightX)*alpha;lightY+=(pointerY-lightY)*alpha;glow+=(targetGlow-glow)*alpha;
     // Text settles into its reading layout; the background keeps its independent depth.
@@ -98,7 +110,7 @@
     write(panel,'transform',`translate(-50%,-50%) translate3d(0,${-26*story.exit}px,0) rotateX(${-y*config.tiltDeg*panelMovement}deg) rotateY(${x*config.tiltDeg*panelMovement}deg)`);
     write(panel,'opacity',String(1-story.exit));
     panel.inert=story.exit>.96;
-    if(introDone)write(hero.querySelector('.hero-bottom'),'opacity',String(1-story.exit));
+    if(introDone)write(heroBottom,'opacity',String(1-story.exit));
     write(border,'opacity',String(.72*(1-layoutValue)));
     pieces.forEach((node,i)=>{
       const t=layoutValue,slot=geometry.slots[i],scale=i===0?(geometry.w<=720?1.08:1.2):1;
@@ -107,27 +119,25 @@
     if(!videoMode){write(photo,'transform',`translate3d(${x*config.photoPx*sceneMovement}px,calc(-50% + ${y*config.photoY*sceneMovement-p*14}px),0) scale(${1+p*.035})`);
     write(lightPlane,'transform',`translate3d(${x*config.lightPx*sceneMovement}px,calc(-50% + ${y*config.lightY*sceneMovement-p*20}px),0) scale(${1+p*.04})`);}
     write(videoPlane,'transform',`translate3d(${x*config.lightPx*sceneMovement}px,${y*config.lightY*sceneMovement}px,0) rotateX(${-y*config.tiltDeg*.42*sceneMovement}deg) rotateY(${x*config.tiltDeg*.42*sceneMovement}deg) scale(${1+story.advance})`);
-    cursorLight.style.transform=`translate3d(${lightX-140}px,${lightY-140}px,0)`;
-    cursorLight.style.opacity=String(glow*.75*(1-p));
-    write(atmosphere,'animationPlayState',!visible||!introDone||hero.querySelector('video').paused?'paused':'running');
+    write(cursorLight,'transform',`translate3d(${lightX-140}px,${lightY-140}px,0)`);
+    write(cursorLight,'opacity',String(glow*.75*(1-p)));
+    write(atmosphere,'animationPlayState',!sceneVisible||!introDone||video.paused?'paused':'running');
     const unsettled=Math.abs(targetX-x)+Math.abs(targetY-y)>.002 || Math.abs(pointerX-lightX)+Math.abs(pointerY-lightY)>.25 || Math.abs(targetGlow-glow)>.002;
     if(visible&&(unsettled||layoutElapsed<1)&&!reduced.matches)request();
   }
 
   // 3. Pointer depth: no touch/gyroscope effect, a brief interpolation loop only.
   function pointerMove(event) {
-    if(!desktop.matches||reduced.matches||!introDone||event.pointerType==='touch')return;
-    const rect=stage.getBoundingClientRect();
-    pointerX=event.clientX-rect.left;pointerY=event.clientY-rect.top;
-    targetX=clamp(pointerX/geometry.w*2-1,-1,1);targetY=clamp(pointerY/geometry.h*2-1,-1,1);
+    if(!desktop.matches||reduced.matches||!introDone||event.pointerType==='touch'||policy.profile.tier==='low')return;
+    clientX=event.clientX;clientY=event.clientY;pointerDirty=true;
     targetGlow=.65;request();
   }
-  function resetPointer(){targetX=targetY=targetGlow=0;request();}
+  function resetPointer(){pointerDirty=false;targetX=targetY=targetGlow=0;request();}
   function motionPreference(){if(reduced.matches)finishIntro();hero.classList.toggle('has-story',!reduced.matches);resetPointer();measure();}
   function scroll(){request();}
   function resize(){measure();}
   function visibility(){lastTime=0;resetPointer();if(document.hidden&&frame){cancelAnimationFrame(frame);frame=0;}else request();}
-  function cleanUp(event){if(event.persisted)return;active=false;events.abort();observer.disconnect();introTimeline?.dispose();aboutStory?.dispose();cancelAnimationFrame(frame);}
+  function cleanUp(event){if(event.persisted)return;active=false;cancelOpening();events.abort();observer.disconnect();introTimeline?.dispose();aboutStory?.dispose();cancelAnimationFrame(frame);}
   hero.classList.toggle('has-story',!reduced.matches);
   const options={passive:true,signal:events.signal};
   stage.addEventListener('pointermove',pointerMove,options);
@@ -142,5 +152,5 @@
   hero.querySelector('video').addEventListener('play',request,{signal:events.signal});
   hero.querySelector('video').addEventListener('pause',request,{signal:events.signal});
   const observer=new ResizeObserver(measure);observer.observe(stage);observer.observe(panel);
-  measure();animateOpening();
+  measure();const cancelOpening=policy.afterPaint(animateOpening);
 })();

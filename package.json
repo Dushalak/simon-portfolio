@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "build": "node scripts/build.mjs",
-    "check": "node scripts/check.mjs"
+    "check": "node scripts/check.mjs && node scripts/check-hero-performance.cjs",
+    "check:hero": "node scripts/check-hero-performance.cjs"
   },
   "devDependencies": {
     "postcss": "8.5.6",

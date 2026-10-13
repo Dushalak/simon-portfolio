@@ -44,14 +44,12 @@
   </script>
   <style>
     html.intro-pending,html.intro-pending body{background:#000}
-    html.intro-pending main{visibility:hidden}
+    html.intro-pending .hero-reveal{opacity:0}
     html.intro-pending .header,html.intro-pending .section-rail,html.intro-running .header,html.intro-running .section-rail{opacity:0}
     html.intro-pending .skip-link:not(:focus){visibility:hidden}
   </style>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="site.css?v=a68de39cb747">
+  <link rel="preload" as="font" href="assets/fonts/dm-sans-400.woff2" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="site.css?v=7922323e4287">
   <link rel="preload" as="image" href="assets/home-enhanced-poster.webp" fetchpriority="high">
   <link rel="canonical" href="https://jin-wangliang-portfolio.yummy-rain-9843.chatgpt.site/">
   <meta property="og:title" content="金王亮 · UI/UX 设计作品集">
@@ -96,7 +94,7 @@
         <div class="hero-scene is-video-scene" aria-hidden="true">
           <div class="hero-photo"><img data-fallback-src="assets/home-figma.png" alt="" width="2480" height="1920" fetchpriority="high"></div>
           <div class="hero-light-plane"><img data-fallback-src="assets/home-figma.png" alt="" width="2480" height="1920"></div>
-          <div class="hero-bg"><img class="scene-poster" src="assets/home-enhanced-poster.webp" alt="" width="1920" height="1080" fetchpriority="high"><video class="bg-video scene-active" loop muted playsinline preload="auto" poster="assets/home-enhanced-poster.webp"><source src="assets/home-enhanced.mp4" type="video/mp4"></video></div>
+          <div class="hero-bg"><img class="scene-poster" src="assets/home-enhanced-poster.webp" alt="" width="1920" height="1080" fetchpriority="high"><video class="bg-video scene-active" loop muted playsinline preload="none" poster="assets/home-enhanced-poster.webp"><source type="video/mp4"></video></div>
           <div class="hero-atmosphere"></div><div class="hero-darken"></div>
         </div>
         <div class="hero-light" aria-hidden="true"></div>
@@ -202,7 +200,7 @@
   </dialog>
   <div class="toast" role="status" aria-live="polite"></div>
   <div class="swipe-toast" data-phase="gone" data-mounted="false" role="status" aria-live="polite" aria-atomic="true" inert><div class="swipe-toast__lift"><div class="swipe-toast__card" tabindex="0" aria-label="复制成功提示，可向下滑动关闭"><span class="swipe-toast__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4.5 4.5L19 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="swipe-toast__body"><span class="swipe-toast__title"></span><span class="swipe-toast__desc"></span></span><i class="swipe-toast__fuse" aria-hidden="true"></i></div></div></div>
-  <script defer src="site.js?v=a68de39cb747"></script>
+  <script defer src="site.js?v=7922323e4287"></script>
 </body>
 </html>
 

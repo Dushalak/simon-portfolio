@@ -21,6 +21,7 @@
     const groups=[...about.querySelectorAll('[data-about-group]')];
     const wide=matchMedia('(min-width:1000px)'),events=new AbortController();
     let enabled=false,w=1,h=1,previous=-1,lastMode='',lastAccess='',destroyed=false,optics=null,fieldReady=false;
+    const output={exit:0,advance:0};const result=(exit,advance)=>{output.exit=exit;output.advance=advance;return output;};
     const svg=document.createElementNS(NS,'svg');svg.setAttribute('aria-hidden','true');
     svg.setAttribute('width','0');svg.setAttribute('height','0');svg.style.cssText='position:absolute;pointer-events:none';
     svg.innerHTML='<defs><radialGradient id="about-scroll-soft"><stop offset="0" stop-color="white"/><stop offset=".43" stop-color="white"/><stop offset=".72" stop-color="white" stop-opacity=".86"/><stop offset="1" stop-color="white" stop-opacity="0"/></radialGradient><filter id="about-scroll-grain" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" x="0" y="0" width="1" height="1"><feTurbulence type="fractalNoise" baseFrequency="13 17" numOctaves="2" seed="19" result="grain"/><feDisplacementMap in="SourceGraphic" in2="grain" scale=".055" xChannelSelector="R" yChannelSelector="G"/><feGaussianBlur stdDeviation=".012"/></filter><filter id="about-scroll-field" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" x="0" y="0" width="1" height="1"><feComponentTransfer><feFuncR type="linear" slope="-45.4545" intercept="0"/><feFuncG type="linear" slope="-45.4545" intercept="0"/><feFuncB type="linear" slope="-45.4545" intercept="0"/></feComponentTransfer></filter><mask id="about-scroll-mask" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox" x="0" y="0" width="1" height="1" style="mask-type:luminance"><g filter="url(#about-scroll-grain)"></g><image x="0" y="0" width="1" height="1" preserveAspectRatio="none" filter="url(#about-scroll-field)"/></mask></defs>';
@@ -62,14 +63,14 @@
       canvas.style.transform=reveal.style.transform;
     }
     function render(scrollProgress,introDone){
-      if(!enabled)return {exit:0,advance:scrollProgress*.035};
+      if(!enabled)return result(0,scrollProgress*.035);
       const p=clamp(scrollProgress/completionAt);
       if(p>0){
         warmAssets();
         if(!optics){optics=window.PortfolioIntro.createOpticalField(viewport,{canvas,overlay:true});measure();}
       }
       const exit=smooth(phase(p,...timing.heroExit));
-      if(previous===scrollProgress)return {exit,advance:smooth(phase(p,0,.25))*.045};
+      if(previous===scrollProgress)return result(exit,smooth(phase(p,0,.25))*.045);
       previous=scrollProgress;about.dataset.storyProgress=p.toFixed(4);
       const settled=scrollProgress>=1,mode=settled?'settled':'transition';
       about.dataset.storyHolding=String(p>=1&&!settled);
@@ -99,7 +100,7 @@
       });
       if(introDone){hero.querySelector('.hero-scene').style.opacity=String(1-smooth(phase(p,.45,.69)));}
       drawLight(p,revealProgress);
-      return {exit,advance:smooth(phase(p,0,.25))*.045};
+      return result(exit,smooth(phase(p,0,.25))*.045);
     }
     document.querySelectorAll('a[href="#about"],a[href="#home"]').forEach(link=>link.addEventListener('click',event=>{
       if(window.portfolioIntroLocked||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;

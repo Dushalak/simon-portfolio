@@ -4,7 +4,7 @@ import postcss from 'postcss';
 import {minify} from 'terser';
 
 const cssFiles=['styles','refinement','hero','menu','about-story','about-work','beam-wordmark-footer','what-i-bring','projects','project-navigation','fold-text','swipe-toast','portfolio-interactions'];
-const jsFiles=['asset-loading','copy-confetti','swipe-toast','fold-text','scroll-reveal','project-data','projects','page-transition','project-atmosphere','project-browser','bring-sparkles','portfolio-interactions','app','hero-intro','about-story','about-hive','hero-motion','footer-optics','beam-wordmark-footer','about-holo','what-i-bring','portfolio-ripple'];
+const jsFiles=['hero-performance','hero-video','asset-loading','copy-confetti','swipe-toast','fold-text','scroll-reveal','project-data','projects','page-transition','project-atmosphere','project-browser','bring-sparkles','portfolio-interactions','app','hero-intro','about-story','about-hive','hero-motion','footer-optics','beam-wordmark-footer','about-holo','what-i-bring','portfolio-ripple'];
 const sources=await Promise.all(jsFiles.map(f=>readFile(`src/${f}.js`,'utf8')));
 const html=await readFile('dist/index.html','utf8');
 const references=html+'\n'+sources.join('\n');

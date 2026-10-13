@@ -33,3 +33,10 @@ html.intro-pending main,html.intro-running main,html.intro-running .skip-link{po
 .is-video-scene .hero-atmosphere{background:radial-gradient(ellipse 25% 48% at 84% 67%,#dccfc030,transparent 75%)}
 .hero-light{background:radial-gradient(circle,#fff3,#f9e5d014 22%,transparent 67%)}
 @media(max-width:720px){.is-video-scene .hero-bg{opacity:1}.is-video-scene .bg-video,.is-video-scene .scene-poster{object-position:65% center;transform:scale(.90)}}
+/* Keep the translucent atmosphere, but composite its motion without a full-screen blur filter. */
+.hero-atmosphere{filter:none;will-change:auto}
+.hero:not(.hero-intro-running) .hero-reveal{will-change:auto}
+.hero[data-hero-quality=low] .hero-light{display:none}
+.hero[data-hero-quality=low] .hero-panel{transform-style:flat}
+.is-video-scene .bg-video,.is-video-scene .scene-poster{mask-image:url('assets/hero-edge-mask.svg');-webkit-mask-image:url('assets/hero-edge-mask.svg');mask-size:100% 100%;-webkit-mask-size:100% 100%;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;mask-composite:add;-webkit-mask-composite:source-over}
+@media(prefers-reduced-motion:reduce){.hero[data-video-motion=user] .bg-video{display:block}}
