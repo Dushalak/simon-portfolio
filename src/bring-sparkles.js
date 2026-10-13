@@ -2,6 +2,7 @@
 (() => {
   const motion=matchMedia('(prefers-reduced-motion:reduce)'),fine=matchMedia('(hover:hover) and (pointer:fine)');
   const events=new AbortController(),cards=[...document.querySelectorAll('.bring-card')];
+  const activators=new Map();
   const ns='http://www.w3.org/2000/svg';
   const tier=window.PortfolioHeroPerformance.profile.tier;
   const count=tier==='high'?4:2;
@@ -27,15 +28,18 @@
       card.classList.add('has-title-sparkles');
     };
     const deactivate=()=>card.classList.remove('has-title-sparkles');
+    activators.set(card,activate);
     card.addEventListener('pointerenter',e=>{if(e.pointerType!=='touch')activate();},{signal:events.signal});
     card.addEventListener('pointerleave',()=>{if(!card.querySelector(':focus-visible'))deactivate();},{signal:events.signal});
     card.addEventListener('focusin',()=>{if(card.querySelector(':focus-visible'))activate();},{signal:events.signal});
     card.addEventListener('focusout',()=>{if(!card.matches(':hover'))deactivate();},{signal:events.signal});
   });
   const stop=()=>cards.forEach(card=>card.classList.remove('has-title-sparkles'));
-  const unsubscribe=window.PortfolioScrollActivity.subscribe(scrolling=>{if(scrolling)stop();});
-  [motion,fine].forEach(media=>media.addEventListener('change',stop,{signal:events.signal}));
-  document.addEventListener('visibilitychange',stop,{signal:events.signal});
+  const resume=()=>cards.forEach(card=>{if(card.matches(':hover')||card.querySelector(':focus-visible'))activators.get(card)();});
+  const unsubscribe=window.PortfolioScrollActivity.subscribe(scrolling=>{if(scrolling)stop();else resume();});
+  [motion,fine].forEach(media=>media.addEventListener('change',()=>{stop();resume();},{signal:events.signal}));
+  document.addEventListener('visibilitychange',()=>{stop();if(!document.hidden)resume();},{signal:events.signal});
+  addEventListener('focus',resume,{signal:events.signal});
   addEventListener('blur',stop,{signal:events.signal});
   addEventListener('pagehide',e=>{if(!e.persisted){stop();unsubscribe();events.abort();}},{signal:events.signal});
 })();

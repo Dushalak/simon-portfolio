@@ -32,7 +32,8 @@
 .bring-section a:focus-visible{outline-color:#111}
 .bring-card:focus-within{box-shadow:0 10px 24px #00000015}
 .bring-ready [data-bring-enter]{opacity:0}
-.bring-ready .bring-card-stage{opacity:.35;transform:translate3d(0,30px,0)}
+/* Scroll reveal owns the stage transform; its settled fallback must stay at zero. */
+.bring-ready .bring-card-stage{transform:none}
 @media(hover:hover) and (pointer:fine){
  .bring-tool-item:hover{z-index:3}
  .bring-tool-item:hover .bring-tool-link{transform:translateY(-8px) scale(1.333);box-shadow:0 8px 13px #0000001a}
