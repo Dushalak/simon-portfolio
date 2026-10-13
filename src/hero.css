@@ -39,7 +39,7 @@ html.intro-pending main,html.intro-running main,html.intro-running .skip-link{po
 .hero[data-hero-quality=low] .hero-light{display:none}
 .hero[data-hero-quality=low] .hero-panel{transform-style:flat}
 .is-video-scene .bg-video,.is-video-scene .scene-poster{mask-image:url('assets/hero-edge-mask.svg');-webkit-mask-image:url('assets/hero-edge-mask.svg');mask-size:100% 100%;-webkit-mask-size:100% 100%;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;mask-composite:add;-webkit-mask-composite:source-over}
-@media(prefers-reduced-motion:reduce){.hero[data-video-motion=user] .bg-video{display:block}}
+@media(prefers-reduced-motion:reduce){.hero[data-video-motion=enabled] .bg-video{display:block}}
 
 /* Tablet/phone composition is framed once on resize, shared by poster and video. */
 .hero[data-hero-framing=tablet] .hero-bg,.hero[data-hero-framing=mobile] .hero-bg{inset:auto;left:50%;top:50%;width:var(--hero-scene-width);height:var(--hero-scene-height);margin-left:calc(var(--hero-scene-width) / -2);margin-top:calc(var(--hero-scene-height) / -2)}

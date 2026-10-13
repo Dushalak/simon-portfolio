@@ -23,11 +23,11 @@ deferred.window.emit('load');assert.equal(work,0);deferred.frame();assert.equal(
 const cancelled=policyFixture();cancelled.policy.afterLoadIdle(()=>work++)();cancelled.window.emit('load');cancelled.frame();cancelled.frame();cancelled.idle();assert.equal(work,1,'cancelled work never starts');
 const hidden=policyFixture({hidden:true});hidden.policy.afterLoadIdle(()=>work++);hidden.timeout();hidden.frame();assert.equal(work,1);hidden.document.hidden=false;hidden.document.emit('visibilitychange');hidden.frame();hidden.frame();hidden.idle();assert.equal(work,2,'hidden tabs wait for visibility');
 
-function videoFixture({reduced=false,intro=false,direct=false,reject=false}={}){
+function videoFixture({reduced=false,intro=false,direct=false,reject=false,rejectOnce=false}={}){
   const root=events({dataset:{},querySelector:()=>({})}),source={},main={inert:false},dialog={open:false};
   const video=events({paused:true,loadCalls:0,playCalls:0,pauseCalls:0,querySelector:()=>source,closest:()=>root,classList:{add(){},remove(){}},
-    load(){this.loadCalls++;},pause(){this.paused=true;this.pauseCalls++;},play(){this.playCalls++;if(reject)return Promise.reject(Object.assign(new Error('blocked'),{name:'NotAllowedError'}));this.paused=false;return Promise.resolve();}});
-  const motion=events({setAttribute(){}}),preference=events({matches:reduced}),document=events({hidden:false,querySelector:()=>main}),window=events({portfolioIntroLocked:intro,portfolioDirectProject:direct});
+    load(){this.loadCalls++;},pause(){this.paused=true;this.pauseCalls++;},play(){this.playCalls++;if(reject||(rejectOnce&&this.playCalls===1))return Promise.reject(Object.assign(new Error('blocked'),{name:'NotAllowedError'}));this.paused=false;return Promise.resolve();}});
+  const motion=events({setAttribute(){},contains(target){return target===this;}}),preference=events({matches:reduced}),document=events({hidden:false,querySelector:()=>main}),window=events({portfolioIntroLocked:intro,portfolioDirectProject:direct});
   const observers=[],mutations=[];let loadReady,cancelled=false;
   window.PortfolioHeroPerformance={profile:{tier:'low',video:'assets/home-enhanced-low.mp4'},afterLoadIdle:f=>{loadReady=f;return ()=>cancelled=true;}};
   vm.runInNewContext(fs.readFileSync('src/hero-video.js','utf8'),{window,document,matchMedia:()=>preference,AbortController,Promise,
@@ -49,10 +49,16 @@ const settle=()=>new Promise(resolve=>setImmediate(resolve));
     f.dialog.open=false;f.main.inert=false;f.root.dataset.sceneVisible='true';f.mutate();await settle();assert.equal(f.video.paused,false);
   }
   f.window.emit('pagehide',{persisted:false});assert(f.closed(),'cancel pending work and observers on unload');
-  const reduced=videoFixture({reduced:true});reduced.loadReady();await settle();assert.equal(reduced.video.loadCalls,0,'reduced motion does not download video');
-  reduced.motion.emit('click');await settle();assert.equal(reduced.video.paused,false,'explicit playback stays available');reduced.preference.emit('change');assert.equal(reduced.video.paused,true);
+  const reduced=videoFixture({reduced:true});reduced.loadReady();await settle();assert.equal(reduced.video.loadCalls,1,'requested default background playback also applies with reduced motion');
+  assert.equal(reduced.video.paused,false);assert.equal(reduced.video.defaultMuted,true);assert.equal(reduced.video.muted,true);assert.equal(reduced.video.playsInline,true,'Safari playback is muted and inline');assert.equal(reduced.root.dataset.videoMotion,'enabled');
+  reduced.motion.emit('click');reduced.document.emit('touchend');await settle();assert.equal(reduced.video.paused,true,'gestures never undo a manual pause');reduced.motion.emit('click');await settle();assert.equal(reduced.video.paused,false);
   const direct=videoFixture({direct:true});direct.loadReady();assert.equal(direct.video.loadCalls,0,'direct project entry skips Hero video');direct.dialog.open=true;direct.mutate();direct.leave();direct.dialog.open=false;direct.mutate();assert.equal(direct.video.loadCalls,0);direct.enter();await settle();assert.equal(direct.video.loadCalls,1);
-  const rejected=videoFixture({reject:true});rejected.loadReady();await settle();assert.equal(rejected.video.playCalls,1,'autoplay rejection does not loop');assert.match(rejected.motion.innerHTML,/播放动画/);
+  const rejected=videoFixture({reject:true});rejected.loadReady();await settle();rejected.leave();rejected.enter();await settle();assert.equal(rejected.video.playCalls,1,'autoplay rejection does not loop or become a manual pause');assert.match(rejected.motion.innerHTML,/暂停动画/);
+  for(const gesture of ['pointerdown','touchend','keydown']){
+    const retry=videoFixture({rejectOnce:true});retry.loadReady();await settle();retry.document.emit(gesture);await settle();assert.equal(retry.video.paused,false,gesture+' retries blocked autoplay');assert.equal(retry.video.loadCalls,1,'gesture retry reuses the loaded source');
+  }
+  const buttonRetry=videoFixture({rejectOnce:true});buttonRetry.loadReady();await settle();buttonRetry.document.emit('pointerdown',{target:buttonRetry.motion});assert.equal(buttonRetry.video.playCalls,1,'toggle gesture must not cause a play/pause double action');buttonRetry.motion.emit('click');await settle();assert.equal(buttonRetry.video.paused,false,'toggle can explicitly retry blocked playback');
+  assert.match(fs.readFileSync('src/hero.css','utf8'),/data-video-motion=enabled\] \.bg-video\{display:block\}/,'enabled Hero video remains visible under reduced motion');
   const failed=videoFixture();failed.loadReady();await settle();failed.video.emit('error');assert.equal(failed.video.paused,true);assert.equal(failed.root.dataset.videoState,'poster');failed.leave();failed.enter();await settle();assert.equal(failed.video.playCalls,1,'a media error does not trigger repeated downloads');failed.motion.emit('click');await settle();assert.equal(failed.video.playCalls,2,'manual retry stays available');
 
   const intro=fs.readFileSync('src/hero-intro.js','utf8');

@@ -2,13 +2,13 @@
 (() => {
   window.PortfolioHeroVideo={create({video,motion,dialog}){
     const root=video.closest('.hero'),main=document.querySelector('main');
-    const preference=matchMedia('(prefers-reduced-motion: reduce)');
     const events=new AbortController(),options={signal:events.signal};
     const performancePolicy=window.PortfolioHeroPerformance;
     let visible=true,canLoad=false,loaded=false,failed=false,playing=false,alive=true;
-    let manualPaused=false,userMotion=false,lastLabel;
+    let manualPaused=false,autoplayBlocked=false,lastLabel;
     let introWaiting=Boolean(window.portfolioIntroLocked),directSuppressed=Boolean(window.portfolioDirectProject),hadDialog=dialog.open;
-    const wanted=()=>!manualPaused&&(!preference.matches||userMotion);
+    // Background playback starts enabled on every device; pause remains explicit.
+    const wanted=()=>!manualPaused;
     const blocked=()=>document.hidden||!visible||dialog.open||main.inert||root.dataset.sceneVisible==='false'||directSuppressed;
     function label(){
       const paused=!wanted()||failed;
@@ -24,12 +24,12 @@
     function pauseVideo(){video.pause();}
     function syncVideo(){
       if(!alive||blocked()||!wanted()||introWaiting||failed){pauseVideo();return;}
-      if(!canLoad)return;load();
+      if(!canLoad||autoplayBlocked)return;load();
       if(playing||!video.paused)return;
       playing=true;
       Promise.resolve(video.play()).catch(error=>{
-        if(error.name!=='AbortError'){manualPaused=true;label();}
-      }).finally(()=>{playing=false;if(alive&&!blocked()&&wanted()&&!introWaiting&&!failed&&video.paused)syncVideo();});
+        if(error.name!=='AbortError')autoplayBlocked=true;
+      }).finally(()=>{playing=false;if(alive&&!autoplayBlocked&&!blocked()&&wanted()&&!introWaiting&&!failed&&video.paused)syncVideo();});
     }
     const cancelLoad=performancePolicy.afterLoadIdle(()=>{canLoad=true;syncVideo();});
     const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;syncVideo();});observer.observe(root.querySelector('.hero-stage'));
@@ -43,16 +43,23 @@
     obscured.observe(root,{attributes:true,attributeFilter:['data-scene-visible']});
     function startIntroVideo(){introWaiting=false;syncVideo();}
     ['portfolio:light-reveal','portfolio:intro-complete','portfolio:intro-timeout'].forEach(name=>addEventListener(name,startIntroVideo,options));
-    video.muted=true;video.loop=true;
+    video.defaultMuted=true;video.muted=true;video.playsInline=true;video.loop=true;
+    root.dataset.videoMotion='enabled';
     video.addEventListener('playing',()=>{video.classList.add('video-ready');root.dataset.videoState='playing';},options);
     video.addEventListener('error',()=>{failed=true;pauseVideo();video.classList.remove('video-ready');root.dataset.videoState='poster';label();},options);
     motion.addEventListener('click',()=>{
-      if(!wanted()||failed){manualPaused=false;userMotion=true;failed=false;canLoad=true;directSuppressed=false;
-        root.dataset.videoMotion='user';if(loaded)video.load();syncVideo();
+      if(!wanted()||failed||autoplayBlocked){manualPaused=false;autoplayBlocked=false;failed=false;canLoad=true;directSuppressed=false;
+        if(loaded&&video.error)video.load();syncVideo();
       }else{manualPaused=true;pauseVideo();}
       label();
     },options);
-    preference.addEventListener('change',()=>{userMotion=false;delete root.dataset.videoMotion;label();syncVideo();},options);
+    function retryAutoplay(event){
+      if(!autoplayBlocked||manualPaused||failed||motion.contains(event.target))return;
+      autoplayBlocked=false;syncVideo();
+    }
+    // iOS may require a user gesture even for muted inline video (e.g. Low Power Mode).
+    // Retry within that gesture, never on a timer and never after manual pause.
+    ['pointerdown','touchend','keydown'].forEach(name=>document.addEventListener(name,retryAutoplay,options));
     document.addEventListener('visibilitychange',syncVideo,options);
     addEventListener('pageshow',syncVideo,options);
     addEventListener('pagehide',event=>{pauseVideo();if(event.persisted)return;
