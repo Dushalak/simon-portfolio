@@ -55,6 +55,11 @@
 .case-copy-clip{overflow:visible}.case-summary,.case-subtitle{font-size:15px;line-height:1.7;letter-spacing:0;color:#e9e8e2b8;margin:0}
 .case-cover{position:relative;z-index:2;width:calc(100% - 200px);max-width:1450px;aspect-ratio:16/9;margin:-14px auto 0;border-radius:24px;overflow:hidden;background:#171717}
 .case-cover img,.case-cover.is-nelu img{display:block;width:100%;height:100%;object-fit:cover;padding:0;transform-origin:center}
+.case-cover-media{position:relative;width:100%;height:100%;background-size:cover;background-position:center;transform-origin:center}
+.case-cover-media>img,.case-cover-sharp{position:absolute;inset:0;width:100%;height:100%;display:block}
+.case-cover-sharp{opacity:0;transition:opacity .2s ease}
+.case-cover-sharp.is-ready{opacity:1}
+@media(prefers-reduced-motion:reduce){.case-cover-sharp{transition:none}}
 .case-preparing [data-case-entry]{opacity:0}
 .case-transitioning .case-dialog{pointer-events:none}
 .page-transition-old{position:fixed!important;inset:0;margin:0;z-index:100;pointer-events:none}

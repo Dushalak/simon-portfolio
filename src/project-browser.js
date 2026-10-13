@@ -15,6 +15,7 @@
     const scrollLock=window.PortfolioProjectScrollLock.create();
     let dataReady;
     function getData(){
+      if(window.PortfolioProjectMedia.pages)return Promise.resolve(window.PortfolioProjectMedia.pages);
       if(!dataReady)dataReady=fetch(window.PortfolioProjectMedia.dataURL).then(response=>{if(!response.ok)throw Error('Case assets unavailable');return response.json();}).catch(error=>{dataReady=null;throw error;});
       return dataReady;
     }
@@ -24,7 +25,7 @@
     const dataObserver=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){prefetch();dataObserver.disconnect();}},{rootMargin:'600px'});
     dataObserver.observe(document.querySelector('.projects-gallery'));
     document.querySelectorAll('[data-open]').forEach(link=>{link.addEventListener('pointerenter',prefetch,{once:true,signal:events.signal});link.addEventListener('focus',prefetch,{once:true,signal:events.signal});});
-    let currentCase=null,lastTrigger=null,homeScroll=0,homeHash='#nelu',busy=false,queued,frame=0,contentAnimations=[];
+    let currentCase=null,currentCover=null,lastTrigger=null,homeScroll=0,homeHash='#nelu',busy=false,queued,frame=0,contentAnimations=[];
     let geometry=null,lastProgress=-1,lastActive=-1,lastPercent=-1,lastReading=null;
     let homeAnchor=null,homeOffset=0,homeWidth=innerWidth,homeHeight=innerHeight;
     const homeRecord=()=>({scroll:homeScroll,hash:homeHash,anchor:homeAnchor,offset:homeOffset,width:homeWidth,height:homeHeight});
@@ -68,7 +69,7 @@
         soften($('.case-scroll-title'),fadeProgress(p,.10,.60),32,12,.97);
         soften($('.case-scroll-meta'),fadeProgress(p,.06,.48),24,8);
         dialog.querySelectorAll('.case-scroll-copy').forEach((el,index)=>soften(el,fadeProgress(p,.02+index*.015,.20+index*.015),28+index*4,9));
-        const image=$('.case-cover img');if(image)image.style.transform=`scale(${1+(1-p)*.025})`;lastProgress=p;
+        const image=$('.case-cover-media');if(image)image.style.transform=`scale(${1+(1-p)*.025})`;lastProgress=p;
       }
       let active=0;geometry.groups.forEach((top,index)=>{if(top-dialog.scrollTop<=dialog.clientHeight*.38)active=index;});
       if(active!==lastActive){dialog.querySelectorAll('.chapter-card').forEach((button,index)=>{const selected=index===active;button.classList.toggle('active',selected);button.setAttribute('aria-expanded',String(selected));if(selected)button.setAttribute('aria-current','step');else button.removeAttribute('aria-current');});lastActive=active;}
@@ -95,9 +96,7 @@
           dialog.scrollTo({top:dialog.scrollTop+section.getBoundingClientRect().top-offset,behavior:preference.matches?'instant':'smooth'});
         });navigation.append(button);
       });
-      const coverMedia=window.PortfolioProjectMedia.detailCovers[key];
-      const cover=document.createElement('img'),coverPicture=window.PortfolioAssets.responsive(cover,coverMedia.coverSrcset,false,true);cover.srcset=coverMedia.coverSrcset;cover.sizes='(max-width:720px) 92vw, 88vw';cover.src=coverMedia.cover;cover.decoding='async';cover.fetchPriority='high';cover.alt=project.title+' 项目主视觉';cover.width=coverMedia.coverWidth;cover.height=coverMedia.coverHeight;
-      return {fragment,navigation,cover:coverPicture};
+      return {fragment,navigation,cover:window.PortfolioProjectCover.create(key,project)};
     }
     function flush(){if(queued!==undefined){const key=queued;queued=undefined;if(key&&key!==currentCase)openCase(key,null,false);else if(!key&&dialog.open)dismissCase();}}
     async function openCase(key,trigger,push=true){
@@ -117,7 +116,7 @@
           scrollLock.lock(homeScroll);
         }
         const data=await getData(),content=build(key,data);
-        if(queued!==undefined&&queued!==key)return;
+        if(queued!==undefined&&queued!==key){content.cover.dispose();return;}
         if(queued===key)queued=undefined;
         closeMenu();setCaseMenu(false);
         if(push){history.replaceState({...history.state,portfolioHome:homeRecord()},'',location.href);history.pushState({project:key,portfolioHome:homeRecord(),portfolioReturn:true},'','#project/'+key);}
@@ -127,8 +126,8 @@
           geometry=null;lastProgress=lastActive=lastPercent=-1;lastReading=null;currentCase=key;$('#case-title').textContent=projects[key].detailTitle;$('.case-category').textContent=projects[key].detailCategory;
           $('.case-year').textContent=projects[key].year;
           $('.case-summary').textContent=projects[key].detailSummary;$('.case-subtitle').textContent=projects[key].detailInsight;
-          $('.case-cover').replaceChildren(content.cover);$('.case-cover').classList.remove('is-nelu');pages.replaceChildren(content.fragment);$('.case-navigation').replaceChildren(content.navigation);
-          if(!dialog.open){scrollLock.lock(homeScroll);dialog.showModal();}caseImages.observe(pages.querySelectorAll('img'));window.PortfolioProximity?.prepare($('#case-title'));dialog.scrollTop=0;atmosphere.setProject(projects[key]);pauseVideo();document.title=projects[key].detailTitle+' · 金王亮设计作品集';updateCase();
+          currentCover?.dispose();currentCover=content.cover;$('.case-cover').replaceChildren(currentCover.element);$('.case-cover').classList.remove('is-nelu');pages.replaceChildren(content.fragment);$('.case-navigation').replaceChildren(content.navigation);
+          if(!dialog.open){scrollLock.lock(homeScroll);dialog.showModal();}currentCover.start();caseImages.observe(pages.querySelectorAll('img'));window.PortfolioProximity?.prepare($('#case-title'));dialog.scrollTop=0;atmosphere.setProject(projects[key]);pauseVideo();document.title=projects[key].detailTitle+' · 金王亮设计作品集';updateCase();
         },{direction:switching?'switch':'enter',dialog,homeScroll,onReady:entrance});
         (innerWidth<=720?$('.case-toolbar-close'):$('.back-home')).focus({preventScroll:true});
       }catch(error){if(!dialog.open)scrollLock.unlock(homeScroll);dialog.classList.remove('case-preparing');toast('作品暂未加载成功，请稍后重试。');}
@@ -142,7 +141,7 @@
         // Restore the real document before measuring/capturing the return destination.
         scrollLock.unlock(homeScroll);
         await window.PortfolioPageTransition.run(()=>{
-          caseImages.clear();atmosphere.stop();dialog.close();currentCase=null;document.title='金王亮 · UI/UX 设计作品集';restoreHome();
+          currentCover?.dispose();currentCover=null;caseImages.clear();atmosphere.stop();dialog.close();currentCase=null;document.title='金王亮 · UI/UX 设计作品集';restoreHome();
           history.replaceState({...history.state,portfolioHome:homeRecord()},'',location.href);
         },{direction:'return',dialog,homeScroll});
         dialog.classList.remove('case-preparing');lastTrigger?.focus({preventScroll:true});resumeVideo();updateHome();dispatchEvent(new Event('portfolio:home-restored'));
@@ -171,6 +170,6 @@
     addEventListener('popstate',route,{signal:events.signal});addEventListener('hashchange',route,{signal:events.signal});
     preference.addEventListener('change',request,{signal:events.signal});
     if(location.hash.startsWith('#project/'))route();
-    addEventListener('pagehide',event=>{if(event.persisted)return;scrollLock.unlock(homeScroll);cancelPrefetch?.();caseImages.dispose();sizeObserver.disconnect();dataObserver.disconnect();events.abort();cancelAnimationFrame(frame);contentAnimations.forEach(animation=>animation.cancel());},{once:true});
+    addEventListener('pagehide',event=>{if(event.persisted)return;currentCover?.dispose();scrollLock.unlock(homeScroll);cancelPrefetch?.();caseImages.dispose();sizeObserver.disconnect();dataObserver.disconnect();events.abort();cancelAnimationFrame(frame);contentAnimations.forEach(animation=>animation.cancel());},{once:true});
   }};
 })();

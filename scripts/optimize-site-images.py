@@ -3,6 +3,8 @@ from pathlib import Path
 from PIL import Image
 import hashlib
 import json
+import base64
+from io import BytesIO
 
 ROOT = Path(__file__).resolve().parent.parent
 ASSETS = ROOT / 'dist' / 'assets'
@@ -48,7 +50,7 @@ for key,pages in data.items():
         original = EXPORTS / PAGE_DIRS[key] / (page['label']+'.png')
         if not original.is_file():
             raise FileNotFoundError(f'Original PNG required: {original.name}')
-        media = responsive(original, f'{key}-page-{index+1:02}', large=1920, small=1152, quality=90, upscale=True)
+        media = responsive(original, f'{key}-page-{index+1:02}', large=1920, small=1152, quality=84, upscale=True)
         page.update(media)
 content = json.dumps(data,ensure_ascii=False,separators=(',',':')).encode('utf-8')
 data_name = 'projects-lite.'+hashlib.sha256(content).hexdigest()[:10]+'.json'
@@ -58,8 +60,13 @@ detail_covers = {}
 for key in data:
     cover = responsive(ASSETS / 'project-covers' / (key+'.webp'), key+'-cover', quality=74)
     covers[key] = {'cover':cover['src'],'coverSrcset':cover['srcset'],'coverWidth':cover['width'],'coverHeight':cover['height']}
-    detail = responsive(EXPORTS / '网站素材' / MOCKUPS[key], key+'-detail-cover', large=2560, small=1536, quality=90, upscale=True)
+    original_cover = EXPORTS / '网站素材' / MOCKUPS[key]
+    detail = responsive(original_cover, key+'-detail-cover', large=2560, small=1536, quality=84, upscale=True)
     detail_covers[key] = {'cover':detail['src'],'coverSrcset':detail['srcset'],'coverWidth':detail['width'],'coverHeight':detail['height']}
+    with Image.open(original_cover) as preview:
+        preview.thumbnail((160,160),Image.Resampling.LANCZOS)
+        buffer=BytesIO();preview.save(buffer,'WEBP',quality=48,method=6)
+        detail_covers[key]['preview']='data:image/webp;base64,'+base64.b64encode(buffer.getvalue()).decode('ascii')
 hero = responsive(ASSETS / 'home-enhanced-poster.webp','hero-poster',large=1280,small=768,quality=72)
 fallback = variant(ASSETS / 'home-figma.png','hero-fallback',1280,72)
 media = {'dataURL':'assets/'+data_name,'covers':covers,'detailCovers':detail_covers,'hero':hero,'heroFallback':fallback['src']}

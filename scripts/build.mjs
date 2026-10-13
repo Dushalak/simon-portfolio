@@ -4,7 +4,7 @@ import postcss from 'postcss';
 import {minify} from 'terser';
 
 const cssFiles=['styles','refinement','hero','menu','about-story','about-work','beam-wordmark-footer','what-i-bring','projects','project-navigation','fold-text','swipe-toast','portfolio-interactions'];
-const jsFiles=['hero-performance','hero-framing','scroll-activity','hero-video','asset-loading','deferred-effects','about-resources','copy-confetti','swipe-toast','fold-text','scroll-reveal','project-media','project-data','projects','page-transition','project-atmosphere','case-images','project-scroll-lock','project-browser','bring-sparkles','portfolio-interactions','app','hero-intro','about-story','about-hive','hero-motion','what-i-bring','portfolio-ripple'];
+const jsFiles=['hero-performance','hero-framing','scroll-activity','hero-video','asset-loading','deferred-effects','about-resources','copy-confetti','swipe-toast','fold-text','scroll-reveal','project-media','project-data','projects','page-transition','project-atmosphere','case-images','project-scroll-lock','project-cover','project-browser','bring-sparkles','portfolio-interactions','app','hero-intro','about-story','about-hive','hero-motion','what-i-bring','portfolio-ripple'];
 const lazyFiles={about:['about-holo'],footer:['footer-optics','beam-wordmark-footer']};
 const minifyOptions={ecma:2020,compress:{passes:2,unsafe:false},mangle:{toplevel:false},format:{comments:false,ascii_only:true}};
 await mkdir('dist/effects',{recursive:true});
@@ -17,6 +17,9 @@ const lazy=await Promise.all(Object.entries(lazyFiles).map(async([name,files])=>
 const sources=await Promise.all(jsFiles.map(f=>readFile(`src/${f}.js`,'utf8').then(source=>lazy.reduce((text,chunk)=>text.replace(`__${chunk.name.toUpperCase()}_EFFECTS_URL__`,chunk.url),source))));
 const html=await readFile('dist/index.html','utf8');
 const media=JSON.parse((await readFile('src/project-media.js','utf8')).split('window.PortfolioProjectMedia = ')[1].trim().replace(/;$/,''));
+// Small chapter metadata travels with the application; image bytes remain lazy.
+const pages=JSON.parse(await readFile('dist/'+media.dataURL,'utf8'));
+sources[jsFiles.indexOf('project-media')]+='\nwindow.PortfolioProjectMedia.pages='+JSON.stringify(pages)+';';
 const references=html+'\n'+sources.join('\n')+'\n'+lazy.flatMap(chunk=>chunk.sources).join('\n');
 // These classes belonged to superseded page structures; none is produced or queried.
 const legacy=['hero-topline','hero-content','hero-sub','hero-word','hero-index','hero-shade','primary-button','button-dot','work-intro','project-copy','project-meta','case-button','next-project','project-art','nelu-art','art-label','art-hover','about-image','about-copy','about-facts','about-lead','serif-word','text-link','hero-enter'];
