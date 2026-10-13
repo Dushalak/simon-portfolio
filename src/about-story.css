@@ -7,8 +7,9 @@
 .about-designed{display:block;padding:0;min-height:0;position:relative;background:#040404;isolation:isolate;scroll-margin:0;overflow-anchor:none}
 .hero{overflow-anchor:none}
 .about-viewport{position:relative;height:var(--about-stage-height,100svh);min-height:640px;overflow:hidden;background:#040404}
-.about-reveal{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);place-items:center;background:#040404}
-.about-board{position:relative;width:1280px;height:842px;flex:none;overflow:clip;border-radius:36px;background:linear-gradient(187.336deg,#0c0c0a 4.9454%,#040404 96.561%);transform:scale(var(--about-board-scale,1));transform-origin:50% 50%;font-family:About Alibaba,'Microsoft YaHei',sans-serif;color:#f3f3ed}
+/* The background fills the reveal; the design board scales only its content. */
+.about-reveal{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);place-items:center;isolation:isolate;background:linear-gradient(187.336deg,#0c0c0a 4.9454%,#040404 96.561%)}
+.about-board{position:relative;z-index:1;width:1280px;height:842px;flex:none;overflow:clip;border-radius:36px;transform:scale(var(--about-board-scale,1));transform-origin:50% 50%;font-family:About Alibaba,'Microsoft YaHei',sans-serif;color:#f3f3ed}
 .about-board p,.about-board h2,.about-board h3,.about-board figure{margin:0}
 .about-hive{--about-hive-opacity:.18;position:absolute;inset:0;width:100%;height:100%;display:block;opacity:var(--about-hive-opacity);pointer-events:none;mask-image:linear-gradient(180deg,transparent,black 14%,black 78%,transparent);-webkit-mask-image:linear-gradient(180deg,transparent,black 14%,black 78%,transparent)}
 .about-title-group{position:absolute;inset:0;pointer-events:none}
@@ -53,7 +54,7 @@
 @media(max-width:999px){
  .about-designed{margin-top:0!important}
  .about-viewport{height:auto;min-height:0;overflow:clip;padding:100px 6% 60px}
- .about-reveal{position:relative;display:block}
+ .about-reveal{position:relative;display:block;border-radius:26px;overflow:clip}
  .about-board{width:100%;height:auto;min-height:0;padding:42px 7% 46px;transform:none!important;display:flex;flex-direction:column;border-radius:26px}
  .about-title-group{position:relative;inset:auto;height:104px}
  .about-board #about-title{left:0;top:0;font-size:clamp(43px,6.6vw,64px);letter-spacing:2px}
