@@ -1,7 +1,6 @@
 /* Project entry pushes up from below; return keeps the existing downward reveal. */
 (() => {
   const reduced=matchMedia('(prefers-reduced-motion:reduce)');
-  const compact=matchMedia('(max-width:1024px), (pointer:coarse)');
   const duration=650,easing='cubic-bezier(.76,0,.24,1)';
   let busy=false,active=null;
   const stripIds=node=>{
@@ -32,7 +31,7 @@
     const root=document.documentElement;root.dataset.pageTransition=direction;document.body.classList.add('case-transitioning');
     try{
       if(reduced.matches||!Element.prototype.animate){apply();onReady?.();return true;}
-      if(document.startViewTransition&&!compact.matches){
+      if(document.startViewTransition){
         active=document.startViewTransition(apply);
         await active.ready.catch(()=>apply());
         onReady?.();
@@ -46,8 +45,7 @@
       }else{
         if(dialog.open)snapshot=detailSnapshot(dialog);
         apply();onReady?.();
-        const frames=compact.matches?[{opacity:0,transform:'translate3d(0,24px,0)'},{opacity:1,transform:'translate3d(0,0,0)'}]:[{transform:'translate3d(0,100%,0)'},{transform:'translate3d(0,0,0)'}];
-        animation=dialog.animate(frames,{duration:compact.matches?360:duration,easing,fill:'both'});
+        animation=dialog.animate([{transform:'translate3d(0,100%,0)'},{transform:'translate3d(0,0,0)'}],{duration,easing,fill:'both'});
         await animation.finished.catch(()=>{});
       }
       return true;
