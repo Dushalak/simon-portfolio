@@ -1,0 +1,7 @@
+[build]
+  base = "."
+  command = "npm run build && npm run check"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "24"

@@ -1,4 +1,4 @@
-import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {readFile,writeFile,mkdir,copyFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import postcss from 'postcss';
 import {minify} from 'terser';
@@ -41,6 +41,7 @@ const css=root.toString();
 const js=await minify(sources.join('\n;\n'),{ecma:2020,compress:{passes:2,unsafe:false},mangle:{toplevel:false},format:{comments:false,ascii_only:true}});
 if(!js.code)throw Error('Empty JS output');
 await mkdir('dist',{recursive:true});
+await copyFile('src/_redirects','dist/_redirects');
 await writeFile('dist/site.css',css);await writeFile('dist/site.js',js.code+'\n');
 const version=createHash('sha256').update(css+js.code).digest('hex').slice(0,12);
 const next=html.replace(/href="site\.css\?v=[^"]*"/,'href="site.css?v='+version+'"').replace(/src="site\.js\?v=[^"]*"/,'src="site.js?v='+version+'"');
