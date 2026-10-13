@@ -6,7 +6,8 @@
 .case-pages picture{display:block}
 .case-pages figure{margin:0;border-radius:0}
 .case-pages figure.case-page-yuxu{border-radius:48px;overflow:hidden;background:transparent}
-.case-pages figure.case-page-yuxu img{background:transparent;clip-path:inset(0 .8%)}
+.case-pages figure.case-page-yuxu picture{border-radius:inherit;overflow:hidden}
+.case-pages figure.case-page-yuxu img{background:transparent;clip-path:none;object-fit:contain}
 .reading-progress{color:rgba(255,255,255,.55)}
 .progress-track{background:rgba(255,255,255,.12)}
 .progress-track i{background:rgba(255,255,255,.75)}

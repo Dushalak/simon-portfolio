@@ -17,7 +17,7 @@ for(const match of js.matchAll(/effects\/[\w.-]+\.js/g))paths.add(match[0]);
 for(const file of await readdir('dist/effects'))if(file.endsWith('.js'))new Script(await readFile('dist/effects/'+file,'utf8'),{filename:file});
 const toolsSource=await readFile('src/what-i-bring.js','utf8');
 for(const match of toolsSource.matchAll(/'([\w-]+\.(?:svg|png|webp))'/g))paths.add('assets/icons/tools/'+match[1]);
-for(const pages of Object.values(data))for(const page of pages){paths.add(page.src);for(const candidate of page.srcset.split(','))paths.add(candidate.trim().split(' ')[0]);assert(page.width<=1280);assert((await stat('dist/'+page.src)).size<=800000);}
+for(const pages of Object.values(data))for(const page of pages){paths.add(page.src);for(const candidate of page.srcset.split(','))paths.add(candidate.trim().split(' ')[0]);assert.equal(page.width,1920);assert((await stat('dist/'+page.src)).size<=2000000);}
 const missing=[];for(const path of paths)try{assert((await stat(resolve('dist',path))).isFile());}catch{missing.push(path);}
 assert.deepEqual(missing,[],'Referenced resources must exist');
 assert.match(html,/<base href="\/">/,'Assets must resolve from the site root after SPA rewrites');
@@ -29,7 +29,7 @@ assert.equal((html.match(/<script[^>]* src=/g)||[]).length,1);
 assert.match(html,/<html lang="zh-CN">/);assert.match(html,/<meta name="description"/);assert.match(html,/<link rel="canonical"/);
 assert.equal((html.match(/<h1\b/g)||[]).length,1);
 assert.match(css,/case-page-yuxu[^}]*border-radius:48px/);
-assert.match(css,/case-page-yuxu img[^}]*clip-path:inset\(0 \.8%\)/);
+assert.match(css,/case-page-yuxu img[^}]*clip-path:none/);
 assert.equal(data.yuxu.length,11);
 assert(!/release-metrics|PerformanceObserver/.test(html),'QA instrumentation must not be published');
 assert(!/\b(?:process\.env|import\.meta\.env)\b/.test(js),'Buildless client needs no environment variables');

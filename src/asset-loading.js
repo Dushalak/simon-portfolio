@@ -15,11 +15,17 @@
     pending.get(anchor).push(image);
   }
   document.querySelectorAll('img[data-src]').forEach(image=>observe(image,image.closest('section')||image));
-  function responsive(image,srcset,deferred=true){
+  function responsive(image,srcset,deferred=true,fullDesktop=false){
     const picture=document.createElement('picture'),source=document.createElement('source');
     source.media='(max-width:720px)';source.type='image/webp';
     if(deferred)source.dataset.srcset=srcset.split(',')[0].trim();else source.srcset=srcset.split(',')[0].trim();
-    picture.append(source,image);return picture;
+    picture.append(source);
+    if(fullDesktop){
+      const desktop=document.createElement('source');desktop.media='(min-width:721px)';desktop.type='image/webp';
+      if(deferred)desktop.dataset.srcset=srcset.split(',').slice(-1)[0].trim();else desktop.srcset=srcset.split(',').slice(-1)[0].trim();
+      picture.append(desktop);
+    }
+    picture.append(image);return picture;
   }
   window.PortfolioAssets={load,observe,responsive};
   addEventListener('pagehide',event=>{if(!event.persisted){observer.disconnect();pending.clear();}},{once:true});
