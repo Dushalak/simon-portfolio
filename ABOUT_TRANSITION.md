@@ -1,5 +1,7 @@
 # 首页 → 个人介绍连续浏览优化
 
+2026-10-13 的后续优化进一步降低背景预算、分包装饰脚本并支持提前结束开场；当前参数和模拟访问结果见 [PERFORMANCE_CN.md](PERFORMANCE_CN.md)。
+
 ## 找到的开销与延迟
 
 这两页是原生 HTML/CSS/JavaScript。首页背景是预先压缩的视频与 WebP 海报；个人介绍背景是 WebGL2 Hive 着色器，照片还有独立的 Holo 着色器。没有 Three.js 或常驻粒子数组。

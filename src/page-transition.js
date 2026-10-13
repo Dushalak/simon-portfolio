@@ -1,9 +1,17 @@
 /* Project entry pushes up from below; return keeps the existing downward reveal. */
 (() => {
   const reduced=matchMedia('(prefers-reduced-motion:reduce)');
-  const duration=1050,easing='cubic-bezier(.76,0,.24,1)';
+  const duration=650,easing='cubic-bezier(.76,0,.24,1)';
   let busy=false,active=null;
-  const stripIds=node=>{node.removeAttribute('id');node.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));node.setAttribute('aria-hidden','true');node.inert=true;return node;};
+  const stripIds=node=>{
+    node.removeAttribute('id');node.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));node.setAttribute('aria-hidden','true');node.inert=true;
+    // A clone has no canvas drawing buffer and must not start a second video decode.
+    node.querySelectorAll('canvas,video').forEach(surface=>surface.remove());
+    node.querySelectorAll('.about-reveal').forEach(surface=>surface.dataset.hiveReady='false');
+    node.querySelectorAll('.about-portrait img').forEach(image=>image.style.opacity='1');
+    node.querySelectorAll('.case-atmosphere,.case-end').forEach(surface=>surface.dataset.renderer='gradient');
+    return node;
+  };
   function detailSnapshot(dialog){
     const copy=stripIds(dialog.cloneNode(true));copy.classList.add('page-transition-old');copy.classList.remove('case-preparing');copy.style.clipPath='none';
     copy.querySelectorAll('[data-case-entry]').forEach(el=>el.style.opacity='1');

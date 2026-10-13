@@ -5,3 +5,19 @@
 
 [build.environment]
   NODE_VERSION = "24"
+
+# Hashed images and optional effects can be reused across visits without revalidation.
+[[headers]]
+  for = "/assets/optimized/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/effects/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"

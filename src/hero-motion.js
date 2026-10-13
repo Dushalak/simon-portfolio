@@ -46,12 +46,18 @@
     hero.dataset.intro='complete'; request();
   }
   function animateOpening() {
+    if(introDone||!active)return;
     if (window.portfolioDirectProject || reduced.matches || !Element.prototype.animate || !window.PortfolioIntro) { finishIntro(); return; }
     try {
       introTimeline=window.PortfolioIntro.create({hero,onComplete:finishIntro,revealMs:config.revealMs,staggerMs:config.staggerMs});
       introTimeline.play();
     } catch (_) { finishIntro(); }
   }
+  // Browsing takes precedence over finishing decoration. Capture before link handlers.
+  document.addEventListener('pointerdown',event=>{
+    if(!introDone&&(event.pointerType==='touch'||event.target.closest('.hero a,.hero button,.header a,.header button')))finishIntro();
+  },{capture:true,signal:events.signal});
+  addEventListener('wheel',()=>{if(!introDone)finishIntro();},{passive:true,signal:events.signal});
 
   // 2. Crossing one threshold starts a timed layout transition. Stopping the
   // wheel cannot leave the text halfway; reversing below the threshold returns it.

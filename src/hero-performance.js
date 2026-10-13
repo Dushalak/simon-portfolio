@@ -6,9 +6,9 @@
   const slow=Boolean(connection?.saveData||/^(slow-2g|2g)$/.test(connection?.effectiveType||''));
   const tier=slow||cores<=4||memory<=2?'low':mobile||memory<=4?'balanced':'high';
   const budgets={
-    high:{maxPixels:786432,maxWidth:1280,maxHeight:800,dpr:1,shaderFps:40,motionFps:60,octaves:4,detail:1,maskWidth:512,video:'assets/home-enhanced-desktop.mp4'},
-    balanced:{maxPixels:360000,maxWidth:960,maxHeight:640,dpr:1,shaderFps:30,motionFps:45,octaves:3,detail:.8,maskWidth:384,video:'assets/home-enhanced-mobile.mp4'},
-    low:{maxPixels:160000,maxWidth:640,maxHeight:480,dpr:.85,shaderFps:24,motionFps:30,octaves:2,detail:.6,maskWidth:256,video:'assets/home-enhanced-low.mp4'}
+    high:{maxPixels:360000,maxWidth:960,maxHeight:640,dpr:1,shaderFps:30,motionFps:60,octaves:3,detail:.8,maskWidth:384,video:'assets/home-enhanced-mobile.mp4'},
+    balanced:{maxPixels:180000,maxWidth:640,maxHeight:480,dpr:1,shaderFps:24,motionFps:45,octaves:2,detail:.6,maskWidth:256,video:'assets/home-enhanced-low.mp4'},
+    low:{maxPixels:90000,maxWidth:480,maxHeight:360,dpr:.85,shaderFps:18,motionFps:30,octaves:2,detail:.5,maskWidth:192,video:'assets/home-enhanced-low.mp4'}
   };
   const profile=Object.freeze({...budgets[tier],tier});
   function afterPaint(callback){

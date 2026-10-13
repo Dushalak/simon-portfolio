@@ -12,8 +12,8 @@
   if(heroBudget){settings.maxPixels=Math.min(settings.maxPixels,heroBudget.maxPixels);settings.fps=Math.min(settings.fps,heroBudget.shaderFps);}
   const activity=window.PortfolioScrollActivity,dialog=document.querySelector('.case-dialog');
   const tier=heroBudget?.tier||'balanced';
-  settings.maxPixels=Math.min(settings.maxPixels,tier==='high'?320000:tier==='balanced'?160000:80000);
-  settings.fps=Math.min(settings.fps,tier==='high'?20:tier==='balanced'?14:10);
+  settings.maxPixels=Math.min(settings.maxPixels,tier==='high'?150000:tier==='balanced'?80000:40000);
+  settings.fps=Math.min(settings.fps,tier==='high'?15:tier==='balanced'?12:8);
   let cancelSetup=null,inView=false,prewarmRequested=false;
   const reveal=canvas.parentElement,main=document.querySelector('main');
   const vertex = `#version 300 es

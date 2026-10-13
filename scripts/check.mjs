@@ -11,10 +11,13 @@ const paths=new Set();
 for(const text of [html,css,js,...await Promise.all((await readdir('src')).map(f=>readFile(join('src',f),'utf8')))])
   for(const m of text.matchAll(/(?:assets\/[\w./-]+\.(?:webp|png|jpg|svg|woff2|mp4|json|js))/g))paths.add(m[0]);
 for(const m of html.replace(/<base\b[^>]*>/g,'').matchAll(/(?:src|href)="([^"#]+)"/g))if(!/^(?:https?:|data:)/.test(m[1]))paths.add(m[1].split('?')[0]);
-const data=JSON.parse(await readFile('dist/assets/projects.json','utf8'));
+const media=JSON.parse((await readFile('src/project-media.js','utf8')).split('window.PortfolioProjectMedia = ')[1].trim().replace(/;$/,''));
+const data=JSON.parse(await readFile('dist/'+media.dataURL,'utf8'));
+for(const match of js.matchAll(/effects\/[\w.-]+\.js/g))paths.add(match[0]);
+for(const file of await readdir('dist/effects'))if(file.endsWith('.js'))new Script(await readFile('dist/effects/'+file,'utf8'),{filename:file});
 const toolsSource=await readFile('src/what-i-bring.js','utf8');
 for(const match of toolsSource.matchAll(/'([\w-]+\.(?:svg|png|webp))'/g))paths.add('assets/icons/tools/'+match[1]);
-for(const pages of Object.values(data))for(const page of pages)paths.add(page.src);
+for(const pages of Object.values(data))for(const page of pages){paths.add(page.src);for(const candidate of page.srcset.split(','))paths.add(candidate.trim().split(' ')[0]);assert(page.width<=1280);assert((await stat('dist/'+page.src)).size<=800000);}
 const missing=[];for(const path of paths)try{assert((await stat(resolve('dist',path))).isFile());}catch{missing.push(path);}
 assert.deepEqual(missing,[],'Referenced resources must exist');
 assert.match(html,/<base href="\/">/,'Assets must resolve from the site root after SPA rewrites');

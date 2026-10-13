@@ -81,6 +81,6 @@
       detailInsight:'让AI成为设计创作伙伴，拓展视觉表达边界，提高从概念到成品的创造效率。',
       atmosphere:{name:'mint-nature',depth:'#09130f',rayColor1:'#b0ddcb',rayColor2:'#5c9b80',origin:'top-right',tilt:-8,spread:1.9,speed:1.4,intensity:3.15,blend:.48,saturation:.9,falloff:1.2,opacity:.95}}
   };
-  Object.entries(projects).forEach(([key,project],i)=>Object.assign(project,cards[key],introductions[key],{key,number:i+1,href:"#project/"+key}));
+  Object.entries(projects).forEach(([key,project],i)=>Object.assign(project,cards[key],introductions[key],window.PortfolioProjectMedia.covers[key],{key,number:i+1,href:"#project/"+key}));
   window.PortfolioProjects=projects;
 })();

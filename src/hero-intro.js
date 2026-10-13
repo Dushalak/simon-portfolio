@@ -4,7 +4,7 @@
     frameHold: 1000, titleEntrance:120, videoStart:480, lightReveal:1480, backgroundReveal:1580,
     constructionFadeOut:2600, contentEntrance:1280, introComplete:3400 });
   const backgroundRevealMs = 1400;
-  const introPlaybackRate = .65;
+  const introPlaybackRate = 1.2;
   const clamp = value => Math.min(1, Math.max(0, value));
   const smooth = value => { const t = clamp(value); return t*t*(3-2*t); };
 
@@ -112,7 +112,7 @@
     const canvas = suppliedCanvas || document.createElement('canvas');
     if(!suppliedCanvas){veil.append(canvas);stage.prepend(veil);}
     const resources = [], events = new AbortController();
-    let gl, program, buffer, uniforms, fallback = false, lastSize = '', maskKey = '', maskURL = null;
+    let gl, program, buffer, uniforms, fallback = false, lastSize = '';
     const quality=window.PortfolioHeroPerformance?.profile||{tier:'high',maxPixels:786432,maxWidth:1280,maxHeight:800,dpr:1,shaderFps:40,octaves:4,detail:1,maskWidth:512};
     let dummy,fieldTexture,fieldBuffer,fieldKey='',floatFields=false,cacheDisabled=false,lastDraw=-Infinity;
     let w=Math.max(1,stage.clientWidth),h=Math.max(1,stage.clientHeight);
@@ -257,26 +257,8 @@
       gl.uniform1f(uniforms.uMode,overlay?1:0);
       gl.drawArrays(gl.TRIANGLES,0,6);
     }
-    // Export the SAME scalar field once per viewport size, not per animation frame.
-    // The SVG mask samples it with a moving threshold while the shader lights its edge.
-    function maskImage(){
-      if(fallback||!gl)return null;
-      const key=`${w}x${h}`;
-      if(key===maskKey)return maskURL;
-      const mw=quality.maskWidth,mh=Math.max(1,Math.min(768,Math.round(mw*h/w)));
-      canvas.width=mw;canvas.height=mh;gl.viewport(0,0,mw,mh);
-      fields(mw,mh,w,h);
-      gl.uniform2f(uniforms.uResolution,w,h);gl.uniform1f(uniforms.uProgress,.5);
-      gl.uniform1f(uniforms.uLight,0);gl.uniform1f(uniforms.uMode,2);gl.drawArrays(gl.TRIANGLES,0,6);
-      const pixels=new Uint8Array(mw*mh*4);gl.readPixels(0,0,mw,mh,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
-      const image=document.createElement('canvas');image.width=mw;image.height=mh;
-      const context=image.getContext('2d'),data=context.createImageData(mw,mh);
-      for(let row=0;row<mh;row++)data.data.set(pixels.subarray((mh-row-1)*mw*4,(mh-row)*mw*4),row*mw*4);
-      context.putImageData(data,0,0);maskURL=image.toDataURL('image/png');maskKey=key;lastSize='';
-      return maskURL;
-    }
     draw(0);
-    return { draw, maskImage, renderer:veil.dataset.renderer, get field(){return fieldKey?'cached':'analytic';}, get pixels(){return canvas.width*canvas.height;}, get format(){return veil.dataset.fieldFormat||'none';}, dispose() {
+    return { draw, renderer:veil.dataset.renderer, get field(){return fieldKey?'cached':'analytic';}, get pixels(){return canvas.width*canvas.height;}, get format(){return veil.dataset.fieldFormat||'none';}, dispose() {
       events.abort();sizeObserver.disconnect();veil.remove();
       if(gl){resources.forEach(shader=>gl.deleteShader(shader));if(buffer)gl.deleteBuffer(buffer);if(program)gl.deleteProgram(program);
         if(dummy)gl.deleteTexture(dummy);if(fieldTexture)gl.deleteTexture(fieldTexture);if(fieldBuffer)gl.deleteFramebuffer(fieldBuffer);
@@ -314,16 +296,12 @@
     timeline.add(hero.querySelector('.hero-border path'),[{strokeDashoffset:'1'},{strokeDashoffset:'0'}],
       labels.frameHold-labels.frameDrawing,labels.frameDrawing,'cubic-bezier(.55,.01,.3,1)');
     timeline.add(scene,[{filter:'brightness(1.12) saturate(.9) blur(1.5px)'},{filter:'none'}],backgroundRevealMs,labels.backgroundReveal);
-    // The title starts at the frame's vertical center, aligned to its left inset.
+    // Keep core copy legible before JS arrives, then settle it without a long reveal.
     const heading=panel.querySelector('.hero-heading'),title=heading.querySelector('.hero-reveal');
-    const centerY=panel.clientHeight/2-heading.offsetTop-heading.offsetHeight/2;
-    const centered=`translate3d(0,${centerY}px,0)`;
-    timeline.add(title,[{opacity:0,filter:'blur(5px)',transform:centered},
-      {opacity:1,filter:'blur(0px)',transform:centered,offset:.28},
-      {opacity:1,filter:'blur(0px)',transform:centered,offset:.44},
-      {opacity:1,filter:'blur(0px)',transform:'translate3d(0,0,0)'}],1080,labels.titleEntrance);
-    const unfold=[{opacity:0,filter:'blur(5px)',transform:'translate3d(0,-14px,0)',clipPath:'inset(0 0 100% 0)'},
-      {opacity:1,filter:'blur(0px)',transform:'translate3d(0,0,0)',clipPath:'inset(0 0 0 0)'}];
+    timeline.add(title,[{opacity:.65,transform:'translate3d(0,8px,0)'},
+      {opacity:1,transform:'translate3d(0,0,0)'}],500,labels.titleEntrance);
+    const unfold=[{opacity:.65,transform:'translate3d(0,-8px,0)'},
+      {opacity:1,transform:'translate3d(0,0,0)'}];
     timeline.add(panel.querySelector('.hero-philosophy .hero-reveal'),unfold,revealMs,labels.contentEntrance);
     panel.querySelectorAll('.hero-nav-item .hero-reveal').forEach((node,i)=>
       timeline.add(node,unfold,revealMs,labels.contentEntrance+170+i*staggerMs));

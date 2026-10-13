@@ -1,5 +1,7 @@
 # Hero rendering and loading optimization
 
+Current follow-up: [Netlify/mainland-oriented optimization](PERFORMANCE_CN.md). The 2026-10-13 pass further lowers the budgets, serves smaller responsive images, splits decoration scripts and lets navigation skip the opening. Historical validation below remains applicable to the alpha correction.
+
 The Hero uses a native WebGL dissolution shader, SVG/WAAPI text and frame animations, CSS atmosphere layers, and a looping H.264 video. It does not use Three.js or a particle library. Its particle appearance comes from procedural noise, so the device budget controls noise detail, octave count, pixel count and draw cadence rather than an array of particle objects.
 
 The previous movie was 2560 × 1440 with an unused AAC audio track (4,787,662 bytes). It was requested eagerly and video readiness could hold the intro. The shader could render up to 1440 × 1000 pixels, while the master timeline updated every tween even after it had finished. Google Fonts also added external render-blocking requests.
@@ -8,9 +10,9 @@ The previous movie was 2560 × 1440 with an unused AAC audio track (4,787,662 by
 
 | Initial device profile | Shader pixel ceiling | Shader draw ceiling | Noise octaves | Background video | Video size |
 | --- | ---: | ---: | ---: | --- | ---: |
-| Desktop with sufficient reported resources | 786,432 | 40/s | 4 | 1920 × 1080, 24 fps | 1,183,964 bytes |
-| Mobile/coarse pointer or limited memory | 360,000 | 30/s | 3 | 1280 × 720, 24 fps | 467,846 bytes |
-| ≤4 reported CPU cores, ≤2 GB reported memory, Save-Data or 2G | 160,000 | 24/s | 2 | 854 × 480, 20 fps | 189,297 bytes |
+| Desktop with sufficient reported resources | 360,000 | 30/s | 3 | 1280 × 720, 24 fps | 467,846 bytes |
+| Mobile/coarse pointer or limited memory | 180,000 | 24/s | 2 | 854 × 480, 20 fps | 189,297 bytes |
+| ≤4 reported CPU cores, ≤2 GB reported memory, Save-Data or 2G | 90,000 | 18/s | 2 | 854 × 480, 20 fps | 189,297 bytes |
 
 Actual draw cadence also depends on the display refresh rate, visibility and whether an update is needed. These are ceilings, not measured FPS. The selected movie reduces transfer by approximately 75%, 90% or 96% respectively. The clips use the same composition and playback speed, contain no audio, and have their MP4 metadata at the beginning for progressive playback. Desktop encoding compared with the original resized to 1080p and sampled at 24 fps gives SSIM 0.998252; this comparison evaluates encoding fidelity, not identical pixels at the original resolution.
 

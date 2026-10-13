@@ -264,7 +264,7 @@ void main() {
   vec3 color = layered
     ? 1.0 - (1.0 - art) * (1.0 - clamp(foil * look.w * band * strength, 0.0, 1.0))
     : mix(art, foil, clamp(strength * look.w, 0.0, 1.0));
-  color += sparkles(p, halfway, sweep, mix(0.55, 1.0, tilted)) * uEdge * frame;
+  if(uEdge > 0.0 && frame > 0.0) color += sparkles(p, halfway, sweep, mix(0.55, 1.0, tilted)) * uEdge * frame;
   // Keep the photo clear: no neutral wash across the rim or the whole face.
   // The remaining small specular reflection appears only with actual tilt.
   color += vec3(shine * 0.3) * uGlare * tilted;
@@ -280,9 +280,9 @@ void main() {
   const fine=matchMedia('(min-width:721px) and (hover:hover) and (pointer:fine)'),reduce=matchMedia('(prefers-reduced-motion:reduce)'),events=new AbortController();
   const settings={preset:4,intensity:.16,scale:1,edge:0,frame:0,glare:.06,tiltMax:15,hoverScale:1.04,radius:14,idle:true};
   const activity=window.PortfolioScrollActivity,policy=window.PortfolioHeroPerformance;
-  const tier=policy.profile.tier;settings.idle=tier==='high';
-  const maxPixels=tier==='high'?240000:tier==='balanced'?140000:80000;
-  const drawInterval=1000/(tier==='high'?24:16);
+  const tier=policy.profile.tier;settings.idle=false;
+  const maxPixels=tier==='high'?120000:tier==='balanced'?70000:40000;
+  const drawInterval=1000/(tier==='high'?18:12);
   let cancelSetup=null;
   let gl,initialized=false;
   let program,buffer,texture,uniforms={},ready=false,lost=false,visible=false,frame=0,last=0,lastDraw=0,clock=0,alive=true;

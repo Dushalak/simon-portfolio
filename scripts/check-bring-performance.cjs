@@ -48,7 +48,7 @@ function hiveFixture(tier,{offscreen=false}={}){
 const prepared=hiveFixture('high',{offscreen:true});prepared.activity.scrolling=false;
 for(let i=0;i<100;i++)prepared.window.PortfolioAboutHive.prepare();assert.equal(prepared.scheduled(),1,'one idle compilation is shared by all preload callers');prepared.idle();assert.equal(prepared.setups(),1);assert.equal(prepared.canvas.dataset.hiveState,'ready');assert.equal(prepared.frames.size,0,'offscreen warmup paints one static frame, with no animation loop');
 prepared.window.PortfolioAboutHive.prepare();prepared.enter();assert.equal(prepared.setups(),1,'entering uses the prepared instance');assert.equal(prepared.frames.size,1);
-for(const [tier,budget,fps] of [['high',320000,20],['balanced',160000,14],['low',80000,10]]){
+for(const [tier,budget,fps] of [['high',150000,15],['balanced',80000,12],['low',40000,8]]){
   const f=hiveFixture(tier);assert.equal(f.setups(),0,'scrolling never initializes WebGL');assert.equal(f.frames.size,0);f.start();assert(f.canvas.width*f.canvas.height<budget*1.01,'resolution has a fixed device budget');
   const before=f.draws();for(let i=1;i<=60;i++)f.tick(i*1000/60);assert(f.draws()-before<=fps,'background draw rate is capped independently of scrolling');
   f.activity.scrolling=true;f.activity.update();assert.equal(f.frames.size,0,'scroll immediately pauses shader');f.activity.scrolling=false;f.activity.update();assert.equal(f.frames.size,1,'idle restores existing shader');assert.equal(f.setups(),1);

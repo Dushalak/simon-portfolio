@@ -23,10 +23,11 @@ html.intro-running .hero-atmosphere{animation-play-state:paused}
 html{scrollbar-gutter:stable}
 html.intro-pending,html.intro-running{overflow:hidden;overscroll-behavior:none}
 html.intro-pending body,html.intro-running body{overscroll-behavior:none;touch-action:none}
-html.intro-pending main,html.intro-running main,html.intro-running .skip-link{pointer-events:none}
+html.intro-pending main,html.intro-running .skip-link{pointer-events:none}
 .is-video-scene .hero-bg{inset:-7%;mask-image:none;-webkit-mask-image:none;mix-blend-mode:normal;opacity:1;transform-origin:50% 50%}
 .is-video-scene .bg-video,.is-video-scene .scene-poster{filter:brightness(.88) saturate(.94);object-position:center;transform:scale(.86);transform-origin:75% 65%;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent),linear-gradient(0deg,transparent,#000 4%,#000 96%,transparent);mask-composite:intersect;-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent),linear-gradient(0deg,transparent,#000 4%,#000 96%,transparent);-webkit-mask-composite:source-in}
 .is-video-scene .scene-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero-poster-picture{position:absolute;inset:0;display:block}
 .is-video-scene .hero-photo{opacity:0}
 .is-video-scene .hero-light-plane{opacity:0}
 .is-video-scene:has(.video-ready) .hero-photo{opacity:0}

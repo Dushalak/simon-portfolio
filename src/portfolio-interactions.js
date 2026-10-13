@@ -61,8 +61,8 @@
     });
     typography.set(title,{title,cells,originals,targets:new Float32Array(cells.length)});request();
   }
-  const aboutText='#about-title,.about-script,.about-greeting p,.about-biography,.about-work-title,.about-work-row>*,.about-work-description';
-  // The complete About left column and only the previously selected headings elsewhere.
+  const aboutText='#about-title,.about-script,.about-greeting p,.about-work-title';
+  // Keep the heading hover, without measuring and splitting hundreds of body glyphs.
   function restoreTypography(){typography.forEach(entry=>entry.originals.forEach(({root,html})=>root.innerHTML=html));typography.clear();}
   function typographyMode(){
     if(!alive)return;

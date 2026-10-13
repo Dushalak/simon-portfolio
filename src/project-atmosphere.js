@@ -58,24 +58,28 @@
       if(iMirrorPair>0.5){
         color=(color+sampleRays(vec2(iResolution.x-fragCoord.x,fragCoord.y)))*0.72;
       }
-      gl_FragColor=color;
+      float alpha=clamp(color.a,0.0,1.0);
+      gl_FragColor=vec4(clamp(color.rgb,0.0,1.0)*alpha,alpha);
     }`;
   const rgb=hex=>hex.slice(1).match(/../g).map(value=>parseInt(value,16)/255);
   window.PortfolioProjectAtmosphere={create(dialog){
     const layer=dialog.querySelector('.case-atmosphere'),ending=dialog.querySelector('.case-end');
     const intro=dialog.querySelector('.case-intro'),toolbar=dialog.querySelector('.case-toolbar');
     const media=matchMedia('(prefers-reduced-motion:reduce)'),events=new AbortController();
+    const tier=window.PortfolioHeroPerformance?.profile.tier||'balanced';
+    const maxPixels=tier==='high'?360000:tier==='balanced'?180000:90000,interval=1000/(tier==='high'?24:tier==='balanced'?18:12);
+    const parameters=['Speed','Intensity','Spread','Tilt','Saturation','Blend','Falloff','Opacity'];
     // A single clock/RAF drives the same supplied shader at the two ends of a case.
     // Only a visible surface allocates WebGL or draws; long case pages cost no GPU time.
     const surfaces=[
       {layer,canvas:layer.querySelector('canvas'),bottom:false},
       {layer:ending,canvas:ending.querySelector('.case-end-rays'),bottom:true}
     ].map(surface=>({...surface,gl:null,program:null,buffer:null,uniforms:{},shaders:[],visible:false,lost:false,failed:false,reported:-1,draws:0}));
-    let theme,frame=0,lastFrame=0,lastTick=0,clock=0,progress=0,destroyed=false,suspended=false;
+    let theme,colors,values,frame=0,lastFrame=0,lastTick=0,clock=0,progress=0,destroyed=false,suspended=false,scrolling=false,quietTimer=0;
     function setup(surface){
       if(surface.failed||surface.lost||media.matches)return;
       try{
-        const gl=surface.gl ||= surface.canvas.getContext('webgl',{alpha:true,antialias:false,premultipliedAlpha:false,depth:false,stencil:false});
+        const gl=surface.gl ||= surface.canvas.getContext('webgl',{alpha:true,antialias:false,premultipliedAlpha:true,depth:false,stencil:false,powerPreference:'low-power'});
         if(!gl){surface.failed=true;return;}
         function compile(type,source){
           const shader=gl.createShader(type);gl.shaderSource(shader,source);gl.compileShader(shader);
@@ -98,7 +102,7 @@
     }
     function size(surface){
       const {gl,canvas,layer}=surface;if(!gl||!surface.program||surface.lost)return;
-      const dpr=Math.min(devicePixelRatio||1,innerWidth<=720?1:1.25);
+      const dpr=Math.min(devicePixelRatio||1,1,Math.sqrt(maxPixels/Math.max(1,layer.clientWidth*layer.clientHeight)));
       const width=Math.max(1,Math.round(layer.clientWidth*dpr)),height=Math.max(1,Math.round(layer.clientHeight*dpr));
       if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}
       gl.viewport(0,0,width,height);
@@ -107,16 +111,16 @@
       const {gl,program,uniforms,canvas}=surface;if(!gl||!program||surface.lost||!theme)return;
       gl.useProgram(program);gl.uniform1f(uniforms.iTime,clock);
       gl.uniform2f(uniforms.iResolution,canvas.width,canvas.height);
-      gl.uniform3fv(uniforms.iRayColor1,rgb(theme.rayColor1));gl.uniform3fv(uniforms.iRayColor2,rgb(theme.rayColor2));
+      gl.uniform3fv(uniforms.iRayColor1,colors[0]);gl.uniform3fv(uniforms.iRayColor2,colors[1]);
       gl.uniform1f(uniforms.iFlipX,0);gl.uniform1f(uniforms.iFlipY,surface.bottom?1:0);
       gl.uniform1f(uniforms.iMirrorPair,surface.bottom?1:0);
-      ['Speed','Intensity','Spread','Tilt','Saturation','Blend','Falloff','Opacity'].forEach(name=>gl.uniform1f(uniforms['i'+name],theme[name[0].toLowerCase()+name.slice(1)]));
+      for(let i=0;i<parameters.length;i++)gl.uniform1f(uniforms['i'+parameters[i]],values[i]);
       gl.drawArrays(gl.TRIANGLES,0,3);
       surface.draws++;
       if(clock-surface.reported>=1){surface.layer.dataset.rayTime=clock.toFixed(2);surface.layer.dataset.drawCount=String(surface.draws);surface.reported=clock;}
     }
     const visibleSurface=surface=>surface.visible&&(surface.bottom||progress<1);
-    const canAnimate=surface=>!destroyed&&!suspended&&theme&&dialog.open&&visibleSurface(surface)&&surface.program&&!surface.lost&&!document.hidden&&!media.matches;
+    const canAnimate=surface=>!destroyed&&!suspended&&!scrolling&&theme&&dialog.open&&visibleSurface(surface)&&surface.program&&!surface.lost&&!document.hidden&&!media.matches;
     function visibility(){
       const bounds=dialog.getBoundingClientRect();
       surfaces.forEach(surface=>{const rect=surface.layer.getBoundingClientRect();surface.visible=rect.bottom>bounds.top&&rect.top<bounds.bottom&&rect.width>0;});
@@ -127,9 +131,9 @@
       visibility();surfaces.forEach(surface=>{size(surface);if(visibleSurface(surface))draw(surface);});sync();
     }
     function tick(time){
-      frame=0;const active=surfaces.filter(canAnimate);if(!active.length){sync();return;}
+      frame=0;let active=false;for(const surface of surfaces)if(canAnimate(surface)){active=true;break;}if(!active){sync();return;}
       if(lastTick)clock+=Math.min((time-lastTick)*.001,.1);lastTick=time;
-      if(time-lastFrame>=32){active.forEach(draw);lastFrame=time;}
+      if(time-lastFrame>=interval){for(const surface of surfaces)if(canAnimate(surface))draw(surface);lastFrame=time;}
       frame=requestAnimationFrame(tick);
     }
     function halt(){cancelAnimationFrame(frame);frame=0;lastTick=0;surfaces.forEach(surface=>surface.layer.dataset.motion='paused');}
@@ -137,7 +141,7 @@
     function sync(){
       let running=false;
       surfaces.forEach(surface=>{
-        if(!suspended&&dialog.open&&theme&&visibleSurface(surface)&&!surface.program&&!document.hidden){setup(surface);size(surface);draw(surface);}
+        if(!suspended&&!scrolling&&dialog.open&&theme&&visibleSurface(surface)&&!surface.program&&!document.hidden){setup(surface);size(surface);draw(surface);}
         surface.layer.dataset.renderer=surface.program&&!surface.lost&&!media.matches?'webgl':'gradient';
         const animate=canAnimate(surface);surface.layer.dataset.motion=media.matches?'static':animate?'running':'paused';running ||= animate;
       });
@@ -145,6 +149,10 @@
       else{cancelAnimationFrame(frame);frame=0;lastTick=0;}
     }
     const resize=new ResizeObserver(measure);[intro,toolbar,ending].forEach(el=>resize.observe(el));
+    dialog.addEventListener('scroll',()=>{
+      if(!scrolling){scrolling=true;halt();}clearTimeout(quietTimer);
+      quietTimer=setTimeout(()=>{quietTimer=0;scrolling=false;sync();},140);
+    },{passive:true,signal:events.signal});
     const intersection=new IntersectionObserver(entries=>{
       entries.forEach(entry=>{const surface=surfaces.find(surface=>surface.layer===entry.target);surface.visible=entry.isIntersecting;});sync();
     },{root:dialog,threshold:0});surfaces.forEach(surface=>intersection.observe(surface.layer));
@@ -154,12 +162,12 @@
       surface.canvas.addEventListener('webglcontextrestored',()=>{surface.lost=false;surface.failed=false;surface.program=surface.buffer=null;surface.shaders=[];measure();},{signal:events.signal});
     });
     addEventListener('pagehide',event=>{
-      halt();if(event.persisted)return;
+      halt();clearTimeout(quietTimer);quietTimer=0;scrolling=false;if(event.persisted)return;
       destroyed=true;resize.disconnect();intersection.disconnect();events.abort();surfaces.forEach(release);
     },{signal:events.signal});addEventListener('pageshow',measure,{signal:events.signal});
     return {
       setProject(project){
-        halt();theme=project.atmosphere;progress=clock=0;suspended=false;dialog.dataset.projectTheme=theme.name;
+        halt();theme=project.atmosphere;colors=[new Float32Array(rgb(theme.rayColor1)),new Float32Array(rgb(theme.rayColor2))];values=parameters.map(name=>theme[name[0].toLowerCase()+name.slice(1)]);progress=clock=0;suspended=false;dialog.dataset.projectTheme=theme.name;
         dialog.style.setProperty('--case-depth',theme.depth);dialog.style.setProperty('--case-glow-1',theme.rayColor1+'55');dialog.style.setProperty('--case-glow-2',theme.rayColor2+'66');
         dialog.style.setProperty('--case-light-x','82%');layer.style.opacity='1';
         surfaces.forEach(surface=>{surface.reported=-1;surface.draws=0;surface.layer.dataset.rayOrigin=surface.bottom?'bottom-pair':'top-right';surface.layer.dataset.rayTime='0';surface.layer.dataset.drawCount='0';});measure();

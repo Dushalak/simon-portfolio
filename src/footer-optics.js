@@ -28,7 +28,7 @@
     let key='',generation=0,texture=null,spots=[],geometry=null,destroyed=false;
     let last={b:58,x:0,y:0,g:0};
     function update(b,x,y,g){
-      last={b,x,y,g};if(!geometry)return;
+      last.b=b;last.x=x;last.y=y;last.g=g;if(!geometry)return;
       const shift=(b-58)*geometry.length/100;
       const transform=`translate3d(${shift*geometry.dx}px,${shift*geometry.dy}px,0)`;
       if(texture.style.transform!==transform)texture.style.transform=transform;

@@ -12,13 +12,13 @@
     const section=node('article','project section');section.id=project.key;section.dataset.project=project.key;
     const stage=node('div','project-stage'),link=node('a','project-card');
     link.href=project.href;link.dataset.open=project.key;link.setAttribute('aria-label','查看 '+project.title+' 完整案例');
-    const image=node('img','project-image');image.dataset.src=project.cover;image.alt=project.title+' 项目封面';image.loading='lazy';image.decoding='async';image.width=1600;image.height=1200;
+    const image=node('img','project-image');image.dataset.src=project.cover;image.dataset.srcset=project.coverSrcset;image.sizes='(max-width:720px) 86vw, 46vw';image.alt=project.title+' 项目封面';image.loading='lazy';image.decoding='async';image.width=project.coverWidth;image.height=project.coverHeight;
     window.PortfolioAssets.observe(image,section);
     const tags=node('div','project-tags');project.tags.forEach(tag=>tags.append(node('span','',tag)));
     const title=node('h3','project-title',project.displayTitle),category=node('p','project-card-category',project.category);
     const fold=window.PortfolioFoldText.create(title,project.displayTitle);folds.push(fold);
     const plus=node('span','project-card-plus','+');plus.setAttribute('aria-hidden','true');
-    link.append(image,node('span','project-shade'),tags,title,category,plus);stage.append(link);section.append(stage);gallery.lastElementChild.append(section);
+    link.append(window.PortfolioAssets.responsive(image,project.coverSrcset),node('span','project-shade'),tags,title,category,plus);stage.append(link);section.append(stage);gallery.lastElementChild.append(section);
     const select=active=>{
       if(!fine.matches)return;
       const entering=active&&!section.classList.contains('is-selected');
@@ -46,7 +46,7 @@
   const entrance=window.PortfolioScrollReveal.create([
     {nodes:headingWords,anchor:headingTitle,duration:680,stagger:70,opacity:.001,y:10,blur:4,visibleClass:'is-heading-word-visible'},
     {nodes:[headingBody],duration:750,y:35,visibleClass:'is-heading-body-visible'},
-    ...cards.map(card=>({nodes:[card.querySelector('.project-stage')],anchor:card,duration:950,y:70,scale:.98,blur:8,start:.95,end:.48}))
+    ...cards.map(card=>({nodes:[card.querySelector('.project-stage')],anchor:card,duration:750,y:40,scale:.99,blur:0,start:.95,end:.48}))
   ]);
   function revealAt(position){
     // A return-transition snapshot must carry real src attributes, including a direct case visit.

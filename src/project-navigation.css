@@ -3,6 +3,7 @@
 .projects-heading-lead,.projects-heading-statement{transform:skewX(2deg)}
 .case-pages{--case-page-gap:clamp(8px,1.1vw,18px);display:grid;gap:var(--case-page-gap);border-radius:16px;overflow:hidden}
 .case-pages .case-group{display:grid;gap:var(--case-page-gap);margin:0}
+.case-pages picture{display:block}
 .case-pages figure{margin:0;border-radius:0}
 .case-pages figure.case-page-yuxu{border-radius:48px;overflow:hidden;background:transparent}
 .case-pages figure.case-page-yuxu img{background:transparent;clip-path:inset(0 .8%)}

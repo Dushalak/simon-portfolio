@@ -37,6 +37,7 @@
   const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
   const events = new AbortController();
   const optics=window.PortfolioFooterOptics.create(root),dialog=document.querySelector('.case-dialog');
+  const activity=window.PortfolioScrollActivity,interval=1000/(window.PortfolioHeroPerformance?.profile.tier==='high'?30:20);
   let alive = true, visible = false, seen = false, reduced = mq.matches;
   let fitFrame = 0, raf = 0;
   let warmed=false,pointerRect=null,rectDirty=true;
@@ -105,7 +106,7 @@
     raf = 0;
     root.dataset.motion = reduced ? 'reduced' : 'full';
     root.dataset.running = 'false';
-    if (reduced || !visible || document.hidden || dialog.open || root.closest('[inert]')) {
+    if (reduced || !visible || document.hidden || activity?.scrolling || dialog.open || root.closest('[inert]')) {
       set(58, ptr.x, ptr.y, ptr.inside ? 1 : 0);
       return;
     }
@@ -113,6 +114,7 @@
     let last = performance.now(), t = last / 1000, b = 58;
     let px = ptr.x, py = ptr.y, g = 0;
     const tick = now => {
+      if(now-last<interval-1){raf=requestAnimationFrame(tick);return;}
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
       t += dt;
@@ -174,13 +176,14 @@
     el.addEventListener('animationend', () => el.classList.remove('is-hop'), { signal: events.signal });
   });
   document.addEventListener('visibilitychange', syncMotion, { signal: events.signal });
+  const unsubscribe=activity?.subscribe(syncMotion);
   addEventListener('scroll',()=>{rectDirty=true;},{passive:true,signal:events.signal});
   const modal=new MutationObserver(syncMotion);modal.observe(dialog,{attributes:true,attributeFilter:['open']});modal.observe(document.querySelector('main'),{attributes:true,attributeFilter:['inert']});
   window.addEventListener('pageshow', syncMotion, { signal: events.signal });
   window.addEventListener('pagehide', e => {
     cancelAnimationFrame(raf);
     if (e.persisted) return;
-    alive = false;
+    alive = false;unsubscribe?.();
     cancelAnimationFrame(fitFrame);
     io.disconnect();
     warmup.disconnect();modal.disconnect();optics.dispose();
