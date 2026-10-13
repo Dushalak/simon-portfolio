@@ -57,6 +57,9 @@
 .button-ripple-wave{position:absolute;border-radius:50%;background:var(--button-ripple-color);pointer-events:none}
 .case-end{background:radial-gradient(ellipse at 0% 120%,var(--case-glow-1),transparent 60%),radial-gradient(ellipse at 100% 120%,var(--case-glow-1),transparent 60%),linear-gradient(#0b0b0b,var(--case-depth))}
 @media(max-width:720px){
+ /* Mobile reading controls attach to the viewport edge, not the hidden toolbar. */
+ .case-toolbar .back-home{display:none}
+ .case-sidebar{top:0;z-index:28;padding-top:calc(14px + env(safe-area-inset-top,0px));background:#111;backdrop-filter:none;-webkit-backdrop-filter:none}
  .case-toolbar .case-menu{height:48px}
  .case-menu summary{width:136px;height:48px;padding:0 14px;gap:7px}
  .case-menu .case-menu-label{font-size:16px}

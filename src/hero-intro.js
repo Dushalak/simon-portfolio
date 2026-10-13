@@ -1,10 +1,10 @@
 /* First-visit intro only. Scroll composition and pointer depth stay in hero-motion.js. */
 (() => {
   const labels = Object.freeze({ introStart: 0, constructionLines: 300, frameDrawing: 100,
-    frameHold: 1000, titleEntrance:120, videoStart:480, lightReveal:1480, backgroundReveal:1580,
+    frameHold: 1250, titleEntrance:120, videoStart:480, lightReveal:1480, backgroundReveal:1580,
     constructionFadeOut:2600, contentEntrance:1280, introComplete:3400 });
   const backgroundRevealMs = 1400;
-  const introPlaybackRate = 1.2;
+  const introPlaybackRate = .65;
   const clamp = value => Math.min(1, Math.max(0, value));
   const smooth = value => { const t = clamp(value); return t*t*(3-2*t); };
 
@@ -296,10 +296,14 @@
     timeline.add(hero.querySelector('.hero-border path'),[{strokeDashoffset:'1'},{strokeDashoffset:'0'}],
       labels.frameHold-labels.frameDrawing,labels.frameDrawing,'cubic-bezier(.55,.01,.3,1)');
     timeline.add(scene,[{filter:'brightness(1.12) saturate(.9) blur(1.5px)'},{filter:'none'}],backgroundRevealMs,labels.backgroundReveal);
-    // Keep core copy legible before JS arrives, then settle it without a long reveal.
+    // Restore the opening title's center-to-top choreography, keeping its left inset.
     const heading=panel.querySelector('.hero-heading'),title=heading.querySelector('.hero-reveal');
-    timeline.add(title,[{opacity:.65,transform:'translate3d(0,8px,0)'},
-      {opacity:1,transform:'translate3d(0,0,0)'}],500,labels.titleEntrance);
+    const centerY=panel.clientHeight/2-heading.offsetTop-heading.offsetHeight/2;
+    const centered=`translate3d(0,${centerY}px,0)`;
+    timeline.add(title,[{opacity:0,filter:'blur(5px)',transform:centered},
+      {opacity:1,filter:'blur(0px)',transform:centered,offset:.28},
+      {opacity:1,filter:'blur(0px)',transform:centered,offset:.44},
+      {opacity:1,filter:'blur(0px)',transform:'translate3d(0,0,0)'}],1080,labels.titleEntrance);
     const unfold=[{opacity:.65,transform:'translate3d(0,-8px,0)'},
       {opacity:1,transform:'translate3d(0,0,0)'}];
     timeline.add(panel.querySelector('.hero-philosophy .hero-reveal'),unfold,revealMs,labels.contentEntrance);

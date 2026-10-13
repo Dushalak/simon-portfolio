@@ -89,7 +89,10 @@
         const button=document.createElement('button');button.className='chapter-card';button.setAttribute('aria-controls',section.id);
         const label=document.createElement('span');label.className='chapter-label';label.textContent=String(i+1).padStart(2,'0')+' / '+group.title;
         const summary=document.createElement('div');summary.className='chapter-summary';const title=document.createElement('strong');title.textContent=group.heading;const text=document.createElement('p');text.textContent=group.text;summary.append(title,text);button.append(label,summary);
-        button.addEventListener('click',()=>dialog.scrollTo({top:dialog.scrollTop+section.getBoundingClientRect().top-(innerWidth<=720?185:110),behavior:preference.matches?'instant':'smooth'}));navigation.append(button);
+        button.addEventListener('click',()=>{
+          const offset=innerWidth<=720?$('.case-sidebar').offsetHeight+12:110;
+          dialog.scrollTo({top:dialog.scrollTop+section.getBoundingClientRect().top-offset,behavior:preference.matches?'instant':'smooth'});
+        });navigation.append(button);
       });
       const cover=document.createElement('img'),coverPicture=window.PortfolioAssets.responsive(cover,project.coverSrcset,false);cover.srcset=project.coverSrcset;cover.sizes='(max-width:720px) 92vw, 88vw';cover.src=project.cover;cover.decoding='async';cover.fetchPriority='high';cover.alt=project.title+' 项目主视觉';cover.width=project.coverWidth;cover.height=project.coverHeight;
       return {fragment,navigation,cover:coverPicture};
