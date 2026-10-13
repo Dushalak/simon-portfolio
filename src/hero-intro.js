@@ -116,11 +116,15 @@
     const quality=window.PortfolioHeroPerformance?.profile||{tier:'high',maxPixels:786432,maxWidth:1280,maxHeight:800,dpr:1,shaderFps:40,octaves:4,detail:1,maskWidth:512};
     let dummy,fieldTexture,fieldBuffer,fieldKey='',floatFields=false,cacheDisabled=false,lastDraw=-Infinity;
     let w=Math.max(1,stage.clientWidth),h=Math.max(1,stage.clientHeight);
-    const sizeObserver=new ResizeObserver(()=>{w=Math.max(1,stage.clientWidth);h=Math.max(1,stage.clientHeight);lastSize='';});sizeObserver.observe(stage);
+    const coarse=matchMedia('(pointer:coarse)');
+    let framing=window.PortfolioHeroFraming.compute(w,h,coarse.matches);
+    const refreshSize=()=>{w=Math.max(1,stage.clientWidth);h=Math.max(1,stage.clientHeight);framing=window.PortfolioHeroFraming.compute(w,h,coarse.matches);lastSize='';fieldKey='';};
+    const sizeObserver=new ResizeObserver(refreshSize);sizeObserver.observe(stage);
+    coarse.addEventListener('change',refreshSize,{signal:events.signal});
     const vertex = `attribute vec2 aPosition;varying vec2 vUv;
       void main(){vUv=aPosition*.5+.5;gl_Position=vec4(aPosition,0.,1.);}`;
     const fragment = `precision highp float;
-      varying vec2 vUv;uniform vec2 uResolution;uniform float uProgress,uLight,uMode,uCached,uPacked,uOctaves,uDetail,uNoiseGain;
+      varying vec2 vUv;uniform vec2 uResolution;uniform vec3 uFraming;uniform float uProgress,uLight,uMode,uCached,uPacked,uOctaves,uDetail,uNoiseGain;
       uniform highp sampler2D uField;
       float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
       float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
@@ -134,7 +138,7 @@
           if(uPacked>.5){field=(data.r*65280.+data.g*255.)/65535.*2.;texture=data.b;precursor=data.a*2.;}
           else{field=data.r*2.;texture=data.g;precursor=data.b*2.;}}
         else{
-        vec2 uv=vec2(vUv.x,1.-vUv.y), ratio=vec2(uResolution.x/uResolution.y,1.);
+        vec2 uv=(vec2(vUv.x,1.-vUv.y)-.5)*uFraming.xy+.5, ratio=vec2(uFraming.z,1.);
         vec2 q=uv*ratio;
         vec2 warp=vec2(fbm(q*3.1+vec2(7.2,1.8)),fbm(q*3.4+vec2(1.3,8.6)));
         float coarse=fbm(q*4.0+warp*2.6+vec2(4.1,9.3));
@@ -189,7 +193,7 @@
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]), gl.STATIC_DRAW);
       const attribute = gl.getAttribLocation(program, 'aPosition');
       gl.enableVertexAttribArray(attribute); gl.vertexAttribPointer(attribute,2,gl.FLOAT,false,0,0);
-      uniforms = Object.fromEntries(['uResolution','uProgress','uLight','uMode','uCached','uField','uPacked','uOctaves','uDetail','uNoiseGain'].map(name=>[name,gl.getUniformLocation(program,name)]));
+      uniforms = Object.fromEntries(['uResolution','uFraming','uProgress','uLight','uMode','uCached','uField','uPacked','uOctaves','uDetail','uNoiseGain'].map(name=>[name,gl.getUniformLocation(program,name)]));
       dummy=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,dummy);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
       gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
       gl.uniform1i(uniforms.uField,0);
@@ -240,8 +244,10 @@
       }
       // Cap the transient shader resolution. It stops completely once the image is revealed.
       const scale=Math.min(devicePixelRatio,quality.dpr,quality.maxWidth/w,quality.maxHeight/h,Math.sqrt(quality.maxPixels/(w*h)));
-      const size=`${w}x${h}`;
-      if(size!==lastSize){canvas.width=Math.max(1,Math.floor(w*scale));canvas.height=Math.max(1,Math.floor(h*scale));gl.viewport(0,0,canvas.width,canvas.height);lastSize=size;}
+      const rasterWidth=Math.max(1,Math.floor(w*scale)),rasterHeight=Math.max(1,Math.floor(h*scale));
+      const size=`${w}x${h}/${rasterWidth}x${rasterHeight}`;
+      if(size!==lastSize){canvas.width=rasterWidth;canvas.height=rasterHeight;gl.viewport(0,0,canvas.width,canvas.height);lastSize=size;}
+      gl.uniform3f(uniforms.uFraming,framing.scaleX,framing.scaleY,framing.aspect);
       if(progress>0||light>0)fields(canvas.width,canvas.height,w,h);
       gl.uniform2f(uniforms.uResolution,w,h);
       gl.uniform1f(uniforms.uProgress,progress);gl.uniform1f(uniforms.uLight,light);

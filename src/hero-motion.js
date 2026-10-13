@@ -32,6 +32,7 @@
   const writes=new WeakMap();
   function write(node,key,value){let values=writes.get(node);if(!values){values={};writes.set(node,values);}if(values[key]!==value){node.style[key]=value;values[key]=value;}}
   const aboutStory=window.PortfolioAbout?.create({hero,stage,reduced});
+  const framing=window.PortfolioHeroFraming.create({hero,stage});
 
   // 1. Intro delegates to one master timeline, then hands off to the interactions.
   function finishIntro() {
@@ -56,6 +57,7 @@
   // wheel cannot leave the text halfway; reversing below the threshold returns it.
   function measure() {
     offscreenSettled=false;
+    framing.measure();
     aboutStory?.measure();
     const w=stage.clientWidth,h=stage.clientHeight;
     const left=panel.offsetLeft-panel.offsetWidth/2;
@@ -97,7 +99,7 @@
     hero.dataset.layoutProgress=layoutValue.toFixed(3);
     const dt=Math.min(40,lastTime?now-lastTime:16.67);lastTime=now;
     const alpha=1-Math.pow(1-config.interpolation,dt/16.67);
-    const canTilt=desktop.matches&&!reduced.matches&&introDone&&visible&&!dialog?.open&&!hero.closest('[inert]')&&policy.profile.tier!=='low';
+    const canTilt=desktop.matches&&hero.dataset.heroFraming==='desktop'&&!reduced.matches&&introDone&&visible&&!dialog?.open&&!hero.closest('[inert]')&&policy.profile.tier!=='low';
     if(pointerDirty&&canTilt){
       const bounds=stage.getBoundingClientRect();pointerX=clientX-bounds.left;pointerY=clientY-bounds.top;
       targetX=clamp(pointerX/geometry.w*2-1,-1,1);targetY=clamp(pointerY/geometry.h*2-1,-1,1);pointerDirty=false;

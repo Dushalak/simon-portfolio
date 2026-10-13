@@ -40,3 +40,13 @@ html.intro-pending main,html.intro-running main,html.intro-running .skip-link{po
 .hero[data-hero-quality=low] .hero-panel{transform-style:flat}
 .is-video-scene .bg-video,.is-video-scene .scene-poster{mask-image:url('assets/hero-edge-mask.svg');-webkit-mask-image:url('assets/hero-edge-mask.svg');mask-size:100% 100%;-webkit-mask-size:100% 100%;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;mask-composite:add;-webkit-mask-composite:source-over}
 @media(prefers-reduced-motion:reduce){.hero[data-video-motion=user] .bg-video{display:block}}
+
+/* Tablet/phone composition is framed once on resize, shared by poster and video. */
+.hero[data-hero-framing=tablet] .hero-bg,.hero[data-hero-framing=mobile] .hero-bg{inset:auto;left:50%;top:50%;width:var(--hero-scene-width);height:var(--hero-scene-height);margin-left:calc(var(--hero-scene-width) / -2);margin-top:calc(var(--hero-scene-height) / -2)}
+.hero[data-hero-framing=tablet] .bg-video,.hero[data-hero-framing=tablet] .scene-poster,.hero[data-hero-framing=mobile] .bg-video,.hero[data-hero-framing=mobile] .scene-poster{object-fit:contain;object-position:50% 50%;transform:none;transform-origin:50% 50%}
+.hero[data-hero-framing=tablet] .hero-panel{width:min(42vw,361px,calc((100svh - 190px)*.72345));top:50%;transform-style:flat}
+.hero[data-hero-framing=mobile] .hero-atmosphere{animation:none;opacity:.2}
+/* Match the sizing query before JS runs, including iPad Pro's wider landscape. */
+@media(min-width:721px) and (max-width:1366px) and (max-aspect-ratio:3/2), (min-width:721px) and (max-width:1366px) and (pointer:coarse){
+ .hero-panel{width:min(42vw,361px,calc((100svh - 190px)*.72345));top:50%;transform-style:flat}
+}
