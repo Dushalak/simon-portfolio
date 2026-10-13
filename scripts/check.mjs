@@ -25,7 +25,14 @@ assert.match(await readFile('dist/_redirects','utf8'),/^\/\*\s+\/index\.html\s+2
 assert.equal(await readFile('dist/_headers','utf8'),await readFile('src/_headers','utf8'),'Netlify cache metadata must accompany the published artifact');
 assert.match(await readFile('dist/_headers','utf8'),/max-age=31536000, immutable/);
 assert.match(html,/<script defer src="site\.js\?v=/);
-assert.equal((html.match(/<script[^>]* src=/g)||[]).length,1);
+const externalScripts=html.match(/<script[^>]* src=/g)||[];
+assert.equal(externalScripts.length,2,'One application script and one analytics beacon');
+const beacon=html.match(/<script\b[^>]*src="https:\/\/static\.cloudflareinsights\.com\/beacon\.min\.js"[^>]*><\/script>/g)||[];
+assert.equal(beacon.length,1,'Analytics must not be injected twice');
+assert.match(beacon[0],/type="module"/,'Analytics must use deferred module execution');
+assert.match(beacon[0],/fetchpriority="low"/,'Analytics must not compete at high priority with core images');
+assert.match(beacon[0],/data-cf-beacon='\{"token":"[a-f0-9]{32}"\}'/,'Analytics needs a real site token');
+assert(html.indexOf(beacon[0])>html.indexOf('<script defer src="site.js?v='),'Application script precedes analytics');
 assert.match(html,/<html lang="zh-CN">/);assert.match(html,/<meta name="description"/);assert.match(html,/<link rel="canonical"/);
 assert.equal((html.match(/<h1\b/g)||[]).length,1);
 assert.match(css,/case-page-yuxu[^}]*border-radius:48px/);
