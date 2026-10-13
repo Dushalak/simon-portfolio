@@ -17,6 +17,7 @@
   let pointer={x:innerWidth/2,y:innerHeight/2,inside:false},gx=pointer.x,gy=pointer.y,bx=gx,by=gy,glowOpacity=0;
   let frame=0,last=0,currentCard=null;
   const typography=new Map();
+  const typographyUpdates=[],activity=window.PortfolioScrollActivity;
   function prepare(title){
     if(!title||!fine.matches||reduce.matches)return;
     if(typography.has(title)&&title.querySelector('.proximity-cell'))return;
@@ -57,7 +58,7 @@
         }else textNode.replaceWith(fragment);
       });
     });
-    typography.set(title,{title,cells,originals});request();
+    typography.set(title,{title,cells,originals,targets:new Float32Array(cells.length)});request();
   }
   const aboutText='#about-title,.about-script,.about-greeting p,.about-biography,.about-work-title,.about-work-row>*,.about-work-description';
   // The complete About left column and only the previously selected headings elsewhere.
@@ -126,21 +127,25 @@
     if(currentCard||viewLeaving){bx+=(pointer.x-bx)*follow;by+=(pointer.y-by)*follow;position.style.transform=`translate3d(${bx-41}px,${by-41}px,0)`;moving ||= Math.abs(pointer.x-bx)+Math.abs(pointer.y-by)>.1;}
     moving ||= Math.abs(pointer.x-gx)+Math.abs(pointer.y-gy)>.1||Math.abs(glowTarget-glowOpacity)>.002;
     const menuOpen=document.body.classList.contains('menu-open')||dialog.classList.contains('case-menu-open');
-    const typographyUpdates=[];
-    typography.forEach(({title,cells})=>{
+    typographyUpdates.length=0;
+    typography.forEach(entry=>{
+      const {title,cells,targets}=entry;
       if(!title.isConnected){typography.delete(title);return;}
+      const canInteract=pointerActive&&!activity.scrolling&&!menuOpen;
+      if(!canInteract&&!cells.some(c=>c.value>.001))return;
       const r=title.getBoundingClientRect(),inCase=Boolean(title.closest('dialog'));
-      const active=pointerActive&&!menuOpen&&!title.closest('[inert]')&&(inCase?dialog.open:!dialog.open)&&r.bottom>0&&r.top<innerHeight&&nearRect(pointer.x,pointer.y,r)<170;
+      const active=canInteract&&!title.closest('[inert]')&&(inCase?dialog.open:!dialog.open)&&r.bottom>0&&r.top<innerHeight&&nearRect(pointer.x,pointer.y,r)<170;
       if(!active&&!cells.some(c=>c.value>.001))return;
       const radius=Math.max(85,Math.min(145,parseFloat(getComputedStyle(title).fontSize)*1.85));
       // Measure before writing: enlarged glyphs never change the distance reference.
-      const targets=cells.map(c=>{
-        if(!active)return 0;
+      for(let i=0;i<cells.length;i++){
+        if(!active){targets[i]=0;continue;}
+        const c=cells[i];
         const rect=c.cell.getBoundingClientRect();
         const distance=Math.hypot(pointer.x-(rect.left+rect.width/2),pointer.y-(rect.top+rect.height/2));
-        const t=clamp((1-distance/radius)*1.22);return t*t*(3-2*t);
-      });
-      typographyUpdates.push({cells,targets});
+        const t=clamp((1-distance/radius)*1.22);targets[i]=t*t*(3-2*t);
+      }
+      typographyUpdates.push(entry);
     });
     // Finish measuring every title before writing any glyph style.
     typographyUpdates.forEach(({cells,targets})=>cells.forEach((c,i)=>{

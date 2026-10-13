@@ -10,6 +10,11 @@
   const settings = { speed: .55, saturation: .45, maxPixels: 520000, fps: 30 };
   const heroBudget=window.PortfolioHeroPerformance?.profile;
   if(heroBudget){settings.maxPixels=Math.min(settings.maxPixels,heroBudget.maxPixels);settings.fps=Math.min(settings.fps,heroBudget.shaderFps);}
+  const activity=window.PortfolioScrollActivity,dialog=document.querySelector('.case-dialog');
+  const tier=heroBudget?.tier||'balanced';
+  settings.maxPixels=Math.min(settings.maxPixels,tier==='high'?320000:tier==='balanced'?160000:80000);
+  settings.fps=Math.min(settings.fps,tier==='high'?20:tier==='balanced'?14:10);
+  let cancelSetup=null,inView=false;
   const vertex = `#version 300 es
     layout(location=0) in vec2 a_pos;
     void main(){ gl_Position=vec4(a_pos,0.0,1.0); }`;
@@ -67,10 +72,10 @@
     finally { shaders.forEach(shader=>gl.deleteShader(shader)); }
   }
   function visible() {
-    if (document.hidden || lost || !program || destroyed) return false;
+    if (!inView || document.hidden || activity.scrolling || dialog?.open || section.closest('[inert]') || lost || !program || destroyed) return false;
     if (section.dataset.storyMode==='transition' && section.dataset.storyVisible!=='true') return false;
-    const rect=canvas.getBoundingClientRect();
-    return rect.bottom>0 && rect.top<innerHeight && rect.width>0 && rect.height>0;
+    // IntersectionObserver owns geometry; animation ticks do not query layout.
+    return true;
   }
   function resize() {
     if (!program || lost || destroyed) return;
@@ -92,19 +97,26 @@
   }
   function update() {
     const approaching=section.dataset.storyVisible==='true'||!matchMedia('(min-width:1000px)').matches||reduced.matches;
-    if(!program&&!failed&&!destroyed&&!lost&&!document.hidden&&approaching){
+    if(!program&&!cancelSetup&&!failed&&!destroyed&&!lost&&inView&&!document.hidden&&!activity.scrolling&&!dialog?.open&&!section.closest('[inert]')&&approaching){
       const rect=canvas.getBoundingClientRect();
-      if(rect.bottom>0&&rect.top<innerHeight){if(setup())resize();else failed=true;}
+      if(rect.bottom>0&&rect.top<innerHeight){
+        cancelSetup=window.PortfolioHeroPerformance.afterLoadIdle(()=>{
+          cancelSetup=null;
+          if(destroyed||!inView||document.hidden||activity.scrolling||dialog?.open||section.closest('[inert]'))return;
+          const bounds=canvas.getBoundingClientRect();if(bounds.bottom<=0||bounds.top>=innerHeight)return;
+          if(setup())resize();else failed=true;
+        });
+      }
     }
     if(!visible() || reduced.matches){cancelAnimationFrame(frame);frame=0;last=0;}
     else if(!frame){last=0;frame=requestAnimationFrame(tick);}
   }
-  const observer=new IntersectionObserver(update,{threshold:0});
+  const observer=new IntersectionObserver(entries=>{inView=entries[0].isIntersecting&&entries[0].intersectionRatio>=.35;update();},{threshold:[0,.35]});
   const sizeObserver=new ResizeObserver(resize);
   const modeObserver=new MutationObserver(update);
   function dispose(event) {
     if(event.persisted)return;
-    destroyed=true;cancelAnimationFrame(frame);events.abort();observer.disconnect();sizeObserver.disconnect();modeObserver.disconnect();
+    destroyed=true;cancelSetup?.();unsubscribe();cancelAnimationFrame(frame);events.abort();observer.disconnect();sizeObserver.disconnect();modeObserver.disconnect();
     if(buffer)gl.deleteBuffer(buffer);if(program)gl.deleteProgram(program);
   }
   canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();lost=true;update();},{signal:events.signal});
@@ -114,6 +126,9 @@
   addEventListener('resize',resize,{passive:true,signal:events.signal});
   addEventListener('pageshow',resize,{signal:events.signal});
   addEventListener('pagehide',dispose,{signal:events.signal});
+  const unsubscribe=activity.subscribe(update);
   observer.observe(canvas);sizeObserver.observe(canvas);modeObserver.observe(section,{attributes:true,attributeFilter:['data-story-mode','data-story-visible']});
+  modeObserver.observe(document.querySelector('main'),{attributes:true,attributeFilter:['inert']});
+  if(dialog)modeObserver.observe(dialog,{attributes:true,attributeFilter:['open']});
   update();
 })();

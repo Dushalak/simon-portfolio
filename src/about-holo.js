@@ -279,6 +279,11 @@ void main() {
   fade.classList.add('about-portrait-fade');root.append(rotor);rotor.append(image,canvas,fade);
   const fine=matchMedia('(min-width:721px) and (hover:hover) and (pointer:fine)'),reduce=matchMedia('(prefers-reduced-motion:reduce)'),events=new AbortController();
   const settings={preset:4,intensity:.16,scale:1,edge:0,frame:0,glare:.06,tiltMax:15,hoverScale:1.04,radius:14,idle:true};
+  const activity=window.PortfolioScrollActivity,policy=window.PortfolioHeroPerformance;
+  const tier=policy.profile.tier;settings.idle=tier==='high';
+  const maxPixels=tier==='high'?240000:tier==='balanced'?140000:80000;
+  const drawInterval=1000/(tier==='high'?24:16);
+  let cancelSetup=null;
   let gl,initialized=false;
   let program,buffer,texture,uniforms={},ready=false,lost=false,visible=false,frame=0,last=0,lastDraw=0,clock=0,alive=true;
   let pointer={x:.5,y:.5,inside:false},state={x:0,y:0,lx:.36,ly:.26,lift:1};
@@ -304,7 +309,7 @@ void main() {
     try{gl.bindTexture(gl.TEXTURE_2D,texture);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,image);gl.generateMipmap(gl.TEXTURE_2D);ready=true;root.dataset.holoRenderer='webgl';resize();}catch{root.dataset.holoRenderer='image';}
   }
   function resize(){
-    if(!program||lost)return;const dpr=Math.min(devicePixelRatio||1,1.25),width=Math.max(1,Math.round(root.clientWidth*dpr)),height=Math.max(1,Math.round(root.clientHeight*dpr));
+    if(!program||lost)return;const dpr=Math.min(devicePixelRatio||1,1,Math.sqrt(maxPixels/Math.max(1,root.clientWidth*root.clientHeight))),width=Math.max(1,Math.round(root.clientWidth*dpr)),height=Math.max(1,Math.round(root.clientHeight*dpr));
     if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}draw();wake();
   }
   const foilUniform=new Float32Array([226,230,236].map(c=>Math.pow(c/255,2.2)));
@@ -316,7 +321,7 @@ void main() {
     gl.uniform1i(uniforms.uPreset,settings.preset);gl.uniform1f(uniforms.uIntensity,settings.intensity);gl.uniform1f(uniforms.uScale,settings.scale);gl.uniform1f(uniforms.uEdge,settings.edge);gl.uniform1f(uniforms.uFrame,settings.frame);gl.uniform1f(uniforms.uRadius,settings.radius/root.clientWidth);gl.uniform1f(uniforms.uGlare,settings.glare);
     gl.uniform3fv(uniforms.uFoil,foilUniform);gl.uniform1f(uniforms.uReady,1);gl.drawArrays(gl.TRIANGLES,0,3);
   }
-  const allowed=()=>alive&&visible&&!document.hidden&&!document.querySelector('.case-dialog').open&&!root.closest('[inert]')&&!lost;
+  const allowed=()=>alive&&visible&&!document.hidden&&!activity.scrolling&&!document.querySelector('.case-dialog').open&&!root.closest('[inert]')&&!lost;
   // Use the supplied component's spring response, with small integration steps.
   function spring(key,target,stiffness,damping,dt){velocity[key]+=((target-state[key])*stiffness-velocity[key]*damping)*dt;state[key]+=velocity[key]*dt;}
   function tick(now){
@@ -332,21 +337,24 @@ void main() {
     rotor.style.transform=`rotateX(${state.x}deg) rotateY(${state.y}deg) scale(${state.lift})`;
     shadow.style.transform=`translate(${-state.y*.7}px,${state.x*.7}px) scale(${.9+(state.lift-1)*1.5})`;
     root.dataset.holoTilt=state.x.toFixed(2)+','+state.y.toFixed(2);root.dataset.holoMotion=enabled?'running':'static';
-    if(now-lastDraw>32){draw();lastDraw=now;}
+    if(now-lastDraw>=drawInterval){draw();lastDraw=now;}
     const remaining=Math.abs(tx-state.x)+Math.abs(ty-state.y)+Math.abs(lift-state.lift)*40+(Math.abs(lx-state.lx)+Math.abs(ly-state.ly))*60+Math.abs(velocity.x)+Math.abs(velocity.y)+Math.abs(velocity.lift)*40+(Math.abs(velocity.lx)+Math.abs(velocity.ly))*60;
     if(idle||enabled&&remaining>.002)wake();
   }
   function wake(){
-    if(!initialized&&visible&&!document.hidden&&root.closest('#about').dataset.storyVisible!=='false')setup();
+    if(!initialized&&!cancelSetup&&allowed()&&root.closest('#about').dataset.storyVisible!=='false')cancelSetup=policy.afterLoadIdle(()=>{cancelSetup=null;if(allowed()){setup();wake();}});
     root.dataset.shineMotion=allowed()&&fine.matches&&!reduce.matches?'running':'paused';
+    if(!allowed()){cancelAnimationFrame(frame);frame=0;last=0;root.dataset.holoMotion='paused';return;}
     if(allowed()&&!frame)frame=requestAnimationFrame(tick);
   }
   function track(e){if(!fine.matches||reduce.matches||e.pointerType==='touch')return;const rect=root.getBoundingClientRect();pointer={x:Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width)),y:Math.max(0,Math.min(1,(e.clientY-rect.top)/rect.height)),inside:true};wake();}
   root.addEventListener('pointerenter',track,{passive:true,signal:events.signal});root.addEventListener('pointermove',track,{passive:true,signal:events.signal});['pointerleave','pointercancel'].forEach(type=>root.addEventListener(type,()=>{pointer.inside=false;wake();},{signal:events.signal}));
-  const intersection=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;wake();});intersection.observe(root);
+  const intersection=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting&&entries[0].intersectionRatio>=.15;wake();},{threshold:[0,.15]});intersection.observe(root);
   const size=new ResizeObserver(resize);size.observe(root);const mode=new MutationObserver(wake);mode.observe(document.querySelector('#about'),{attributes:true,attributeFilter:['inert','data-story-mode','data-story-visible']});mode.observe(document.querySelector('.case-dialog'),{attributes:true,attributeFilter:['open']});
   image.addEventListener('load',load,{signal:events.signal});document.addEventListener('visibilitychange',wake,{signal:events.signal});fine.addEventListener('change',wake,{signal:events.signal});reduce.addEventListener('change',wake,{signal:events.signal});
   canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();lost=true;root.dataset.holoRenderer='image';},{signal:events.signal});canvas.addEventListener('webglcontextrestored',()=>{lost=false;ready=false;setup();resize();},{signal:events.signal});
-  addEventListener('pagehide',e=>{if(e.persisted)return;alive=false;events.abort();intersection.disconnect();size.disconnect();mode.disconnect();cancelAnimationFrame(frame);if(gl){gl.deleteTexture(texture);gl.deleteBuffer(buffer);gl.deleteProgram(program);}},{signal:events.signal});
+  mode.observe(document.querySelector('main'),{attributes:true,attributeFilter:['inert']});
+  const unsubscribe=activity.subscribe(wake);
+  addEventListener('pagehide',e=>{if(e.persisted)return;alive=false;cancelSetup?.();unsubscribe();events.abort();intersection.disconnect();size.disconnect();mode.disconnect();cancelAnimationFrame(frame);if(gl){gl.deleteTexture(texture);gl.deleteBuffer(buffer);gl.deleteProgram(program);}},{signal:events.signal});
   wake();
 })();

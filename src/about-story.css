@@ -38,7 +38,6 @@
 .about-portrait img{position:absolute;width:107.9%;height:105.3%;max-width:none;left:-2.09%;top:-5.3%}
 .about-portrait span{position:absolute;inset:0;background:linear-gradient(180deg,transparent 65.909%,#060606 97.803%);pointer-events:none}
 .about-bottom-shadow{position:absolute;left:709px;top:799px;width:521px;height:71px;opacity:.5;background:linear-gradient(0deg,#020507,rgba(51,42,27,0) 108.64%);pointer-events:none}
-.about-optics{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:none}
 .about-skills{position:relative;padding:35px 7% 65px;background:#040404;scroll-margin-top:110px}
 /* One existing sticky Hero, one overlapping flow section; no second pin/spacer. */
 @media(min-width:1000px){
@@ -46,9 +45,8 @@
  .about-story-enabled .about-designed{margin-top:calc(-1 * var(--about-stage-height,100svh));min-height:var(--about-stage-height,100svh)}
  .about-story-enabled .about-designed[data-story-mode=transition] .about-viewport{position:fixed;inset:0;visibility:hidden;background:transparent}
  .about-story-enabled .about-designed[data-story-visible=true] .about-viewport{visibility:visible}
- .about-story-enabled .about-designed[data-story-mode=transition] .about-reveal:not([data-optics-complete=true]){mask-image:url('#about-scroll-mask');-webkit-mask-image:url('#about-scroll-mask')}
- .about-story-enabled .about-designed[data-story-mode=transition] .about-optics{display:block}
- .about-story-enabled .about-motion{will-change:transform,opacity,filter}
+ .about-story-enabled .about-designed[data-story-mode=transition] .about-reveal{will-change:transform,opacity}
+ .about-story-enabled .about-motion{will-change:transform,opacity}
  .about-story-enabled .about-designed[data-story-mode=settled] .about-motion{will-change:auto}
 }
 @media(max-width:999px){
@@ -70,4 +68,4 @@
  .about-board .about-portrait{width:min(100%,379px);aspect-ratio:379/518;height:auto;margin:12px auto 0;order:8}
  .about-bottom-shadow{display:none}.about-skills{padding:0 7% 45px}
 }
-@media(prefers-reduced-motion:reduce){.about-optics{display:none!important}.about-motion{transform:none!important;filter:none!important}.about-viewport,.about-reveal{mask-image:none!important;-webkit-mask-image:none!important}}
+@media(prefers-reduced-motion:reduce){.about-motion{transform:none!important;filter:none!important}}
