@@ -62,6 +62,9 @@ const settle=()=>new Promise(resolve=>setImmediate(resolve));
   const failed=videoFixture();failed.loadReady();await settle();failed.video.emit('error');assert.equal(failed.video.paused,true);assert.equal(failed.root.dataset.videoState,'poster');failed.leave();failed.enter();await settle();assert.equal(failed.video.playCalls,1,'a media error does not trigger repeated downloads');failed.motion.emit('click');await settle();assert.equal(failed.video.playCalls,2,'manual retry stays available');
 
   const intro=fs.readFileSync('src/hero-intro.js','utf8');
+  assert.match(intro,/premultipliedAlpha: true/,'WebGL output must match the canvas compositor alpha convention');
+  assert.match(intro,/gl_FragColor=vec4\(min\(silver,vec3\(alpha\)\),alpha\)/,'transparent edge pixels must not carry full white RGB');
+  assert(!intro.includes('silver/max(alpha'),'avoid amplifying low-alpha RGB before accelerated compositing');
   const prefix=intro.slice(intro.indexOf('  const labels'),intro.indexOf('  function construction'));
   let frameCount=0,completed=0;const clock={document:{hidden:false},window:{PortfolioHeroPerformance:{profile:{motionFps:30}}},requestAnimationFrame:()=>1,cancelAnimationFrame(){}};
   vm.runInNewContext(prefix+'\nthis.Timeline=MasterTimeline;',clock);

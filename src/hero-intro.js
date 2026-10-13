@@ -168,7 +168,10 @@
         float alpha=clamp(1.-open+light,0.,1.);
         vec3 silver=vec3(1.,.96,.86)*light;
         if(uMode>.5){alpha=clamp(light,0.,1.);}
-        gl_FragColor=vec4(silver/max(alpha,.0001),alpha);
+        // Match the canvas compositor's premultiplied-alpha convention. Keeping
+        // straight RGB near 1 at almost-zero alpha can bloom into solid islands
+        // on WebKit's accelerated canvas path instead of a transparent edge.
+        gl_FragColor=vec4(min(silver,vec3(alpha)),alpha);
       }`;
     function gradientFallback() {
       fallback = true; veil.dataset.renderer = 'gradient';
@@ -176,7 +179,7 @@
       else{canvas.style.background='radial-gradient(ellipse 24% 35% at 39% 56%,#e4dfbb40,transparent),radial-gradient(ellipse 21% 30% at 65% 32%,#e4dfbb38,transparent),radial-gradient(ellipse 25% 33% at 78% 66%,#e4dfbb38,transparent)';}
     }
     try {
-      gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false,
+      gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: true,
         antialias: false, depth: false, stencil: false, powerPreference: 'low-power' });
       if (!gl) throw new Error('WebGL unavailable');
       function shader(type, source) {

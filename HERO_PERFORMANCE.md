@@ -31,6 +31,12 @@ Actual draw cadence also depends on the display refresh rate, visibility and whe
 
 ## Validation
 
+### iPad optical alpha correction (2026-10-13)
+
+The reported iPad/WeChat screenshot showed pale solid islands during the opening where desktop showed thin silver edges. The optical shader used a straight-alpha WebGL canvas and divided edge RGB by very small alpha values. That creates nearly white RGB in transparent pixels and is vulnerable to differences in accelerated canvas compositing. The optical canvas now explicitly requests premultiplied alpha and emits bounded premultiplied RGB (`RGB <= alpha`), keeping the same edge field, timing, device budgets, layout and playback controls. Cached Float32/RGBA8 field textures are offscreen data and retain their existing encoding.
+
+Actual WebGL readback checks ran on desktop (1920 × 1080), iPad landscape (1024 × 768), portrait (768 × 1024), Pro (1366 × 1024) and mobile (375 × 812), across high/balanced/low profiles and four reveal progress samples each. All 20 samples had zero premultiplied-color violations and zero GL errors. Both Float32 and packed RGBA8 paths passed. A paired render of the previous shader confirmed normal composited colors differ by at most 1.165/255 per RGB channel, preserving desktop appearance within quantization. The build regression guards the shader/context alpha pairing. These checks use the available Chromium browser; a physical iPad's WeChat/WebKit compositor has not been tested remotely.
+
 `npm run build`, `npm run check`, and existing footer lifecycle/cache regression checks pass. Hero regressions cover device tiers, load/paint/idle ordering, cancellation, hidden documents, intro/video gating, manual pause, offscreen and modal/menu pause, reduced motion, direct project entry, autoplay rejection and completed tween updates. Browser verification covers desktop and a 375 × 812 viewport, WebGL cache format/pixel budget, native movie dimensions, loaded fonts, and console errors.
 
 Lighthouse scores and foreground-device FPS have not been measured in this run. Background in-app preview scheduling is unsuitable for claiming an FPS uplift. Local checks and asset reductions establish reduced work and transfer, not a guaranteed score or connection speed. Netlify/CDN connectivity remains a separate factor for domestic access.
