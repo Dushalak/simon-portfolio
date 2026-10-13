@@ -304,8 +304,9 @@
       {opacity:1,filter:'blur(0px)',transform:centered,offset:.28},
       {opacity:1,filter:'blur(0px)',transform:centered,offset:.44},
       {opacity:1,filter:'blur(0px)',transform:'translate3d(0,0,0)'}],1080,labels.titleEntrance);
-    const unfold=[{opacity:.65,transform:'translate3d(0,-8px,0)'},
-      {opacity:1,transform:'translate3d(0,0,0)'}];
+    // Keep the lower copy hidden until the title has settled, then unfold each row.
+    const unfold=[{opacity:0,transform:'translate3d(0,-14px,0)',clipPath:'inset(0 0 100% 0)'},
+      {opacity:1,transform:'translate3d(0,0,0)',clipPath:'inset(0 0 0 0)'}];
     timeline.add(panel.querySelector('.hero-philosophy .hero-reveal'),unfold,revealMs,labels.contentEntrance);
     panel.querySelectorAll('.hero-nav-item .hero-reveal').forEach((node,i)=>
       timeline.add(node,unfold,revealMs,labels.contentEntrance+170+i*staggerMs));
