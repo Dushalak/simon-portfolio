@@ -11,7 +11,17 @@
 .about-reveal{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);place-items:center;isolation:isolate;background:linear-gradient(187.336deg,#0c0c0a 4.9454%,#040404 96.561%)}
 .about-board{position:relative;z-index:1;width:1280px;height:842px;flex:none;overflow:clip;border-radius:36px;transform:scale(var(--about-board-scale,1));transform-origin:50% 50%;font-family:About Alibaba,'Microsoft YaHei',sans-serif;color:#f3f3ed}
 .about-board p,.about-board h2,.about-board h3,.about-board figure{margin:0}
-.about-hive{--about-hive-opacity:.18;position:absolute;inset:0;width:100%;height:100%;display:block;opacity:var(--about-hive-opacity);pointer-events:none;mask-image:linear-gradient(180deg,transparent,black 14%,black 78%,transparent);-webkit-mask-image:linear-gradient(180deg,transparent,black 14%,black 78%,transparent)}
+.about-hive{--about-hive-opacity:.18;position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .55s ease;pointer-events:none;mask-image:linear-gradient(180deg,transparent,black 14%,black 78%,transparent);-webkit-mask-image:linear-gradient(180deg,transparent,black 14%,black 78%,transparent)}
+.about-reveal::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 75% 22%,#502b1e55,transparent 65%),radial-gradient(ellipse at 24% 68%,#36504455,transparent 65%);transition:opacity .55s ease}
+.about-reveal[data-preview-ready=true]::before,.about-reveal[data-hive-ready=true]::before{opacity:0}
+.about-hive-preview{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;opacity:0;transition:opacity .55s ease;mask-image:linear-gradient(180deg,transparent,black 14%,black 78%,transparent);-webkit-mask-image:linear-gradient(180deg,transparent,black 14%,black 78%,transparent)}
+.about-hive-preview img{display:block;width:100%;height:100%;object-fit:cover}
+.about-hive-preview[data-ready=true]{opacity:.45}
+.about-reveal[data-hive-ready=true] .about-hive{opacity:var(--about-hive-opacity)}
+.about-reveal[data-hive-ready=true] .about-hive-preview{opacity:0}
+.about-portrait-picture{position:absolute;inset:0;display:block}
+.about-portrait img{opacity:0;transition:opacity .45s ease}
+.about-portrait[data-portrait-ready=true] img{opacity:1}
 .about-title-group{position:absolute;inset:0;pointer-events:none}
 .about-board #about-title{--about-title-fill:linear-gradient(144.17513deg,rgba(255,255,255,.8) 26.558%,rgba(246,250,251,.85) 18.551%,rgba(255,255,255,.98) 68.556%,rgba(250,247,246,.56) 113.21%);position:absolute;left:65px;top:105px;font:400 64px/normal About Erya,sans-serif;letter-spacing:3.2px;opacity:.96;color:transparent;background-image:var(--about-title-fill);background-clip:text;-webkit-background-clip:text;white-space:nowrap}
 /* Each folding letter samples the same full-title gradient, so hover preserves
@@ -20,11 +30,11 @@
 .about-board #about-title .fold-text-segment{position:relative}
 .about-board #about-title .fold-text-piece{color:transparent;background-image:var(--about-title-fill);background-size:var(--about-fill-width,322px) var(--about-fill-height,77px);background-position:var(--about-fill-x,0px) var(--about-fill-y,0px);background-repeat:no-repeat;background-clip:text;-webkit-background-clip:text}
 .about-script{position:absolute;left:316px;top:144px;width:117.906px;height:62.651px;display:flex;align-items:center;justify-content:center;transform:rotate(-12.14deg);font:400 32px/normal About Script,cursive;color:transparent;background-image:linear-gradient(123.50951deg,rgba(124,140,105,.8) 21.156%,#ab5c33 35.215%,#d59f5f 70.3%,rgba(171,92,51,.6) 97.41%);background-clip:text;-webkit-background-clip:text;white-space:nowrap}
-.about-greeting{position:absolute;left:65px;top:206px;font-weight:500;letter-spacing:2px;color:transparent;background-image:url('assets/about/imgHi.png');background-position:center;background-size:cover;background-repeat:no-repeat;background-clip:text;-webkit-background-clip:text}
+.about-greeting{position:absolute;left:65px;top:206px;font-weight:500;letter-spacing:2px;color:transparent;background-image:url('assets/about/imgHi.webp');background-position:center;background-size:cover;background-repeat:no-repeat;background-clip:text;-webkit-background-clip:text}
 .about-greeting p{color:transparent}
 .about-greeting p:first-child{font-size:52px;line-height:1.2}.about-greeting p:last-child{font-size:40px;line-height:.9798999}
 .about-text-fill{background-position:center;background-size:cover;background-repeat:no-repeat;background-clip:text;-webkit-background-clip:text;color:transparent}
-.about-biography{position:absolute;left:65px;top:347px;width:625px;font-size:14px;line-height:normal;letter-spacing:.7px;opacity:.76;background-image:url('assets/about/imgUiUxAiAgent01CBaigc.png')}
+.about-biography{position:absolute;left:65px;top:347px;width:625px;font-size:14px;line-height:normal;letter-spacing:.7px;opacity:.76;background-image:url('assets/about/imgUiUxAiAgent01CBaigc.webp')}
 .about-board strong{font-weight:500}.about-board b{font-weight:700}
 .about-work-title{position:absolute;left:65px;top:471px;font-size:26px;font-weight:500;line-height:normal;letter-spacing:1.3px;background-image:url('assets/about/img.png')}
 .about-experience{position:absolute;left:65px;width:625px}.about-experience-one{top:525px}.about-experience-two{top:612px}

@@ -14,7 +14,8 @@
   const tier=heroBudget?.tier||'balanced';
   settings.maxPixels=Math.min(settings.maxPixels,tier==='high'?320000:tier==='balanced'?160000:80000);
   settings.fps=Math.min(settings.fps,tier==='high'?20:tier==='balanced'?14:10);
-  let cancelSetup=null,inView=false;
+  let cancelSetup=null,inView=false,prewarmRequested=false;
+  const reveal=canvas.parentElement,main=document.querySelector('main');
   const vertex = `#version 300 es
     layout(location=0) in vec2 a_pos;
     void main(){ gl_Position=vec4(a_pos,0.0,1.0); }`;
@@ -84,7 +85,7 @@
     const width=Math.max(1,Math.round(rect.width*ratio)), height=Math.max(1,Math.round(rect.height*ratio));
     if(canvas.width!==width || canvas.height!==height){canvas.width=width;canvas.height=height;}
     gl.viewport(0,0,width,height); gl.uniform2f(resolution,width,height);
-    draw(); update();
+    draw();canvas.dataset.hiveState='ready';if(reveal)reveal.dataset.hiveReady='true';update();
   }
   function draw() { if(!program || lost)return; gl.uniform1f(timeUniform,time); gl.drawArrays(gl.TRIANGLES,0,6); }
   function tick(now) {
@@ -95,19 +96,21 @@
     if(now-drawn>=1000/settings.fps){draw();drawn=now;}
     frame=requestAnimationFrame(tick);
   }
+  function queueSetup(early=false){
+    if(program||cancelSetup||failed||destroyed||lost||document.hidden||activity.scrolling||dialog?.open||main.inert||(!early&&section.closest('[inert]'))||(early&&reduced.matches))return;
+    if(!early&&!inView)return;
+    canvas.dataset.hiveState='preparing';
+    cancelSetup=window.PortfolioHeroPerformance.afterLoadIdle(()=>{
+      cancelSetup=null;
+      if(program||destroyed||lost||document.hidden||activity.scrolling||dialog?.open||main.inert||(!early&&(!inView||section.closest('[inert]'))))return;
+      if(setup())resize();else{failed=true;canvas.dataset.hiveState='fallback';}
+    });
+  }
+  window.PortfolioAboutHive={prepare(){prewarmRequested=true;queueSetup(true);}};
   function update() {
     const approaching=section.dataset.storyVisible==='true'||!matchMedia('(min-width:1000px)').matches||reduced.matches;
-    if(!program&&!cancelSetup&&!failed&&!destroyed&&!lost&&inView&&!document.hidden&&!activity.scrolling&&!dialog?.open&&!section.closest('[inert]')&&approaching){
-      const rect=canvas.getBoundingClientRect();
-      if(rect.bottom>0&&rect.top<innerHeight){
-        cancelSetup=window.PortfolioHeroPerformance.afterLoadIdle(()=>{
-          cancelSetup=null;
-          if(destroyed||!inView||document.hidden||activity.scrolling||dialog?.open||section.closest('[inert]'))return;
-          const bounds=canvas.getBoundingClientRect();if(bounds.bottom<=0||bounds.top>=innerHeight)return;
-          if(setup())resize();else failed=true;
-        });
-      }
-    }
+    if(prewarmRequested)queueSetup(true);
+    else if(approaching)queueSetup();
     if(!visible() || reduced.matches){cancelAnimationFrame(frame);frame=0;last=0;}
     else if(!frame){last=0;frame=requestAnimationFrame(tick);}
   }
@@ -119,7 +122,7 @@
     destroyed=true;cancelSetup?.();unsubscribe();cancelAnimationFrame(frame);events.abort();observer.disconnect();sizeObserver.disconnect();modeObserver.disconnect();
     if(buffer)gl.deleteBuffer(buffer);if(program)gl.deleteProgram(program);
   }
-  canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();lost=true;update();},{signal:events.signal});
+  canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();lost=true;if(reveal)reveal.dataset.hiveReady='false';canvas.dataset.hiveState='fallback';update();},{signal:events.signal});
   canvas.addEventListener('webglcontextrestored',()=>{lost=false;if(setup())resize();},{signal:events.signal});
   document.addEventListener('visibilitychange',update,{signal:events.signal});
   reduced.addEventListener('change',()=>{draw();update();},{signal:events.signal});

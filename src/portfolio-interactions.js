@@ -18,6 +18,7 @@
   let frame=0,last=0,currentCard=null;
   const typography=new Map();
   const typographyUpdates=[],activity=window.PortfolioScrollActivity;
+  let typographyPending=false,cancelTypography=null,alive=true;
   function prepare(title){
     if(!title||!fine.matches||reduce.matches)return;
     if(typography.has(title)&&title.querySelector('.proximity-cell'))return;
@@ -64,6 +65,9 @@
   // The complete About left column and only the previously selected headings elsewhere.
   function restoreTypography(){typography.forEach(entry=>entry.originals.forEach(({root,html})=>root.innerHTML=html));typography.clear();}
   function typographyMode(){
+    if(!alive)return;
+    if(activity.scrolling){typographyPending=true;return;}
+    typographyPending=false;
     restoreTypography();
     if(fine.matches&&!reduce.matches){
       // Keep the hero's animated reveal wrapper intact; split only its two text spans.
@@ -167,6 +171,7 @@
   fine.addEventListener('change',()=>{typographyMode();surface();},{signal:events.signal});reduce.addEventListener('change',()=>{typographyMode();surface();},{signal:events.signal});
   const modalObserver=new MutationObserver(surface);modalObserver.observe(dialog,{attributes:true,attributeFilter:['open']});
   surface();
-  document.fonts.ready.then(typographyMode);
-  addEventListener('pagehide',e=>{if(e.persisted)return;clearView();events.abort();modalObserver.disconnect();cancelAnimationFrame(frame);layer.remove();},{signal:events.signal});
+  const unsubscribeTypography=activity.subscribe(scrolling=>{if(!scrolling&&typographyPending){cancelTypography?.();cancelTypography=window.PortfolioHeroPerformance.afterLoadIdle(typographyMode);}});
+  document.fonts.ready.then(()=>{if(alive)cancelTypography=window.PortfolioHeroPerformance.afterLoadIdle(typographyMode);});
+  addEventListener('pagehide',e=>{if(e.persisted)return;alive=false;cancelTypography?.();unsubscribeTypography();clearView();events.abort();modalObserver.disconnect();cancelAnimationFrame(frame);layer.remove();},{signal:events.signal});
 })();

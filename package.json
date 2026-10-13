@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build": "node scripts/build.mjs",
-    "check": "node scripts/check.mjs && node scripts/check-hero-performance.cjs && node scripts/check-bring-performance.cjs && node scripts/check-hero-framing.cjs",
+    "check": "node scripts/check.mjs && node scripts/check-hero-performance.cjs && node scripts/check-bring-performance.cjs && node scripts/check-hero-framing.cjs && node scripts/check-about-transition.cjs",
     "check:bring": "node scripts/check-bring-performance.cjs",
     "check:hero": "node scripts/check-hero-performance.cjs"
   },

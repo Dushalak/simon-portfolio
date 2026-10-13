@@ -276,7 +276,7 @@ void main() {
   const rotor=document.createElement('div');rotor.className='about-holo-rotor';
   const shadow=document.createElement('div');shadow.className='about-holo-shadow';shadow.setAttribute('aria-hidden','true');root.prepend(shadow);
   const canvas=document.createElement('canvas');canvas.className='about-holo-canvas';canvas.setAttribute('aria-hidden','true');
-  fade.classList.add('about-portrait-fade');root.append(rotor);rotor.append(image,canvas,fade);
+  fade.classList.add('about-portrait-fade');root.append(rotor);rotor.append(image.closest('picture')||image,canvas,fade);
   const fine=matchMedia('(min-width:721px) and (hover:hover) and (pointer:fine)'),reduce=matchMedia('(prefers-reduced-motion:reduce)'),events=new AbortController();
   const settings={preset:4,intensity:.16,scale:1,edge:0,frame:0,glare:.06,tiltMax:15,hoverScale:1.04,radius:14,idle:true};
   const activity=window.PortfolioScrollActivity,policy=window.PortfolioHeroPerformance;

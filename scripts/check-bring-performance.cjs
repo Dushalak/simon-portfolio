@@ -32,9 +32,9 @@ reveal.dialog.open=false;reveal.main.inert=true;reveal.window.emit('scroll');ass
 reveal.document.hidden=true;reveal.window.emit('scroll');assert.equal(reveal.frames.size,0,'hidden tab does no scroll work');reveal.document.hidden=false;
 reveal.motion.matches=true;reveal.motion.emit('change');assert.equal(reveal.style.opacity,'1');assert.equal(reveal.style.transform,'');reveal.api.dispose();assert(reveal.intersections[0].closed);assert(reveal.mutations[0].closed);
 
-function hiveFixture(tier){
-  const frames=new Map();let id=0,draws=0,setups=0,deferred;
-  const window=eventTarget({PortfolioHeroPerformance:{profile:{tier,maxPixels:786432,shaderFps:40},afterLoadIdle(fn){deferred=fn;return ()=>deferred=null;}}});
+function hiveFixture(tier,{offscreen=false}={}){
+  const frames=new Map(),intersections=[];let id=0,draws=0,setups=0,deferred,scheduled=0;
+  const window=eventTarget({PortfolioHeroPerformance:{profile:{tier,maxPixels:786432,shaderFps:40},afterLoadIdle(fn){scheduled++;deferred=fn;return ()=>deferred=null;}}});
   const activity={scrolling:true,subscribe(fn){this.update=fn;return ()=>{};}};window.PortfolioScrollActivity=activity;
   const gl=new Proxy({getShaderParameter:()=>true,getProgramParameter:()=>true,createShader:()=>({}),createProgram:()=>({}),createBuffer:()=>({}),getUniformLocation:()=>({}),drawArrays(){draws++;}}, {get(target,key){return key in target?target[key]:()=>{};}});
   const section={dataset:{storyVisible:'true'},closest:()=>main.inert?main:null},main={inert:false},dialog={open:false},canvas=eventTarget({dataset:{},width:0,height:0,closest:()=>section,getBoundingClientRect:()=>({top:0,bottom:1000,width:2000,height:1000}),getContext(){setups++;return gl;}});
@@ -42,9 +42,12 @@ function hiveFixture(tier){
   const mutations=[],motion=eventTarget({matches:false});
   vm.runInNewContext(fs.readFileSync('src/about-hive.js','utf8'),{window,document,innerHeight:1000,devicePixelRatio:2,AbortController,matchMedia:()=>motion,addEventListener:window.addEventListener,
     requestAnimationFrame:fn=>{frames.set(++id,fn);return id;},cancelAnimationFrame:id=>frames.delete(id),
-    IntersectionObserver:class{constructor(fn){this.callback=fn;}observe(){this.callback([{isIntersecting:true,intersectionRatio:1}]);}disconnect(){}},ResizeObserver:class{observe(){}disconnect(){}},MutationObserver:class{constructor(fn){mutations.push(fn);}observe(){}disconnect(){}}});
-  return {activity,canvas,dialog,motion,document,frames,setups:()=>setups,draws:()=>draws,start(){activity.scrolling=false;activity.update();assert.equal(setups,0,'GL compile waits for idle');deferred();},tick(now){const work=[...frames.values()];frames.clear();work.forEach(fn=>fn(now));},mutate:()=>mutations[0]()};
+    IntersectionObserver:class{constructor(fn){this.callback=fn;intersections.push(this);}observe(){this.callback([{isIntersecting:!offscreen,intersectionRatio:offscreen?0:1}]);}disconnect(){}},ResizeObserver:class{observe(){}disconnect(){}},MutationObserver:class{constructor(fn){mutations.push(fn);}observe(){}disconnect(){}}});
+  return {window,activity,canvas,dialog,motion,document,frames,setups:()=>setups,draws:()=>draws,scheduled:()=>scheduled,idle(){const fn=deferred;deferred=null;fn?.();},enter(){intersections[0].callback([{isIntersecting:true,intersectionRatio:1}]);},start(){activity.scrolling=false;activity.update();assert.equal(setups,0,'GL compile waits for idle');this.idle();},tick(now){const work=[...frames.values()];frames.clear();work.forEach(fn=>fn(now));},mutate:()=>mutations[0]()};
 }
+const prepared=hiveFixture('high',{offscreen:true});prepared.activity.scrolling=false;
+for(let i=0;i<100;i++)prepared.window.PortfolioAboutHive.prepare();assert.equal(prepared.scheduled(),1,'one idle compilation is shared by all preload callers');prepared.idle();assert.equal(prepared.setups(),1);assert.equal(prepared.canvas.dataset.hiveState,'ready');assert.equal(prepared.frames.size,0,'offscreen warmup paints one static frame, with no animation loop');
+prepared.window.PortfolioAboutHive.prepare();prepared.enter();assert.equal(prepared.setups(),1,'entering uses the prepared instance');assert.equal(prepared.frames.size,1);
 for(const [tier,budget,fps] of [['high',320000,20],['balanced',160000,14],['low',80000,10]]){
   const f=hiveFixture(tier);assert.equal(f.setups(),0,'scrolling never initializes WebGL');assert.equal(f.frames.size,0);f.start();assert(f.canvas.width*f.canvas.height<budget*1.01,'resolution has a fixed device budget');
   const before=f.draws();for(let i=1;i<=60;i++)f.tick(i*1000/60);assert(f.draws()-before<=fps,'background draw rate is capped independently of scrolling');

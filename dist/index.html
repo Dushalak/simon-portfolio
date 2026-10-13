@@ -49,7 +49,7 @@
     html.intro-pending .skip-link:not(:focus){visibility:hidden}
   </style>
   <link rel="preload" as="font" href="assets/fonts/dm-sans-400.woff2" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="site.css?v=c0eace515675">
+  <link rel="stylesheet" href="site.css?v=03f828cd2eba">
   <link rel="preload" as="image" href="assets/home-enhanced-poster.webp" fetchpriority="high">
   <link rel="canonical" href="https://jin-wangliang-portfolio.yummy-rain-9843.chatgpt.site/">
   <meta property="og:title" content="金王亮 · UI/UX 设计作品集">
@@ -116,6 +116,11 @@
     <section id="about" class="about about-designed section" aria-labelledby="about-title">
       <div class="about-viewport">
         <div class="about-reveal">
+          <picture class="about-hive-preview" aria-hidden="true">
+            <source media="(max-width:720px)" type="image/webp" data-srcset="assets/about/hive-preview-mobile.webp">
+            <source media="(max-width:999px)" type="image/webp" data-srcset="assets/about/hive-preview-tablet.webp">
+            <img data-src="assets/about/hive-preview-desktop.webp" width="768" height="432" alt="" decoding="async" fetchpriority="low">
+          </picture>
           <canvas class="about-hive" aria-hidden="true"></canvas>
           <article class="about-board" data-node-id="3:3">
             <div class="about-title-group about-motion" data-about-group="title">
@@ -133,7 +138,7 @@
               <div class="about-work-row"><time class="about-text-fill" data-node-id="3:17">2026.03-9</time><p class="about-company about-text-fill" data-node-id="3:19">上海皮克索极光科技有限公<span class="about-tight">司</span>「AI Agent」</p><p class="about-role about-text-fill" data-node-id="3:21">UI设计师(实习)</p></div>
               <p class="about-work-description about-text-fill" data-node-id="3:29">·<b>参与 AI Agent 产品 0-1 体验设计</b>，围绕智能交互、角色 IP、多模态场景进行界面设计与体验优化，主导 AI 产品情感化体验构建，助力提升线上业务转化率。</p>
             </div>
-            <figure class="about-portrait about-motion" data-about-group="portrait" data-node-id="3:31"><img data-src="assets/about/imgB881Eac952Ae76E95B827Dfd83537F371.png" decoding="async" alt="金王亮的个人照片"><span aria-hidden="true"></span></figure>
+            <figure class="about-portrait about-motion" data-about-group="portrait" data-node-id="3:31"><picture class="about-portrait-picture"><source type="image/webp" sizes="(min-width:1000px) 49vh, (min-width:500px) 410px, 82vw" data-srcset="assets/about/portrait-640.webp 640w, assets/about/portrait-960.webp 960w, assets/about/portrait-1280.webp 1280w"><img data-src="assets/about/imgB881Eac952Ae76E95B827Dfd83537F371.png" width="1280" height="1707" decoding="async" fetchpriority="low" alt="金王亮的个人照片"></picture><span aria-hidden="true"></span></figure>
             <div class="about-bottom-shadow" aria-hidden="true"></div>
           </article>
         </div>
@@ -199,7 +204,7 @@
   </dialog>
   <div class="toast" role="status" aria-live="polite"></div>
   <div class="swipe-toast" data-phase="gone" data-mounted="false" role="status" aria-live="polite" aria-atomic="true" inert><div class="swipe-toast__lift"><div class="swipe-toast__card" tabindex="0" aria-label="复制成功提示，可向下滑动关闭"><span class="swipe-toast__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4.5 4.5L19 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="swipe-toast__body"><span class="swipe-toast__title"></span><span class="swipe-toast__desc"></span></span><i class="swipe-toast__fuse" aria-hidden="true"></i></div></div></div>
-  <script defer src="site.js?v=c0eace515675"></script>
+  <script defer src="site.js?v=03f828cd2eba"></script>
 </body>
 </html>
 
