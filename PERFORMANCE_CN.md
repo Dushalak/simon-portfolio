@@ -43,7 +43,7 @@
 
 ## 缓存与部署
 
-Netlify 的哈希图片和装饰脚本使用一年 immutable 浏览器缓存，字体缓存一天并允许后台更新。HTML/主脚本继续原有版本更新方式；不为 HTML 设置长期缓存。实现依据：[Netlify 自定义响应头文档](https://docs.netlify.com/manage/routing/headers/)。canonical 和 Open Graph 地址更新为当前 Netlify 域名。
+Netlify 的哈希图片、章节元数据和装饰脚本使用一年 immutable 浏览器缓存，字体缓存一天并允许后台更新。规则在 `src/_headers`，构建复制进 `dist/_headers`，确保发布产物携带配置。HTML/主脚本继续原有版本更新方式；不为 HTML 设置长期缓存。实现依据：[Netlify 自定义响应头文档](https://docs.netlify.com/manage/routing/headers/)。canonical 和 Open Graph 地址更新为当前 Netlify 域名。
 
 ## 检查结果与边界
 

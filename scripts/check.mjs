@@ -22,6 +22,8 @@ const missing=[];for(const path of paths)try{assert((await stat(resolve('dist',p
 assert.deepEqual(missing,[],'Referenced resources must exist');
 assert.match(html,/<base href="\/">/,'Assets must resolve from the site root after SPA rewrites');
 assert.match(await readFile('dist/_redirects','utf8'),/^\/\*\s+\/index\.html\s+200\s*$/m,'Publish the Netlify SPA fallback');
+assert.equal(await readFile('dist/_headers','utf8'),await readFile('src/_headers','utf8'),'Netlify cache metadata must accompany the published artifact');
+assert.match(await readFile('dist/_headers','utf8'),/max-age=31536000, immutable/);
 assert.match(html,/<script defer src="site\.js\?v=/);
 assert.equal((html.match(/<script[^>]* src=/g)||[]).length,1);
 assert.match(html,/<html lang="zh-CN">/);assert.match(html,/<meta name="description"/);assert.match(html,/<link rel="canonical"/);

@@ -52,6 +52,7 @@ const js=await minify(sources.join('\n;\n'),minifyOptions);
 if(!js.code)throw Error('Empty JS output');
 await mkdir('dist',{recursive:true});
 await copyFile('src/_redirects','dist/_redirects');
+await copyFile('src/_headers','dist/_headers');
 await writeFile('dist/site.css',css);await writeFile('dist/site.js',js.code+'\n');
 const version=createHash('sha256').update(css+js.code).digest('hex').slice(0,12);
 const next=html.replace(/href="site\.css\?v=[^"]*"/,'href="site.css?v='+version+'"').replace(/src="site\.js\?v=[^"]*"/,'src="site.js?v='+version+'"')
