@@ -12,6 +12,7 @@
     const preference=matchMedia('(prefers-reduced-motion:reduce)');
     const atmosphere=window.PortfolioProjectAtmosphere.create(dialog);
     const caseImages=window.PortfolioCaseImages.create(dialog);
+    const scrollLock=window.PortfolioProjectScrollLock.create();
     let dataReady;
     function getData(){
       if(!dataReady)dataReady=fetch(window.PortfolioProjectMedia.dataURL).then(response=>{if(!response.ok)throw Error('Case assets unavailable');return response.json();}).catch(error=>{dataReady=null;throw error;});
@@ -30,7 +31,7 @@
     function resizeHomePosition(){
       if(homeWidth===innerWidth&&homeHeight===innerHeight)return;
       const anchor=document.getElementById(homeAnchor);
-      if(anchor)homeScroll=Math.max(0,anchor.getBoundingClientRect().top+scrollY-homeOffset);
+      if(anchor)homeScroll=Math.max(0,anchor.getBoundingClientRect().top+scrollLock.scrollY-homeOffset);
       homeWidth=innerWidth;homeHeight=innerHeight;
     }
     function restoreHome(){window.PortfolioProjectsUI?.revealAt(homeScroll);window.scrollTo({top:homeScroll,behavior:'instant'});}
@@ -102,19 +103,21 @@
       if(!projects[key]||busy||currentCase===key&&dialog.open)return;
       busy=true;trigger?.setAttribute('aria-busy','true');
       try{
-        const data=await getData(),content=build(key,data);
-        if(queued!==undefined&&queued!==key)return;
-        if(queued===key)queued=undefined;
         const switching=dialog.open;
         if(!switching){
           const saved=history.state?.portfolioHome;
-          homeScroll=push?scrollY:(saved?.scroll??Math.max(0,document.getElementById(key).getBoundingClientRect().top+scrollY-95));
+          homeScroll=push?scrollLock.scrollY:(saved?.scroll??Math.max(0,document.getElementById(key).getBoundingClientRect().top+scrollLock.scrollY-95));
           homeHash=push?(location.hash||'#nelu'):(saved?.hash??'#'+key);
           lastTrigger=trigger||document.querySelector('[data-open="'+key+'"]');
           homeAnchor=push?key:(saved?.anchor??key);
           homeOffset=push?document.getElementById(key).getBoundingClientRect().top:(saved?.offset??document.getElementById(homeAnchor).getBoundingClientRect().top+scrollY-homeScroll);
           homeWidth=push?innerWidth:(saved?.width??innerWidth);homeHeight=push?innerHeight:(saved?.height??innerHeight);resizeHomePosition();
+          // Freeze at the click, before metadata, image creation or modal autofocus.
+          scrollLock.lock(homeScroll);
         }
+        const data=await getData(),content=build(key,data);
+        if(queued!==undefined&&queued!==key)return;
+        if(queued===key)queued=undefined;
         closeMenu();setCaseMenu(false);
         if(push){history.replaceState({...history.state,portfolioHome:homeRecord()},'',location.href);history.pushState({project:key,portfolioHome:homeRecord(),portfolioReturn:true},'','#project/'+key);}
         else if(switching&&location.hash!=='#project/'+key)history.replaceState({...history.state,project:key,portfolioHome:homeRecord()},'','#project/'+key);
@@ -124,17 +127,19 @@
           $('.case-year').textContent=projects[key].year;
           $('.case-summary').textContent=projects[key].detailSummary;$('.case-subtitle').textContent=projects[key].detailInsight;
           $('.case-cover').replaceChildren(content.cover);$('.case-cover').classList.remove('is-nelu');pages.replaceChildren(content.fragment);$('.case-navigation').replaceChildren(content.navigation);
-          if(!dialog.open)dialog.showModal();caseImages.observe(pages.querySelectorAll('img'));window.PortfolioProximity?.prepare($('#case-title'));dialog.scrollTop=0;atmosphere.setProject(projects[key]);pauseVideo();document.title=projects[key].detailTitle+' · 金王亮设计作品集';updateCase();
+          if(!dialog.open){scrollLock.lock(homeScroll);dialog.showModal();}caseImages.observe(pages.querySelectorAll('img'));window.PortfolioProximity?.prepare($('#case-title'));dialog.scrollTop=0;atmosphere.setProject(projects[key]);pauseVideo();document.title=projects[key].detailTitle+' · 金王亮设计作品集';updateCase();
         },{direction:switching?'switch':'enter',dialog,homeScroll,onReady:entrance});
-        $('.back-home').focus({preventScroll:true});
-      }catch(error){dialog.classList.remove('case-preparing');toast('作品暂未加载成功，请稍后重试。');}
-      finally{busy=false;trigger?.removeAttribute('aria-busy');flush();}
+        (innerWidth<=720?$('.case-toolbar-close'):$('.back-home')).focus({preventScroll:true});
+      }catch(error){if(!dialog.open)scrollLock.unlock(homeScroll);dialog.classList.remove('case-preparing');toast('作品暂未加载成功，请稍后重试。');}
+      finally{if(!dialog.open)scrollLock.unlock(homeScroll);busy=false;trigger?.removeAttribute('aria-busy');flush();}
     }
     async function dismissCase(){
       if(!dialog.open||busy)return;busy=true;
       try{
         if(homeWidth!==innerWidth||homeHeight!==innerHeight)await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
         resizeHomePosition();
+        // Restore the real document before measuring/capturing the return destination.
+        scrollLock.unlock(homeScroll);
         await window.PortfolioPageTransition.run(()=>{
           caseImages.clear();atmosphere.stop();dialog.close();currentCase=null;document.title='金王亮 · UI/UX 设计作品集';restoreHome();
           history.replaceState({...history.state,portfolioHome:homeRecord()},'',location.href);
@@ -147,10 +152,16 @@
       if(history.state?.portfolioReturn)history.back();
       else{history.replaceState({portfolioHome:homeRecord()},'',homeHash);dismissCase();}
     }
-    document.querySelectorAll('[data-open]').forEach(link=>link.addEventListener('click',event=>{
+    document.querySelectorAll('[data-open]').forEach(link=>{
+      // Pointer focus can scroll a large card before click; focus the modal instead.
+      link.addEventListener('pointerdown',event=>{
+        if(scrollLock.compact&&event.button===0&&!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey)event.preventDefault();
+      },{signal:events.signal});
+      link.addEventListener('click',event=>{
       if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
       event.preventDefault();if(!busy)openCase(link.dataset.open,link,true);
-    },{signal:events.signal}));
+      },{signal:events.signal});
+    });
     dialog.querySelectorAll('.case-close').forEach(button=>button.addEventListener('click',returnHome,{signal:events.signal}));
     dialog.addEventListener('cancel',event=>{event.preventDefault();returnHome();},{signal:events.signal});
     dialog.querySelectorAll('[data-case-switch]').forEach(button=>button.addEventListener('click',()=>{if(!busy){history.replaceState({...history.state,project:button.dataset.caseSwitch},'','#project/'+button.dataset.caseSwitch);openCase(button.dataset.caseSwitch,null,false);}},{signal:events.signal}));
@@ -159,6 +170,6 @@
     addEventListener('popstate',route,{signal:events.signal});addEventListener('hashchange',route,{signal:events.signal});
     preference.addEventListener('change',request,{signal:events.signal});
     if(location.hash.startsWith('#project/'))route();
-    addEventListener('pagehide',event=>{if(event.persisted)return;cancelPrefetch?.();caseImages.dispose();sizeObserver.disconnect();dataObserver.disconnect();events.abort();cancelAnimationFrame(frame);contentAnimations.forEach(animation=>animation.cancel());},{once:true});
+    addEventListener('pagehide',event=>{if(event.persisted)return;scrollLock.unlock(homeScroll);cancelPrefetch?.();caseImages.dispose();sizeObserver.disconnect();dataObserver.disconnect();events.abort();cancelAnimationFrame(frame);contentAnimations.forEach(animation=>animation.cancel());},{once:true});
   }};
 })();

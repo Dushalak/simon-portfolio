@@ -51,7 +51,8 @@
 .about-skills{position:relative;padding:35px 7% 65px;background:#040404;scroll-margin-top:110px}
 /* One existing sticky Hero, one overlapping flow section; no second pin/spacer. */
 @media(min-width:1000px){
- .about-story-enabled{--hero-scroll-distance:210svh}
+ /* Preserve the reveal's physical pace, removing its unused tail after the final text. */
+ .about-story-enabled{--hero-scroll-distance:148.176svh}
  .about-story-enabled .about-designed{margin-top:calc(-1 * var(--about-stage-height,100svh));min-height:var(--about-stage-height,100svh)}
  .about-story-enabled .about-designed[data-story-mode=transition] .about-viewport{position:fixed;inset:0;visibility:hidden;background:transparent}
  .about-story-enabled .about-designed[data-story-visible=true] .about-viewport{visibility:visible}

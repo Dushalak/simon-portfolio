@@ -4,7 +4,7 @@ import postcss from 'postcss';
 import {minify} from 'terser';
 
 const cssFiles=['styles','refinement','hero','menu','about-story','about-work','beam-wordmark-footer','what-i-bring','projects','project-navigation','fold-text','swipe-toast','portfolio-interactions'];
-const jsFiles=['hero-performance','hero-framing','scroll-activity','hero-video','asset-loading','deferred-effects','about-resources','copy-confetti','swipe-toast','fold-text','scroll-reveal','project-media','project-data','projects','page-transition','project-atmosphere','case-images','project-browser','bring-sparkles','portfolio-interactions','app','hero-intro','about-story','about-hive','hero-motion','what-i-bring','portfolio-ripple'];
+const jsFiles=['hero-performance','hero-framing','scroll-activity','hero-video','asset-loading','deferred-effects','about-resources','copy-confetti','swipe-toast','fold-text','scroll-reveal','project-media','project-data','projects','page-transition','project-atmosphere','case-images','project-scroll-lock','project-browser','bring-sparkles','portfolio-interactions','app','hero-intro','about-story','about-hive','hero-motion','what-i-bring','portfolio-ripple'];
 const lazyFiles={about:['about-holo'],footer:['footer-optics','beam-wordmark-footer']};
 const minifyOptions={ecma:2020,compress:{passes:2,unsafe:false},mangle:{toplevel:false},format:{comments:false,ascii_only:true}};
 await mkdir('dist/effects',{recursive:true});

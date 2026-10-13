@@ -41,9 +41,10 @@ function resourceFixture({direct=false,reject=false}={}){
   const document={querySelector:()=>about,querySelectorAll:()=>[],documentElement:{style:{setProperty(){}},classList:{toggle(){},remove(){}}}};
   vm.runInNewContext(fs.readFileSync('src/about-story.js','utf8'),{window,document,AbortController,matchMedia:()=>({matches:true})});
   const story=window.PortfolioAbout.create({hero,stage:{clientWidth:1280,clientHeight:842},reduced:{matches:false}});
-  const output=story.render(.3*.84,true);assert.equal(scene.style.opacity,'1');assert(Number(reveal.style.opacity)>0&&Number(reveal.style.opacity)<1);
-  assert.equal(output,story.render(.4*.84,true),'scroll state object is reused');assert.equal(scene.style.opacity,'1','the outgoing backdrop stays painted below the incoming fade');
-  story.render(.5*.84,true);assert.equal(reveal.style.opacity,'1');assert.equal(scene.style.opacity,'0','video backdrop retires only after the next backdrop is opaque');
-  story.render(1,true);assert.equal(groups[0].style.opacity,'1');assert.equal(groups[2].style.opacity,'1');story.render(0,true);assert.equal(scene.style.opacity,'1','reverse browsing restores the homepage');story.dispose();
+  const output=story.render(.3/.84,true);assert.equal(scene.style.opacity,'1');assert(Number(reveal.style.opacity)>0&&Number(reveal.style.opacity)<1);
+  assert.equal(output,story.render(.4/.84,true),'scroll state object is reused');assert.equal(scene.style.opacity,'1','the outgoing backdrop stays painted below the incoming fade');
+  story.render(.5/.84,true);assert.equal(reveal.style.opacity,'1');assert.equal(scene.style.opacity,'0','video backdrop retires only after the next backdrop is opaque');
+  story.render(.99,true);assert.equal(about.dataset.storyMode,'transition');assert(Number(groups.at(-1).style.opacity)<1,'the pin does not keep holding after the last text finishes');
+  story.render(1,true);assert.equal(about.dataset.storyMode,'settled');assert.equal(groups.at(-1).style.opacity,'1');assert.equal(groups[0].style.opacity,'1');assert.equal(groups[2].style.opacity,'1');story.render(0,true);assert.equal(scene.style.opacity,'1','reverse browsing restores the homepage');story.dispose();
   console.log('PASS: deferred/shared next-chapter preload, independent GPU preparation, responsive candidate selection, decode recovery, scroll-safe readiness, disposal and continuous/reversible crossfade.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

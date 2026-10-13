@@ -2,9 +2,6 @@
   const clamp=v=>Math.max(0,Math.min(1,v));
   const phase=(p,a,b)=>clamp((p-a)/(b-a));
   const smooth=t=>t*t*(3-2*t);
-  // Reserve the final 16% of the existing pin for reading the finished About.
-  // The section height and the next section's physical spacing stay unchanged.
-  const completionAt=.84;
   // Every value below is sampled from scroll progress, never from elapsed time.
   const timing={backdrop:[.16,.46],heroExit:[.16,.40],
     portrait:[.38,.70],title:[.34,.56],greeting:[.40,.62],biography:[.44,.68],
@@ -41,18 +38,18 @@
       });
       previous=-1;lastMode='';lastAccess='';
       lastReveal=lastScene=-1;tracks.forEach(track=>track.last=-1);
-      if(!enabled){about.removeAttribute('data-story-mode');about.removeAttribute('data-story-visible');about.removeAttribute('data-story-holding');
+      if(!enabled){about.removeAttribute('data-story-mode');about.removeAttribute('data-story-visible');
         about.inert=false;about.removeAttribute('aria-hidden');groups.forEach(node=>{node.style.removeProperty('transform');node.style.removeProperty('opacity');node.style.removeProperty('filter');});
         reveal.style.removeProperty('transform');reveal.style.removeProperty('opacity');scene.style.removeProperty('opacity');}
     }
     function render(scrollProgress,introDone){
       if(!enabled)return result(0,scrollProgress*.035);
-      const p=clamp(scrollProgress/completionAt);
+      // Release the pin as soon as the final text finishes; no extra reading hold.
+      const p=clamp(scrollProgress)*timing['experience-two'][1];
       const exit=smooth(phase(p,...timing.heroExit));
       if(previous===scrollProgress)return result(exit,smooth(phase(p,0,.25))*.045);
       previous=scrollProgress;about.dataset.storyProgress=p.toFixed(4);
       const settled=scrollProgress>=1,mode=settled?'settled':'transition';
-      const holding=String(p>=1&&!settled);if(about.dataset.storyHolding!==holding)about.dataset.storyHolding=holding;
       if(mode!==lastMode){about.dataset.storyMode=mode;lastMode=mode;}
       const visible=String(p>.16);if(about.dataset.storyVisible!==visible)about.dataset.storyVisible=visible;
       const access=String(p>=.68);
